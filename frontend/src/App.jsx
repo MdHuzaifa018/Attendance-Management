@@ -23,6 +23,7 @@ import TeachersPage from "./pages/admin/TeachersPage.jsx";
 import DepartmentsPage from "./pages/admin/DepartmentsPage.jsx";
 import ClassesPage from "./pages/admin/ClassesPage.jsx";
 import SubjectsPage from "./pages/admin/SubjectsPage.jsx";
+import TeacherAttendancePage from "./pages/teacher/TeacherAttendancePage.jsx";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard.jsx";
 import StudentDashboard from "./pages/student/StudentDashboard.jsx";
 
@@ -100,7 +101,8 @@ function App() {
                 <Route path="/admin/departments" element={<DepartmentsPage />} />
                 <Route path="/admin/classes" element={<ClassesPage />} />
                 <Route path="/admin/subjects" element={<SubjectsPage />} />
-                {/* Phase 9+: /admin/subjects, /admin/attendance, /admin/reports */}
+                <Route path="/admin/attendance" element={<TeacherAttendancePage />} />
+                {/* Phase 12+: /admin/reports */}
               </Route>
             </Route>
 
@@ -108,7 +110,8 @@ function App() {
             <Route element={<RoleRoute allowedRoles={["teacher", "admin"]} />}>
               <Route element={<TeacherLayout />}>
                 <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
-                {/* Phase 7+: /teacher/attendance, /teacher/history */}
+                <Route path="/teacher/attendance" element={<TeacherAttendancePage />} />
+                {/* Phase 11+: /teacher/history */}
               </Route>
             </Route>
 

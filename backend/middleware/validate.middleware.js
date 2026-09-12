@@ -13,16 +13,19 @@ import { ZodError } from "zod";
  * Usage:
  *   router.post("/register", validate(registerSchema), register);
  */
-const validate = (schema) => (req, res, next) => {
-  const result = schema.safeParse(req.body);
+const validate = (schema, source = "body") => (req, res, next) => {
+  const result = schema.safeParse(req[source]);
 
   if (!result.success) {
     // Pass the ZodError to the centralized error handler
     return next(result.error);
   }
 
-  // Replace req.body with the parsed/sanitized value (trimmed strings etc.)
-  req.body = result.data;
+  if (source === "query") {
+    req.validatedQuery = result.data;
+  } else {
+    req[source] = result.data;
+  }
   next();
 };
 
