@@ -1,27 +1,45 @@
 import express from "express";
-import Class from "../models/Class.js";
+import {
+  getClasses,
+  getClass,
+  createClass,
+  updateClass,
+  deleteClass,
+} from "../controllers/class.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
+import { authorize } from "../middleware/role.middleware.js";
+import validate from "../middleware/validate.middleware.js";
+import {
+  createClassSchema,
+  updateClassSchema,
+} from "../validators/class.validator.js";
 
 const router = express.Router();
 
-/**
- * GET /api/classes?departmentId=...
- * Returns all active classes, optionally filtered by department.
- * Sorted by name. Used by admin student/teacher forms for dropdowns.
- * Phase 8 will add full CRUD for classes.
- */
-router.get("/", protect, async (req, res) => {
-  const { departmentId } = req.query;
+// All routes require authentication
+router.use(protect);
 
-  const filter = { isActive: true };
-  if (departmentId) filter.department = departmentId;
+// GET /api/classes — list (paginated, department filter, or all=true)
+router.get("/", getClasses);
 
-  const classes = await Class.find(filter)
-    .select("_id name code department")
-    .populate("department", "name code")
-    .sort({ name: 1 });
+// GET /api/classes/:id — single class details
+router.get("/:id", getClass);
 
-  res.status(200).json({ success: true, classes });
-});
+// Admin-only management endpoints
+router.post(
+  "/",
+  authorize("admin"),
+  validate(createClassSchema),
+  createClass
+);
+
+router.put(
+  "/:id",
+  authorize("admin"),
+  validate(updateClassSchema),
+  updateClass
+);
+
+router.delete("/:id", authorize("admin"), deleteClass);
 
 export default router;

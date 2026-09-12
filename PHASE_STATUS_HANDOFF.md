@@ -65,7 +65,6 @@ Includes:
 - Backend student validators (`student.validator.js`) with Zod schemas for create and update
 - Backend student service (`student.service.js`) with pagination, debounced multi-field search (name & roll no), department/class filters, atomic user+student creation, cascade deletion
 - Backend student controller (`student.controller.js`) & REST routes (`/api/students`) protected with admin authorization
-- Supporting lookup routes for active departments (`/api/departments`) and classes (`/api/classes`)
 - Database seed script (`seedData.js`) for departments, classes, and initial BCA-III students
 - Frontend `studentService.js` with Axios API integration
 - Frontend `StudentFormModal.jsx` featuring React Hook Form + Zod, cascading department-to-class dropdowns, validation errors, and loading states
@@ -86,21 +85,37 @@ Includes:
 - Frontend `TeachersPage.jsx` with search bar, data table, status badges, edit & delete modals, pagination, and empty state
 - Full end-to-end browser verification of list, search, modal create, table update, and delete confirmation dialog
 
+### Phase 8 --- Department & Class Management
+
+COMPLETE
+
+Includes:
+- Backend department validator (`department.validator.js`) and class validator (`class.validator.js`)
+- Backend department service (`department.service.js`) with search, statistics aggregation (classes, students, faculty counts), and orphan prevention safeguards
+- Backend class service (`class.service.js`) with search, department filtering, statistics aggregation (students, subjects counts), and orphan prevention safeguards
+- Backend controllers and REST routes (`/api/departments`, `/api/classes`) protected by auth and admin role
+- Frontend `departmentService.js` and `classService.js` with Axios integration
+- Frontend `DepartmentFormModal.jsx` and `ClassFormModal.jsx` with React Hook Form + Zod validation
+- Frontend `DepartmentsPage.jsx` and `ClassesPage.jsx` featuring searchable/filterable data tables, metrics badges, edit/delete modals, and delete confirmation dialogs
+- Full end-to-end browser verification of both pages, search, department filter, modal creation, and safe deletion
+
 ## Current
 
-### Phase 8 --- Department & Class Management
+### Phase 9 --- Subject Management
 
 READY TO START
 
 Immediate next work:
-1. Department Zod validator (`department.validator.js`) & Class Zod validator (`class.validator.js`)
-2. Department & Class service layers with full CRUD, validations, and cascading lookups
-3. Department & Class controllers & routes (`/api/departments`, `/api/classes`) protected by admin
-4. Frontend `departmentService.js` & `classService.js`
-5. Departments list page (`DepartmentsPage.jsx`) & Class list page (`ClassesPage.jsx`)
-6. Department & Class modals for creation/editing
-7. Wire `/admin/departments` and `/admin/classes` in `App.jsx`
-8. End-to-end testing and verification
+1. Subject Zod validator (`subject.validator.js`)
+2. Subject service layer (`subject.service.js`) with CRUD, class association, teacher assignment, and uniqueness validation
+3. Subject controller (`subject.controller.js`)
+4. Subject routes (`subject.routes.js`) protected by admin
+5. Seed script for subjects (`seedSubjects.js`)
+6. Frontend `subjectService.js`
+7. Subject modal for create/edit (`SubjectFormModal.jsx`) with class and teacher dropdowns
+8. Subjects list page (`SubjectsPage.jsx`)
+9. Wire `/admin/subjects` route in `App.jsx`
+10. End-to-end testing and verification
 
 ## Relationships
 

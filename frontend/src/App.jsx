@@ -15,10 +15,12 @@ import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
 import UnauthorizedPage from "./pages/auth/UnauthorizedPage.jsx";
 
-// Dashboard pages (Phase 5 placeholders)
+// Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 import StudentsPage from "./pages/admin/StudentsPage.jsx";
 import TeachersPage from "./pages/admin/TeachersPage.jsx";
+import DepartmentsPage from "./pages/admin/DepartmentsPage.jsx";
+import ClassesPage from "./pages/admin/ClassesPage.jsx";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard.jsx";
 import StudentDashboard from "./pages/student/StudentDashboard.jsx";
 
@@ -92,7 +94,9 @@ function App() {
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 <Route path="/admin/students" element={<StudentsPage />} />
                 <Route path="/admin/teachers" element={<TeachersPage />} />
-                {/* Phase 8+: /admin/departments, /admin/classes, /admin/subjects, /admin/attendance, /admin/reports */}
+                <Route path="/admin/departments" element={<DepartmentsPage />} />
+                <Route path="/admin/classes" element={<ClassesPage />} />
+                {/* Phase 9+: /admin/subjects, /admin/attendance, /admin/reports */}
               </Route>
             </Route>
 

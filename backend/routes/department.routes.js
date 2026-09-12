@@ -1,21 +1,45 @@
 import express from "express";
-import Department from "../models/Department.js";
+import {
+  getDepartments,
+  getDepartment,
+  createDepartment,
+  updateDepartment,
+  deleteDepartment,
+} from "../controllers/department.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
+import { authorize } from "../middleware/role.middleware.js";
+import validate from "../middleware/validate.middleware.js";
+import {
+  createDepartmentSchema,
+  updateDepartmentSchema,
+} from "../validators/department.validator.js";
 
 const router = express.Router();
 
-/**
- * GET /api/departments
- * Returns all active departments sorted by name.
- * Used by admin student/teacher forms for dropdowns.
- * Phase 8 will add full CRUD for departments.
- */
-router.get("/", protect, async (req, res) => {
-  const departments = await Department.find({ isActive: true })
-    .select("_id name code")
-    .sort({ name: 1 });
+// All routes require authentication
+router.use(protect);
 
-  res.status(200).json({ success: true, departments });
-});
+// GET /api/departments — list (paginated or all=true for dropdowns)
+router.get("/", getDepartments);
+
+// GET /api/departments/:id — single department details
+router.get("/:id", getDepartment);
+
+// Admin-only modification routes
+router.post(
+  "/",
+  authorize("admin"),
+  validate(createDepartmentSchema),
+  createDepartment
+);
+
+router.put(
+  "/:id",
+  authorize("admin"),
+  validate(updateDepartmentSchema),
+  updateDepartment
+);
+
+router.delete("/:id", authorize("admin"), deleteDepartment);
 
 export default router;
