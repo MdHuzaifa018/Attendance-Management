@@ -47,44 +47,47 @@ Public registration creates students only.
 
 ### Phase 5 --- Admin UI & Dashboard Foundation
 
-IN PROGRESS
+COMPLETE
 
-Already created:
+Includes:
+- Real Login page with credentials validation & dark theme
+- Register page for student self-registration
+- Unauthorized & 404 pages
+- Admin, Teacher, and Student layouts with dynamic sidebar navigation & responsive mobile drawers
+- Real Admin Dashboard with quick stats, recent attendance, alerts, and quick actions
+- Teacher and Student dashboard foundation
 
-``` text
-frontend/src/services/api.js
-frontend/src/context/AuthContext.jsx
-frontend/src/routes/ProtectedRoute.jsx
-frontend/src/routes/RoleRoute.jsx
-frontend/src/App.jsx
-frontend/src/main.jsx
-```
+### Phase 6 --- Student Management
 
-Current temporary routes:
+COMPLETE
 
-``` text
-/login
-/admin/dashboard
-/teacher/dashboard
-/student/dashboard
-/unauthorized
-```
+Includes:
+- Backend student validators (`student.validator.js`) with Zod schemas for create and update
+- Backend student service (`student.service.js`) with pagination, debounced multi-field search (name & roll no), department/class filters, atomic user+student creation, cascade deletion
+- Backend student controller (`student.controller.js`) & REST routes (`/api/students`) protected with admin authorization
+- Supporting lookup routes for active departments (`/api/departments`) and classes (`/api/classes`)
+- Database seed script (`seedData.js`) for departments, classes, and initial BCA-III students
+- Frontend `studentService.js` with Axios API integration
+- Frontend `StudentFormModal.jsx` featuring React Hook Form + Zod, cascading department-to-class dropdowns, validation errors, and loading states
+- Frontend `StudentsPage.jsx` featuring searchable & paginated data table, status badges, edit & delete modals, and empty state
+- Full end-to-end browser verification of list, search, modal create, table reflect, and delete confirmation dialog
 
-## Immediate next work
+## Current
 
-1.  Real Login page
-2.  Register page if required
-3.  Loading screen
-4.  Admin layout
-5.  Teacher layout
-6.  Student layout
-7.  Login → JWT integration
-8.  `/auth/me` refresh persistence
-9.  Logout
-10. Role redirect
-11. Unauthorized handling
-12. Test end-to-end
-13. Build real Admin Dashboard
+### Phase 7 --- Teacher Management
+
+READY TO START
+
+Immediate next work:
+1. Teacher Zod validator (`teacher.validator.js`)
+2. Teacher service layer (`teacher.service.js`) with CRUD and class/subject assignments
+3. Teacher controller (`teacher.controller.js`)
+4. Teacher routes (`teacher.routes.js`) protected by admin
+5. Frontend `teacherService.js`
+6. Teacher list page (`TeachersPage.jsx`)
+7. Teacher modal for create/edit (`TeacherFormModal.jsx`) with department and assigned classes/subjects
+8. Wire `/admin/teachers` route in `App.jsx`
+9. End-to-end testing and verification
 
 ## Relationships
 

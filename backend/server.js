@@ -7,6 +7,9 @@ import requestLogger from "./middleware/requestLogger.js";
 import connectDB from "./config/db.js";
 import testRoutes from "./routes/test.route.js";
 import authRoutes from "./routes/auth.routes.js";
+import studentRoutes from "./routes/student.routes.js";
+import departmentRoutes from "./routes/department.routes.js";
+import classRoutes from "./routes/class.routes.js";
 import { notFound, errorHandler } from "./middleware/error.middleware.js";
 dotenv.config();
 
@@ -40,6 +43,9 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/students", studentRoutes);
+app.use("/api/departments", departmentRoutes);
+app.use("/api/classes", classRoutes);
 
 app.use(notFound);
 
