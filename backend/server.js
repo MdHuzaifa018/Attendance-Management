@@ -15,6 +15,7 @@ import subjectRoutes from "./routes/subject.routes.js";
 import attendanceRoutes from "./routes/attendance.routes.js";
 import attendanceHistoryRoutes from "./routes/attendanceHistory.routes.js";
 import studentAttendanceRoutes from "./routes/studentAttendance.routes.js";
+import reportRoutes from "./routes/report.routes.js";
 import { notFound, errorHandler } from "./middleware/error.middleware.js";
 dotenv.config();
 
@@ -56,6 +57,7 @@ app.use("/api/subjects", subjectRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/attendance/history", attendanceHistoryRoutes);
 app.use("/api/student-attendance", studentAttendanceRoutes);
+app.use("/api/reports", reportRoutes);
 
 app.use(notFound);
 

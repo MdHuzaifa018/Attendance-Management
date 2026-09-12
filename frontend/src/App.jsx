@@ -28,6 +28,7 @@ import TeacherHistoryPage from "./pages/teacher/TeacherHistoryPage.jsx";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard.jsx";
 import StudentDashboard from "./pages/student/StudentDashboard.jsx";
 import AdminHistoryPage from "./pages/admin/AdminHistoryPage.jsx";
+import AdminReportsPage from "./pages/admin/AdminReportsPage.jsx";
 import StudentAttendancePage from "./pages/student/StudentAttendancePage.jsx";
 
 /**
@@ -106,7 +107,7 @@ function App() {
                 <Route path="/admin/subjects" element={<SubjectsPage />} />
                 <Route path="/admin/attendance" element={<TeacherAttendancePage />} />
                 <Route path="/admin/history" element={<AdminHistoryPage />} />
-                {/* Phase 12+: /admin/reports */}
+                <Route path="/admin/reports" element={<AdminReportsPage />} />
               </Route>
             </Route>
 
