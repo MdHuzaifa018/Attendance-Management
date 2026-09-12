@@ -72,22 +72,35 @@ Includes:
 - Frontend `StudentsPage.jsx` featuring searchable & paginated data table, status badges, edit & delete modals, and empty state
 - Full end-to-end browser verification of list, search, modal create, table reflect, and delete confirmation dialog
 
+### Phase 7 --- Teacher Management
+
+COMPLETE
+
+Includes:
+- Backend teacher validator (`teacher.validator.js`) with Zod schemas for create and update
+- Backend teacher service (`teacher.service.js`) with pagination, debounced multi-field search (name & employeeId), department filter, atomic user+teacher creation, cascade deletion
+- Backend teacher controller (`teacher.controller.js`) & REST routes (`/api/teachers`) protected by admin authorization
+- Database seed script (`seedTeachers.js`) populating initial faculty members for BCA and MCA departments
+- Frontend `teacherService.js` with Axios API integration
+- Frontend `TeacherFormModal.jsx` featuring React Hook Form + Zod, department selection, designation options, validation errors, and loading states
+- Frontend `TeachersPage.jsx` with search bar, data table, status badges, edit & delete modals, pagination, and empty state
+- Full end-to-end browser verification of list, search, modal create, table update, and delete confirmation dialog
+
 ## Current
 
-### Phase 7 --- Teacher Management
+### Phase 8 --- Department & Class Management
 
 READY TO START
 
 Immediate next work:
-1. Teacher Zod validator (`teacher.validator.js`)
-2. Teacher service layer (`teacher.service.js`) with CRUD and class/subject assignments
-3. Teacher controller (`teacher.controller.js`)
-4. Teacher routes (`teacher.routes.js`) protected by admin
-5. Frontend `teacherService.js`
-6. Teacher list page (`TeachersPage.jsx`)
-7. Teacher modal for create/edit (`TeacherFormModal.jsx`) with department and assigned classes/subjects
-8. Wire `/admin/teachers` route in `App.jsx`
-9. End-to-end testing and verification
+1. Department Zod validator (`department.validator.js`) & Class Zod validator (`class.validator.js`)
+2. Department & Class service layers with full CRUD, validations, and cascading lookups
+3. Department & Class controllers & routes (`/api/departments`, `/api/classes`) protected by admin
+4. Frontend `departmentService.js` & `classService.js`
+5. Departments list page (`DepartmentsPage.jsx`) & Class list page (`ClassesPage.jsx`)
+6. Department & Class modals for creation/editing
+7. Wire `/admin/departments` and `/admin/classes` in `App.jsx`
+8. End-to-end testing and verification
 
 ## Relationships
 
