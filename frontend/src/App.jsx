@@ -28,6 +28,7 @@ import TeacherHistoryPage from "./pages/teacher/TeacherHistoryPage.jsx";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard.jsx";
 import StudentDashboard from "./pages/student/StudentDashboard.jsx";
 import AdminHistoryPage from "./pages/admin/AdminHistoryPage.jsx";
+import StudentAttendancePage from "./pages/student/StudentAttendancePage.jsx";
 
 /**
  * App — Root component. Defines the complete routing tree.
@@ -122,7 +123,8 @@ function App() {
             <Route element={<RoleRoute allowedRoles={["student"]} />}>
               <Route element={<StudentLayout />}>
                 <Route path="/student/dashboard" element={<StudentDashboard />} />
-                {/* Phase 8+: /student/attendance, /student/history */}
+                <Route path="/student/attendance" element={<StudentAttendancePage />} />
+                <Route path="/student/history" element={<StudentAttendancePage />} />
               </Route>
             </Route>
 
