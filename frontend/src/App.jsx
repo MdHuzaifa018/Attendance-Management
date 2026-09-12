@@ -22,6 +22,7 @@ import StudentsPage from "./pages/admin/StudentsPage.jsx";
 import TeachersPage from "./pages/admin/TeachersPage.jsx";
 import DepartmentsPage from "./pages/admin/DepartmentsPage.jsx";
 import ClassesPage from "./pages/admin/ClassesPage.jsx";
+import SubjectsPage from "./pages/admin/SubjectsPage.jsx";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard.jsx";
 import StudentDashboard from "./pages/student/StudentDashboard.jsx";
 
@@ -98,6 +99,7 @@ function App() {
                 <Route path="/admin/teachers" element={<TeachersPage />} />
                 <Route path="/admin/departments" element={<DepartmentsPage />} />
                 <Route path="/admin/classes" element={<ClassesPage />} />
+                <Route path="/admin/subjects" element={<SubjectsPage />} />
                 {/* Phase 9+: /admin/subjects, /admin/attendance, /admin/reports */}
               </Route>
             </Route>
