@@ -1,5 +1,21 @@
 import mongoose from "mongoose";
 
+const editEntrySchema = new mongoose.Schema(
+  {
+    changedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    changedByRole: { type: String, required: true },
+    previousStatus: { type: String, enum: ["present", "absent"], required: true },
+    newStatus: { type: String, enum: ["present", "absent"], required: true },
+    reason: { type: String, trim: true, maxlength: 300 },
+    changedAt: { type: Date, default: Date.now },
+  },
+  { _id: true }
+);
+
 const attendanceSchema = new mongoose.Schema(
   {
     student: {
@@ -46,6 +62,12 @@ const attendanceSchema = new mongoose.Schema(
     markedAt: {
       type: Date,
       default: Date.now,
+    },
+
+    // Audit trail: every manual correction is appended here
+    editHistory: {
+      type: [editEntrySchema],
+      default: [],
     },
   },
   {

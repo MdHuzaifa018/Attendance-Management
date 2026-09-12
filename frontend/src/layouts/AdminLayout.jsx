@@ -8,11 +8,13 @@ import {
   BookOpen,
   BookMarked,
   ClipboardList,
+  History,
   BarChart3,
   GraduationCap,
   LogOut,
   Menu,
 } from "lucide-react";
+
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext.jsx";
 import ThemeToggle from "../components/common/ThemeToggle.jsx";
@@ -25,6 +27,7 @@ const navItems = [
   { path: "/admin/classes", label: "Classes", icon: BookOpen },
   { path: "/admin/subjects", label: "Subjects", icon: BookMarked },
   { path: "/admin/attendance", label: "Attendance", icon: ClipboardList },
+  { path: "/admin/history", label: "History & Audit", icon: History },
   { path: "/admin/reports", label: "Reports", icon: BarChart3 },
 ];
 

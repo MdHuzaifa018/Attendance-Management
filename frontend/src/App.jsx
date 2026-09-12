@@ -24,8 +24,10 @@ import DepartmentsPage from "./pages/admin/DepartmentsPage.jsx";
 import ClassesPage from "./pages/admin/ClassesPage.jsx";
 import SubjectsPage from "./pages/admin/SubjectsPage.jsx";
 import TeacherAttendancePage from "./pages/teacher/TeacherAttendancePage.jsx";
+import TeacherHistoryPage from "./pages/teacher/TeacherHistoryPage.jsx";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard.jsx";
 import StudentDashboard from "./pages/student/StudentDashboard.jsx";
+import AdminHistoryPage from "./pages/admin/AdminHistoryPage.jsx";
 
 /**
  * App — Root component. Defines the complete routing tree.
@@ -102,6 +104,7 @@ function App() {
                 <Route path="/admin/classes" element={<ClassesPage />} />
                 <Route path="/admin/subjects" element={<SubjectsPage />} />
                 <Route path="/admin/attendance" element={<TeacherAttendancePage />} />
+                <Route path="/admin/history" element={<AdminHistoryPage />} />
                 {/* Phase 12+: /admin/reports */}
               </Route>
             </Route>
@@ -111,7 +114,7 @@ function App() {
               <Route element={<TeacherLayout />}>
                 <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
                 <Route path="/teacher/attendance" element={<TeacherAttendancePage />} />
-                {/* Phase 11+: /teacher/history */}
+                <Route path="/teacher/history" element={<TeacherHistoryPage />} />
               </Route>
             </Route>
 
