@@ -3,3 +3,11 @@ node_modules/
 dist/
 .DS_Store
 *.log
+
+# Ignore all markdown docs
+*.md
+*/*.md
+**/*.md
+
+# Only keep root README.md
+!/README.md
