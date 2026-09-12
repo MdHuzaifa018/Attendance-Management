@@ -40,9 +40,9 @@ const editSchema = z.object({
 // ─── Shared input classes ─────────────────────────────────────────────────────
 
 const inputCls = (err) =>
-  `w-full px-3 py-2 bg-slate-800 border rounded-lg text-white text-sm placeholder-slate-500
+  `w-full px-3 py-2 bg-white dark:bg-slate-800 border rounded-lg text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-slate-500
    focus:outline-none focus:ring-2 transition-colors
-   ${err ? "border-red-500 focus:ring-red-500" : "border-slate-700 hover:border-slate-600 focus:ring-indigo-500"}`;
+   ${err ? "border-red-500 focus:ring-red-500" : "border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600 focus:ring-indigo-500"}`;
 
 const FieldError = ({ msg }) =>
   msg ? (
@@ -173,20 +173,20 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={onClose} />
 
       {/* Modal panel */}
-      <div className="relative w-full max-w-xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 flex-shrink-0">
-          <h2 className="text-white font-semibold text-base">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex-shrink-0">
+          <h2 className="text-slate-900 dark:text-white font-semibold text-base">
             {isEdit ? "Edit Student" : "Add New Student"}
           </h2>
           <button
             id="student-modal-close"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -199,12 +199,12 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
             {/* User account section (create only) */}
             {!isEdit && (
               <div className="space-y-4">
-                <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest">
+                <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-widest">
                   Account Details
                 </p>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Full Name</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Full Name</label>
                   <input id="sf-name" type="text" placeholder="Student's full name"
                     {...register("name")} className={inputCls(errors.name)} />
                   <FieldError msg={errors.name?.message} />
@@ -212,21 +212,21 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1.5">Email</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Email</label>
                     <input id="sf-email" type="email" placeholder="student@example.com"
                       {...register("email")} className={inputCls(errors.email)} />
                     <FieldError msg={errors.email?.message} />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Password</label>
                     <input id="sf-password" type="password" placeholder="Min. 6 characters"
                       {...register("password")} className={inputCls(errors.password)} />
                     <FieldError msg={errors.password?.message} />
                   </div>
                 </div>
 
-                <div className="border-t border-slate-800 pt-4">
-                  <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-3">
+                <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
+                  <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-widest mb-3">
                     Student Profile
                   </p>
                 </div>
@@ -236,13 +236,13 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
             {/* Roll No + Father Name */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Roll Number</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Roll Number</label>
                 <input id="sf-rollno" type="text" placeholder="e.g. BCA-III-006"
                   {...register("rollNo")} className={inputCls(errors.rollNo)} />
                 <FieldError msg={errors.rollNo?.message} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Father's Name</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Father's Name</label>
                 <input id="sf-fathername" type="text" placeholder="Father's full name"
                   {...register("fatherName")} className={inputCls(errors.fatherName)} />
                 <FieldError msg={errors.fatherName?.message} />
@@ -252,7 +252,7 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
             {/* Department + Class cascade */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Department</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Department</label>
                 <select id="sf-department" {...register("departmentId")} className={inputCls(errors.departmentId)}>
                   <option value="">{loadingDepts ? "Loading…" : "Select department"}</option>
                   {departments.map((d) => (
@@ -262,7 +262,7 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
                 <FieldError msg={errors.departmentId?.message} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Class</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Class</label>
                 <select id="sf-class" {...register("classId")} className={inputCls(errors.classId)}
                   disabled={!selectedDeptId || classes.length === 0}>
                   <option value="">
@@ -279,13 +279,13 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
             {/* Admission Year + Phone */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Admission Year</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Admission Year</label>
                 <input id="sf-year" type="number" min="2000" max="2030" placeholder="2022"
                   {...register("admissionYear")} className={inputCls(errors.admissionYear)} />
                 <FieldError msg={errors.admissionYear?.message} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Phone <span className="text-slate-500">(optional)</span></label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Phone <span className="text-slate-400 dark:text-slate-500">(optional)</span></label>
                 <input id="sf-phone" type="tel" placeholder="10-digit number"
                   {...register("phone")} className={inputCls(errors.phone)} />
                 <FieldError msg={errors.phone?.message} />
@@ -296,8 +296,8 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
             {isEdit && (
               <div className="flex items-center gap-3 pt-1">
                 <input id="sf-isactive" type="checkbox" {...register("isActive")}
-                  className="w-4 h-4 accent-indigo-500 cursor-pointer" />
-                <label htmlFor="sf-isactive" className="text-sm text-slate-300 cursor-pointer">
+                  className="w-4 h-4 accent-indigo-600 cursor-pointer" />
+                <label htmlFor="sf-isactive" className="text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
                   Active (uncheck to deactivate this student)
                 </label>
               </div>
@@ -306,9 +306,9 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
         </form>
 
         {/* Footer actions */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-800 flex-shrink-0">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-transparent flex-shrink-0">
           <button type="button" onClick={onClose}
-            className="px-4 py-2 text-slate-300 hover:text-white text-sm font-medium transition-colors">
+            className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors">
             Cancel
           </button>
           <button
@@ -319,7 +319,7 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
             disabled={isSubmitting}
             className="flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-500
               disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold
-              rounded-lg transition-colors"
+              rounded-lg transition-colors shadow-sm"
           >
             {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
             {isEdit ? "Save Changes" : "Create Student"}

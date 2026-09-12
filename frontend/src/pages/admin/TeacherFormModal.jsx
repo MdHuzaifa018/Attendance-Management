@@ -35,9 +35,9 @@ const editSchema = z.object({
 // ─── Shared UI Helpers ───────────────────────────────────────────────────────
 
 const inputCls = (err) =>
-  `w-full px-3 py-2 bg-slate-800 border rounded-lg text-white text-sm placeholder-slate-500
+  `w-full px-3 py-2 bg-white dark:bg-slate-800 border rounded-lg text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-slate-500
    focus:outline-none focus:ring-2 transition-colors
-   ${err ? "border-red-500 focus:ring-red-500" : "border-slate-700 hover:border-slate-600 focus:ring-indigo-500"}`;
+   ${err ? "border-red-500 focus:ring-red-500" : "border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600 focus:ring-indigo-500"}`;
 
 const FieldError = ({ msg }) =>
   msg ? (
@@ -150,17 +150,20 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-xs"
+        onClick={onClose}
+      />
 
-      {/* Modal Dialog */}
-      <div className="relative w-full max-w-lg bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
+      {/* Modal Card */}
+      <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
           <div>
-            <h3 className="text-lg font-bold text-white">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
               {isEdit ? "Edit Teacher" : "Add New Teacher"}
             </h3>
-            <p className="text-slate-400 text-xs mt-0.5">
+            <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
               {isEdit
                 ? `Updating ${teacher.user?.name} (${teacher.employeeId})`
                 : "Creates a teacher profile and portal login credentials"}
@@ -168,7 +171,7 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+            className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -178,14 +181,14 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           {/* Create-only account fields */}
           {!isEdit && (
-            <div className="space-y-4 pb-4 border-b border-slate-800">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <div className="space-y-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Account Credentials
               </p>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Full Name <span className="text-red-400">*</span>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  Full Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -198,8 +201,8 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                    Email Address <span className="text-red-400">*</span>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Email Address <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -211,8 +214,8 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                    Password <span className="text-red-400">*</span>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Password <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="password"
@@ -228,14 +231,14 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
 
           {/* Teacher Profile fields */}
           <div className="space-y-4">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               Profile Details
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Employee ID <span className="text-red-400">*</span>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  Employee ID <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -247,8 +250,8 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Department <span className="text-red-400">*</span>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  Department <span className="text-red-500">*</span>
                 </label>
                 <select
                   disabled={loadingDepts}
@@ -270,8 +273,8 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Designation <span className="text-red-400">*</span>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  Designation <span className="text-red-500">*</span>
                 </label>
                 <select
                   className={inputCls(errors.designation)}
@@ -287,7 +290,7 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Phone Number
                 </label>
                 <input
@@ -302,10 +305,10 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
 
             {/* Status toggle in edit mode */}
             {isEdit && (
-              <div className="flex items-center justify-between p-3 bg-slate-800/60 border border-slate-700/60 rounded-xl">
+              <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-xl">
                 <div>
-                  <p className="text-xs font-medium text-white">Active Status</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs font-medium text-slate-900 dark:text-white">Active Status</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Disabling restricts portal access for this teacher
                   </p>
                 </div>
@@ -315,25 +318,25 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
                     className="sr-only peer"
                     {...register("isActive")}
                   />
-                  <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600" />
+                  <div className="w-11 h-6 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600" />
                 </label>
               </div>
             )}
           </div>
 
           {/* Action buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-slate-400 hover:text-white text-sm font-medium transition-colors"
+              className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-semibold rounded-xl shadow-md transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
             >
               {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {isEdit ? "Save Changes" : "Create Teacher"}
