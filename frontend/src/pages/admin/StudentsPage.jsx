@@ -247,7 +247,7 @@ const StudentsPage = () => {
                     <th className="text-left text-slate-500 dark:text-slate-400 font-semibold text-xs uppercase tracking-widest px-4 py-3.5">Department</th>
                     <th className="text-left text-slate-500 dark:text-slate-400 font-semibold text-xs uppercase tracking-widest px-4 py-3.5">Class</th>
                     <th className="text-left text-slate-500 dark:text-slate-400 font-semibold text-xs uppercase tracking-widest px-4 py-3.5">Phone</th>
-                    <th className="text-left text-slate-500 dark:text-slate-400 font-semibold text-xs uppercase tracking-widest px-4 py-3.5">Year</th>
+                    <th className="text-left text-slate-500 dark:text-slate-400 font-semibold text-xs uppercase tracking-widest px-4 py-3.5">Batch</th>
                     <th className="text-left text-slate-500 dark:text-slate-400 font-semibold text-xs uppercase tracking-widest px-4 py-3.5">Status</th>
                     <th className="text-right text-slate-500 dark:text-slate-400 font-semibold text-xs uppercase tracking-widest px-5 py-3.5">Actions</th>
                   </tr>
@@ -267,7 +267,7 @@ const StudentsPage = () => {
                       <td className="px-4 py-3.5 text-slate-700 dark:text-slate-300">{s.department?.code || "—"}</td>
                       <td className="px-4 py-3.5 text-slate-700 dark:text-slate-300">{s.class?.code || "—"}</td>
                       <td className="px-4 py-3.5 text-slate-600 dark:text-slate-400">{s.phone || "—"}</td>
-                      <td className="px-4 py-3.5 text-slate-600 dark:text-slate-400">{s.admissionYear}</td>
+                      <td className="px-4 py-3.5 text-slate-600 dark:text-slate-400">{s.duration ? s.duration : s.admissionYear}</td>
                       <td className="px-4 py-3.5">
                         <StatusBadge isActive={s.isActive} />
                       </td>

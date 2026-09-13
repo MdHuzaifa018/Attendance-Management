@@ -53,6 +53,11 @@ export const createStudentSchema = z.object({
     .min(2000, "Admission year seems too early")
     .max(2030, "Admission year seems too far in the future"),
 
+  duration: z
+    .string()
+    .trim()
+    .optional(),
+
   phone: z
     .string()
     .max(15, "Phone number is too long")
@@ -87,6 +92,8 @@ export const updateStudentSchema = z.object({
   classId: objectId.optional(),
 
   admissionYear: z.coerce.number().int().min(2000).max(2030).optional(),
+
+  duration: z.string().trim().optional(),
 
   phone: z.string().max(15).optional().or(z.literal("")),
 

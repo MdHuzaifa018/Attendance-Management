@@ -84,9 +84,10 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
           rollNo:        student.rollNo || "",
           fatherName:    student.fatherName || "",
           departmentId:  student.department?._id || "",
-          classId:       student.class?._id || "",
-          admissionYear: student.admissionYear || new Date().getFullYear(),
-          phone:         student.phone || "",
+          classId:       student?.class?._id || "",
+          admissionYear: student?.admissionYear || new Date().getFullYear(),
+          duration:      student?.duration || "2024-27",
+          phone:         student?.phone || "",
           isActive:      student.isActive ?? true,
         }
       : {
@@ -94,6 +95,7 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
           rollNo: "", fatherName: "",
           departmentId: "", classId: "",
           admissionYear: new Date().getFullYear(),
+          duration: "2024-27",
           phone: "",
         },
   });
@@ -134,9 +136,10 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
               rollNo:        student.rollNo || "",
               fatherName:    student.fatherName || "",
               departmentId:  student.department?._id || "",
-              classId:       student.class?._id || "",
-              admissionYear: student.admissionYear || new Date().getFullYear(),
-              phone:         student.phone || "",
+              classId:       student?.class?._id || "",
+              admissionYear: student?.admissionYear || new Date().getFullYear(),
+              duration:      student?.duration || "2024-27",
+              phone:         student?.phone || "",
               isActive:      student.isActive ?? true,
             }
           : {
@@ -144,6 +147,7 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
               rollNo: "", fatherName: "",
               departmentId: "", classId: "",
               admissionYear: new Date().getFullYear(),
+              duration: "2024-27",
               phone: "",
             }
       );
@@ -280,9 +284,15 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Admission Year</label>
-                <input id="sf-year" type="number" min="2000" max="2030" placeholder="2022"
+                <input id="sf-year" type="number" placeholder="2024"
                   {...register("admissionYear")} className={inputCls(errors.admissionYear)} />
                 <FieldError msg={errors.admissionYear?.message} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Batch Duration</label>
+                <input id="sf-duration" type="text" placeholder="e.g. 2024-27"
+                  {...register("duration")} className={inputCls(errors.duration)} />
+                <FieldError msg={errors.duration?.message} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Phone <span className="text-slate-400 dark:text-slate-500">(optional)</span></label>

@@ -40,6 +40,12 @@ const studentSchema = new mongoose.Schema(
       required: [true, "Admission year is required"],
     },
 
+    duration: {
+      type: String,
+      trim: true,
+      default: "2024-27"
+    },
+
     phone: {
       type: String,
       trim: true,
