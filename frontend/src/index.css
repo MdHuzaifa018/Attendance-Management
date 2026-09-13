@@ -61,7 +61,23 @@
     width: 100% !important;
     margin: 0 !important;
     padding: 20px !important;
+    background: #ffffff !important;
+    color: #000000 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  #printable-attendance-sheet table {
+    width: 100% !important;
+    page-break-inside: auto;
+  }
+
+  #printable-attendance-sheet tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  #printable-attendance-sheet thead {
+    display: table-header-group;
   }
 }
