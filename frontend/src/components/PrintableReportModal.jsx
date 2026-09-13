@@ -36,14 +36,14 @@ const PrintableReportModal = ({ isOpen, onClose, reportData, filters, department
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 dark:bg-black/70 backdrop-blur-sm overflow-y-auto animate-fadeIn">
       {/* Modal Card */}
-      <div className="relative w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl flex flex-col my-8 max-h-[90vh]">
+      <div className="relative w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl flex flex-col my-8 max-h-[90vh] text-slate-900 dark:text-white">
         {/* Top Control Bar (Hidden in Print) */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/80 rounded-t-3xl print:hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 rounded-t-3xl print:hidden">
           <div className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-indigo-400" />
-            <h3 className="text-base font-bold text-white tracking-wide">
+            <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-wide">
               Official Printable Attendance Sheet
             </h3>
           </div>
@@ -56,7 +56,7 @@ const PrintableReportModal = ({ isOpen, onClose, reportData, filters, department
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+              className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -64,7 +64,7 @@ const PrintableReportModal = ({ isOpen, onClose, reportData, filters, department
         </div>
 
         {/* Printable Document Container */}
-        <div className="p-6 md:p-8 overflow-y-auto flex justify-center bg-slate-950/40">
+        <div className="p-6 md:p-8 overflow-y-auto flex justify-center bg-slate-100/70 dark:bg-slate-950/40">
           <div
             id="printable-attendance-sheet"
             ref={reportRef}

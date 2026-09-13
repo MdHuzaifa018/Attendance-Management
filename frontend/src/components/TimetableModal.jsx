@@ -190,19 +190,19 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 dark:bg-black/70 backdrop-blur-sm animate-fadeIn">
+      <div className="relative w-full max-w-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden text-slate-900 dark:text-white">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/80">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
               <CalendarDays className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white tracking-wide">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-wide">
                 Manage Class Schedule & Timetable
               </h3>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 Configure periods, lecture timings, faculty, and room allocations
               </p>
             </div>
@@ -210,25 +210,25 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
 
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-xl transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Controls: Class & Day Selector */}
-        <div className="p-6 pb-3 border-b border-slate-800 bg-slate-950/40 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="p-6 pb-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/40 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-slate-300 text-xs font-semibold mb-1">
+            <label className="block text-slate-700 dark:text-slate-300 text-xs font-semibold mb-1">
               Select Class / Course
             </label>
             <select
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-indigo-500 cursor-pointer"
+              className="w-full px-3 py-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm cursor-pointer"
             >
               {classes.map((cls) => (
-                <option key={cls._id} value={cls._id}>
+                <option key={cls._id} value={cls._id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                   {cls.name} ({cls.code})
                 </option>
               ))}
@@ -236,7 +236,7 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
           </div>
 
           <div>
-            <label className="block text-slate-300 text-xs font-semibold mb-1">
+            <label className="block text-slate-700 dark:text-slate-300 text-xs font-semibold mb-1">
               Select Day of Week
             </label>
             <div className="flex items-center gap-1 overflow-x-auto pb-1">
@@ -248,7 +248,7 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                     selectedDay === day
                       ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                      : "bg-slate-800 text-slate-400 hover:text-white"
+                      : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 shadow-sm"
                   }`}
                 >
                   {day.slice(0, 3)}
@@ -262,13 +262,13 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">
                 Periods for {selectedDay} ({periods.length})
               </h4>
               <button
                 type="button"
                 onClick={handleAddPeriod}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-300 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-50 dark:bg-indigo-500/20 hover:bg-indigo-100 dark:hover:bg-indigo-500/30 border border-indigo-200 dark:border-indigo-500/40 text-indigo-700 dark:text-indigo-300 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-sm"
               >
                 <Plus className="w-3.5 h-3.5" /> Add Period
               </button>
@@ -279,23 +279,23 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
                 <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />
               </div>
             ) : periods.length === 0 ? (
-              <div className="text-center py-12 text-slate-400 text-xs border border-dashed border-slate-800 rounded-2xl">
+              <div className="text-center py-12 text-slate-500 dark:text-slate-400 text-xs border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl">
                 No periods configured for this day. Click{" "}
-                <span className="text-indigo-400 font-bold">Add Period</span> to create the routine.
+                <span className="text-indigo-600 dark:text-indigo-400 font-bold">Add Period</span> to create the routine.
               </div>
             ) : (
               <div className="space-y-3">
                 {periods.map((p, idx) => (
                   <div
                     key={idx}
-                    className="p-4 rounded-2xl border border-slate-800 bg-slate-950/60 flex flex-col md:flex-row md:items-center gap-3"
+                    className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/60 shadow-sm flex flex-col md:flex-row md:items-center gap-3"
                   >
                     {/* Period Badge */}
                     <div className="flex items-center justify-between md:justify-start gap-2">
-                      <span className="w-8 h-8 rounded-xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                      <span className="w-8 h-8 rounded-xl bg-indigo-600/10 dark:bg-indigo-600/20 border border-indigo-500/20 dark:border-indigo-500/30 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center flex-shrink-0">
                         #{p.periodNumber}
                       </span>
-                      <span className="text-xs font-semibold text-slate-400 md:hidden">
+                      <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 md:hidden">
                         Period #{p.periodNumber}
                       </span>
                     </div>
@@ -303,7 +303,7 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
                     {/* Timings */}
                     <div className="grid grid-cols-2 gap-2 w-full md:w-56 flex-shrink-0">
                       <div>
-                        <span className="text-[10px] text-slate-400 font-semibold block mb-0.5">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mb-0.5">
                           Start Time
                         </span>
                         <input
@@ -312,11 +312,11 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
                           value={p.startTime}
                           onChange={(e) => handlePeriodChange(idx, "startTime", e.target.value)}
                           placeholder="10:00 AM"
-                          className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500"
+                          className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-xs focus:outline-none focus:border-indigo-500 shadow-sm"
                         />
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 font-semibold block mb-0.5">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mb-0.5">
                           End Time
                         </span>
                         <input
@@ -325,25 +325,25 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
                           value={p.endTime}
                           onChange={(e) => handlePeriodChange(idx, "endTime", e.target.value)}
                           placeholder="11:00 AM"
-                          className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500"
+                          className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-xs focus:outline-none focus:border-indigo-500 shadow-sm"
                         />
                       </div>
                     </div>
 
                     {/* Subject Selector */}
                     <div className="flex-1 w-full">
-                      <span className="text-[10px] text-slate-400 font-semibold block mb-0.5">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mb-0.5">
                         Subject
                       </span>
                       <select
                         required
                         value={p.subject}
                         onChange={(e) => handlePeriodChange(idx, "subject", e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500 cursor-pointer"
+                        className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-xs focus:outline-none focus:border-indigo-500 shadow-sm cursor-pointer"
                       >
-                        <option value="">-- Choose Subject --</option>
+                        <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">-- Choose Subject --</option>
                         {subjects.map((sub) => (
-                          <option key={sub._id} value={sub._id}>
+                          <option key={sub._id} value={sub._id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                             {sub.name} ({sub.code})
                           </option>
                         ))}
@@ -352,17 +352,17 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
 
                     {/* Teacher Selector */}
                     <div className="w-full md:w-44 flex-shrink-0">
-                      <span className="text-[10px] text-slate-400 font-semibold block mb-0.5">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mb-0.5">
                         Faculty
                       </span>
                       <select
                         value={p.teacher}
                         onChange={(e) => handlePeriodChange(idx, "teacher", e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500 cursor-pointer"
+                        className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-xs focus:outline-none focus:border-indigo-500 shadow-sm cursor-pointer"
                       >
-                        <option value="">-- Faculty Assigned --</option>
+                        <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">-- Faculty Assigned --</option>
                         {teachers.map((tch) => (
-                          <option key={tch._id} value={tch._id}>
+                          <option key={tch._id} value={tch._id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                             {tch.user?.name}
                           </option>
                         ))}
@@ -371,7 +371,7 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
 
                     {/* Room No */}
                     <div className="w-full md:w-32 flex-shrink-0">
-                      <span className="text-[10px] text-slate-400 font-semibold block mb-0.5">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mb-0.5">
                         Room / Lab
                       </span>
                       <input
@@ -379,7 +379,7 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
                         value={p.roomNo}
                         onChange={(e) => handlePeriodChange(idx, "roomNo", e.target.value)}
                         placeholder="Room 201"
-                        className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500"
+                        className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-xs focus:outline-none focus:border-indigo-500 shadow-sm"
                       />
                     </div>
 
@@ -388,7 +388,7 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
                       <button
                         type="button"
                         onClick={() => handleRemovePeriod(idx)}
-                        className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
+                        className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
                         title="Remove Period"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -401,15 +401,15 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
           </div>
 
           {/* Footer Save Button */}
-          <div className="pt-6 border-t border-slate-800 flex items-center justify-between gap-3 mt-6">
-            <p className="text-[11px] text-slate-400">
+          <div className="pt-5 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 mt-6">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
               Changes apply directly to students and faculty routines for {selectedDay}.
             </p>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-slate-400 hover:text-white transition-colors text-xs font-semibold cursor-pointer"
+                className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors text-xs font-semibold cursor-pointer"
               >
                 Cancel
               </button>
