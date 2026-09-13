@@ -146,9 +146,14 @@ const LoginPage = () => {
         </div>
 
         {/* Bottom footer badge */}
-        <div className="relative z-10 flex items-center justify-between text-xs text-white/70">
-          <span>BCA-III Academic Session 2024-25</span>
-          <span>Version 1.0</span>
+        <div className="relative z-10 flex flex-col text-xs text-white/70">
+          <div className="flex items-center justify-between w-full">
+            <span>BCA-III Academic Session 2024-25</span>
+            <span>Version 1.0</span>
+          </div>
+          <div className="mt-3 text-center text-white/60">
+            Developed with <span className="text-red-400">❤</span> by <a href="https://github.com/MdHuzaifa018" target="_blank" rel="noopener noreferrer" className="text-white hover:text-indigo-200 transition-colors font-medium underline underline-offset-2">Md Huzaifa</a>
+          </div>
         </div>
       </div>
 

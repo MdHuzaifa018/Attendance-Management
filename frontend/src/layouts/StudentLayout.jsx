@@ -115,8 +115,17 @@ const StudentLayout = () => {
             className="w-full flex items-center gap-2 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl text-sm transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
-            Log out
+            <span className="font-medium">Logout</span>
           </button>
+
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60 text-center">
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-medium">
+              Developed by
+            </p>
+            <a href="https://github.com/MdHuzaifa018" target="_blank" rel="noreferrer" className="text-[11px] font-semibold text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors hover:underline">
+              Md Huzaifa
+            </a>
+          </div>
         </div>
       </aside>
 
