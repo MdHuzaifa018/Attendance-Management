@@ -9,5 +9,6 @@ dist/
 */*.md
 **/*.md
 
-# Only keep root README.md
+# Only keep root README.md and guides
 !/README.md
+!/WEBSITE_TO_WEBAPP_GUIDE.md
