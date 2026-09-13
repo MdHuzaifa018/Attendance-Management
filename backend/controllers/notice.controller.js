@@ -11,9 +11,18 @@ export const getNotices = async (req, res) => {
     const role = req.user?.role || "student";
     const filter = { isActive: true };
 
-    if (role !== "admin") {
-      filter.$or = [{ targetRole: "all" }, { targetRole: role }];
+    if (role === "student") {
+      // Students see notices for everyone or specifically for students
+      filter.$or = [{ targetRole: "all" }, { targetRole: "student" }];
+    } else if (role === "teacher") {
+      // Teachers need to see general announcements, faculty circulars, and student academic notices
+      filter.$or = [
+        { targetRole: "all" },
+        { targetRole: "teacher" },
+        { targetRole: "student" },
+      ];
     }
+    // Admin sees all notices without restriction
 
     const notices = await Notice.find(filter)
       .populate("postedBy", "name email role")

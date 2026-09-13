@@ -43,7 +43,7 @@ const seedErp = async () => {
           content: "Mid-Term evaluations and practical viva for BCA 3rd Year (Batch 2024-27) will commence from next Monday in Computer Lab 1 & 2. Full syllabus covered till date will be assessed.",
           category: "Exam",
           priority: "high",
-          targetRole: "student",
+          targetRole: "all",
           postedBy: adminUser._id,
         },
         {

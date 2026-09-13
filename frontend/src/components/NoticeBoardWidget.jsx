@@ -151,6 +151,9 @@ const NoticeBoardWidget = () => {
                   <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-semibold">
                     {notice.category}
                   </span>
+                  <span className="px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/50 text-[10px] font-semibold capitalize">
+                    {notice.targetRole === "all" ? "Everyone" : notice.targetRole === "student" ? "Students" : "Teachers"}
+                  </span>
                   <span className="text-[10px] text-slate-400 flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
                     {new Date(notice.createdAt).toLocaleDateString("en-IN", {
@@ -211,7 +214,7 @@ const NoticeBoardWidget = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Category</label>
                   <select
@@ -236,6 +239,18 @@ const NoticeBoardWidget = () => {
                     <option value="normal">Normal</option>
                     <option value="high">High</option>
                     <option value="urgent">Urgent</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Target Audience</label>
+                  <select
+                    value={formData.targetRole}
+                    onChange={(e) => setFormData({ ...formData, targetRole: e.target.value })}
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 shadow-sm cursor-pointer"
+                  >
+                    <option value="all">Everyone</option>
+                    <option value="student">Students</option>
+                    <option value="teacher">Teachers</option>
                   </select>
                 </div>
               </div>
