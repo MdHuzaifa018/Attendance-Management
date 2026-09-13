@@ -135,7 +135,7 @@ const AdminLayout = () => {
             <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-medium">
               Developed by
             </p>
-            <a href="https://github.com/MdHuzaifa018" target="_blank" rel="noreferrer" className="text-[11px] font-semibold text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors hover:underline">
+            <a href="https://latest-portfolio-huzaif-sheikh.vercel.app/" target="_blank" rel="noreferrer" className="text-[11px] font-semibold text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors hover:underline">
               Md Huzaifa
             </a>
           </div>

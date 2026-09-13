@@ -152,7 +152,7 @@ const LoginPage = () => {
             <span>Version 1.0</span>
           </div>
           <div className="mt-3 text-center text-white/60">
-            Developed with <span className="text-red-400">❤</span> by <a href="https://github.com/MdHuzaifa018" target="_blank" rel="noopener noreferrer" className="text-white hover:text-indigo-200 transition-colors font-medium underline underline-offset-2">Md Huzaifa</a>
+            Developed with <span className="text-red-400">❤</span> by <a href="https://latest-portfolio-huzaif-sheikh.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-white hover:text-indigo-200 transition-colors font-medium underline underline-offset-2">Md Huzaifa</a>
           </div>
         </div>
       </div>
