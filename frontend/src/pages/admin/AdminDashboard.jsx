@@ -7,7 +7,11 @@ import {
   TrendingUp,
   Activity,
   CalendarDays,
+  FileCheck,
 } from "lucide-react";
+import NoticeBoardWidget from "../../components/NoticeBoardWidget.jsx";
+import LeaveManagementModal from "../../components/LeaveManagementModal.jsx";
+import TimetableWidget from "../../components/TimetableWidget.jsx";
 import {
   AreaChart,
   Area,
@@ -44,6 +48,7 @@ const AdminDashboard = () => {
   const [overview, setOverview] = useState(null);
   const [trends, setTrends] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,6 +99,13 @@ const AdminDashboard = () => {
             Welcome back, {user?.name}. Here's the system overview for today.
           </p>
         </div>
+
+        <button
+          onClick={() => setShowLeaveModal(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition-all cursor-pointer self-start sm:self-auto"
+        >
+          <FileCheck className="w-4 h-4" /> Review Student Leaves
+        </button>
       </div>
 
       {loading ? (
@@ -190,8 +202,20 @@ const AdminDashboard = () => {
               </ResponsiveContainer>
             </div>
           </div>
+
+          {/* ── Notice Board & Timetable Grid (Phase 7 & 8) ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <NoticeBoardWidget />
+            <TimetableWidget />
+          </div>
         </>
       )}
+
+      {/* Leave Approval Modal */}
+      <LeaveManagementModal
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+      />
     </div>
   );
 };

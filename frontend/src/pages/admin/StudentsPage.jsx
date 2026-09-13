@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { Search, UserPlus, Pencil, Trash2, ChevronLeft, ChevronRight, Loader2, Users, AlertTriangle } from "lucide-react";
+import { Search, UserPlus, Pencil, Trash2, ChevronLeft, ChevronRight, Loader2, Users, AlertTriangle, CreditCard } from "lucide-react";
 import toast from "react-hot-toast";
 import { getStudents, deleteStudent } from "../../services/studentService.js";
 import { getClasses } from "../../services/classService.js";
 import StudentFormModal from "./StudentFormModal.jsx";
+import StudentIdCardModal from "../../components/StudentIdCardModal.jsx";
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
@@ -96,6 +97,7 @@ const StudentsPage = () => {
   // Modal state
   const [modalOpen, setModalOpen]           = useState(false);
   const [editingStudent, setEditingStudent] = useState(null); // null = create
+  const [idCardStudent, setIdCardStudent]   = useState(null);
 
   // Delete confirm state
   const [deleteTarget, setDeleteTarget]     = useState(null);
@@ -274,9 +276,17 @@ const StudentsPage = () => {
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-end gap-2">
                           <button
+                            id={`idcard-student-${s._id}`}
+                            onClick={() => setIdCardStudent(s)}
+                            className="p-1.5 text-slate-400 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 rounded-lg transition-colors cursor-pointer"
+                            title="Generate Official ID Card"
+                          >
+                            <CreditCard className="w-3.5 h-3.5" />
+                          </button>
+                          <button
                             id={`edit-student-${s._id}`}
                             onClick={() => handleOpenEdit(s)}
-                            className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-indigo-500/10 rounded-lg transition-colors"
+                            className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-indigo-500/10 rounded-lg transition-colors cursor-pointer"
                             title="Edit student"
                           >
                             <Pencil className="w-3.5 h-3.5" />
@@ -284,7 +294,7 @@ const StudentsPage = () => {
                           <button
                             id={`delete-student-${s._id}`}
                             onClick={() => handleDeleteClick(s)}
-                            className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
+                            className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
                             title="Delete student"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -349,6 +359,13 @@ const StudentsPage = () => {
           loading={deleting}
         />
       )}
+
+      {/* ── Official Student ID Card Modal ────────────────────────────── */}
+      <StudentIdCardModal
+        isOpen={!!idCardStudent}
+        onClose={() => setIdCardStudent(null)}
+        student={idCardStudent}
+      />
     </div>
   );
 };

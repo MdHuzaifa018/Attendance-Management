@@ -6,17 +6,20 @@ import {
   RotateCcw,
   Search,
   BookOpen,
+  Printer,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { getDetailedReport, downloadCSVReport } from "../../services/reportService.js";
 import { getDepartments } from "../../services/departmentService.js";
 import { getClasses } from "../../services/classService.js";
 import { getSubjects } from "../../services/subjectService.js";
+import PrintableReportModal from "../../components/PrintableReportModal.jsx";
 
 const AdminReportsPage = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [showPdfModal, setShowPdfModal] = useState(false);
   
   // Filter lookups
   const [departments, setDepartments] = useState([]);
@@ -124,9 +127,18 @@ const AdminReportsPage = () => {
             Filters
           </button>
           <button
+            onClick={() => setShowPdfModal(true)}
+            disabled={data.length === 0}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold disabled:opacity-50 transition-colors shadow-sm shadow-indigo-600/20 cursor-pointer"
+            title="Generate print-ready official report with college letterhead"
+          >
+            <Printer className="w-4 h-4" />
+            Official PDF Print
+          </button>
+          <button
             onClick={handleExport}
             disabled={downloading || data.length === 0}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-sm font-semibold hover:bg-slate-800 dark:hover:bg-slate-100 disabled:opacity-50 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-sm font-semibold hover:bg-slate-800 dark:hover:bg-slate-100 disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
           >
             <Download className="w-4 h-4" />
             {downloading ? "Exporting..." : "Export CSV"}
@@ -278,6 +290,17 @@ const AdminReportsPage = () => {
           </div>
         )}
       </div>
+
+      {/* Official Printable Report Modal */}
+      <PrintableReportModal
+        isOpen={showPdfModal}
+        onClose={() => setShowPdfModal(false)}
+        reportData={data}
+        filters={filters}
+        departments={departments}
+        classes={classes}
+        subjects={subjects}
+      />
     </div>
   );
 };

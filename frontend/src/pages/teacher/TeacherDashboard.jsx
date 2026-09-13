@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
-import { BookOpen, Clock, Users, ArrowRight, ClipboardCheck } from "lucide-react";
+import { BookOpen, Clock, Users, ArrowRight, ClipboardCheck, FileCheck } from "lucide-react";
 import { getAssignedSubjects } from "../../services/attendanceService.js";
 import { getAttendanceSessions } from "../../services/attendanceHistoryService.js";
 import toast from "react-hot-toast";
+import LeaveManagementModal from "../../components/LeaveManagementModal.jsx";
+import NoticeBoardWidget from "../../components/NoticeBoardWidget.jsx";
+import TimetableWidget from "../../components/TimetableWidget.jsx";
 
 const TeacherDashboard = () => {
   const { user } = useAuth();
@@ -13,6 +16,7 @@ const TeacherDashboard = () => {
   const [mySubjects, setMySubjects] = useState([]);
   const [recentSessions, setRecentSessions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,21 +60,30 @@ const TeacherDashboard = () => {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Welcome header */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-6 text-white shadow-sm">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-            <ClipboardCheck className="w-5 h-5" />
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+              <ClipboardCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-emerald-100 text-xs font-semibold uppercase tracking-wide">Faculty Portal</p>
+              <h1 className="text-xl font-extrabold leading-tight">
+                Welcome back, {user?.name?.split(" ")[0]}!
+              </h1>
+            </div>
           </div>
-          <div>
-            <p className="text-emerald-100 text-xs font-semibold uppercase tracking-wide">Faculty Portal</p>
-            <h1 className="text-xl font-extrabold leading-tight">
-              Welcome back, {user?.name?.split(" ")[0]}!
-            </h1>
-          </div>
+          <p className="text-emerald-100 text-sm mt-1">
+            Manage your assigned classes and mark attendance.
+          </p>
         </div>
-        <p className="text-emerald-100 text-sm mt-1">
-          Manage your assigned classes and mark attendance.
-        </p>
+
+        <button
+          onClick={() => setShowLeaveModal(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-white/15 hover:bg-white/25 border border-white/20 rounded-xl text-white text-xs font-bold shadow-md transition-all cursor-pointer self-start md:self-auto"
+        >
+          <FileCheck className="w-4 h-4 text-emerald-200" /> Review Student Leaves
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -164,6 +177,18 @@ const TeacherDashboard = () => {
         </div>
 
       </div>
+
+      {/* ── Notice Board & Timetable Row ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <NoticeBoardWidget />
+        <TimetableWidget />
+      </div>
+
+      {/* Leave Review Modal */}
+      <LeaveManagementModal
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+      />
     </div>
   );
 };

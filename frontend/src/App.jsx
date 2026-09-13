@@ -30,6 +30,7 @@ import StudentDashboard from "./pages/student/StudentDashboard.jsx";
 import AdminHistoryPage from "./pages/admin/AdminHistoryPage.jsx";
 import AdminReportsPage from "./pages/admin/AdminReportsPage.jsx";
 import StudentAttendancePage from "./pages/student/StudentAttendancePage.jsx";
+import InstallAppBanner from "./components/InstallAppBanner.jsx";
 
 /**
  * App — Root component. Defines the complete routing tree.
@@ -85,6 +86,9 @@ function App() {
             },
           }}
         />
+
+        {/* PWA Mobile Installation Prompt Banner */}
+        <InstallAppBanner />
 
         <Routes>
           {/* ── Public routes ──────────────────────────────────────────── */}

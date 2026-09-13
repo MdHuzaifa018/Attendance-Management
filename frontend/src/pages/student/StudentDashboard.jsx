@@ -9,9 +9,17 @@ import {
   CheckCircle,
   ArrowRight,
   Award,
+  CreditCard,
+  AlertCircle,
+  FileCheck,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { getAttendanceSummary } from "../../services/studentAttendanceService.js";
+import StudentIdCardModal from "../../components/StudentIdCardModal.jsx";
+import LeaveManagementModal from "../../components/LeaveManagementModal.jsx";
+import StudentMarksModal from "../../components/StudentMarksModal.jsx";
+import NoticeBoardWidget from "../../components/NoticeBoardWidget.jsx";
+import TimetableWidget from "../../components/TimetableWidget.jsx";
 
 /**
  * StudentDashboard — Real dashboard with live attendance overview.
@@ -22,6 +30,9 @@ const StudentDashboard = () => {
   const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showIdCard, setShowIdCard] = useState(false);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [showMarksModal, setShowMarksModal] = useState(false);
 
   useEffect(() => {
     getAttendanceSummary()
@@ -48,24 +59,87 @@ const StudentDashboard = () => {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* ── Welcome header ── */}
-      <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl p-6 text-white">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-            <GraduationCap className="w-5 h-5" />
+      <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+              <GraduationCap className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-violet-200 text-xs font-semibold uppercase tracking-wide">Student Portal</p>
+              <h1 className="text-xl font-extrabold leading-tight">
+                Welcome, {user?.name?.split(" ")[0]}!
+              </h1>
+            </div>
           </div>
-          <div>
-            <p className="text-violet-200 text-xs font-semibold uppercase tracking-wide">Student Portal</p>
-            <h1 className="text-xl font-extrabold leading-tight">
-              Welcome, {user?.name?.split(" ")[0]}!
-            </h1>
-          </div>
+          {student && (
+            <p className="text-violet-200 text-sm mt-1">
+              {student.class?.name} · {student.department?.name} · Roll #{student.rollNo}
+            </p>
+          )}
         </div>
+
+        {/* Action Buttons: ID Card, Apply Leave, View Grade Card */}
         {student && (
-          <p className="text-violet-200 text-sm mt-1">
-            {student.class?.name} · {student.department?.name} · Roll #{student.rollNo}
-          </p>
+          <div className="flex items-center gap-2 flex-wrap self-start md:self-auto">
+            <button
+              onClick={() => setShowIdCard(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white text-xs font-bold shadow-lg transition-all backdrop-blur-md cursor-pointer"
+            >
+              <CreditCard className="w-3.5 h-3.5 text-amber-300" /> ID Card
+            </button>
+            <button
+              onClick={() => setShowLeaveModal(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white text-xs font-bold shadow-lg transition-all backdrop-blur-md cursor-pointer"
+            >
+              <FileCheck className="w-3.5 h-3.5 text-emerald-300" /> Apply Leave
+            </button>
+            <button
+              onClick={() => setShowMarksModal(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white text-xs font-bold shadow-lg transition-all backdrop-blur-md cursor-pointer"
+            >
+              <Award className="w-3.5 h-3.5 text-violet-300" /> Internal Marks
+            </button>
+          </div>
         )}
       </div>
+
+      {/* ── Low Attendance Alert Banner (Phase 7 Alert) ── */}
+      {overview && overview.overallPercent < 75 && (
+        <div
+          className={`rounded-2xl p-4 border flex items-start gap-3.5 shadow-md ${
+            overview.overallPercent < 50
+              ? "bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-300"
+              : "bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300"
+          }`}
+        >
+          <div
+            className={`p-2 rounded-xl flex-shrink-0 ${
+              overview.overallPercent < 50 ? "bg-red-500/20 text-red-500" : "bg-amber-500/20 text-amber-500"
+            }`}
+          >
+            {overview.overallPercent < 50 ? (
+              <AlertCircle className="w-5 h-5" />
+            ) : (
+              <AlertTriangle className="w-5 h-5" />
+            )}
+          </div>
+          <div className="flex-1 text-xs">
+            <h4 className="font-bold text-sm mb-0.5">
+              {overview.overallPercent < 50
+                ? "🚨 Critical Attendance Shortage Alert!"
+                : "⚠️ Low Attendance Notice"}
+            </h4>
+            <p className="leading-relaxed opacity-90">
+              Your overall attendance is currently{" "}
+              <strong className="font-extrabold">{overview.overallPercent}%</strong>. The University mandates a
+              minimum of <strong>75% attendance</strong> to be eligible for semester examination forms and hall tickets.
+              {overview.overallPercent < 50 &&
+                " You are at immediate risk of debarment. Please report to your H.O.D office immediately."}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── Attendance overview card ── */}
       {loading ? (
@@ -219,6 +293,31 @@ const StudentDashboard = () => {
           </p>
         </div>
       </div>
+
+      {/* ── Notice Board & Timetable Grid ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <NoticeBoardWidget />
+        <TimetableWidget classId={student?.class?._id} />
+      </div>
+
+      {/* ── Student ID Card Modal ── */}
+      <StudentIdCardModal
+        isOpen={showIdCard}
+        onClose={() => setShowIdCard(false)}
+        student={student}
+      />
+
+      {/* ── Leave Application Modal ── */}
+      <LeaveManagementModal
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+      />
+
+      {/* ── Student Internal Marks Modal ── */}
+      <StudentMarksModal
+        isOpen={showMarksModal}
+        onClose={() => setShowMarksModal(false)}
+      />
     </div>
   );
 };

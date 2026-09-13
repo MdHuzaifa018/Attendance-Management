@@ -24,3 +24,44 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.5);
 }
+
+/* Print Optimization for ID Cards & Official Reports */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  /* Hide all app chrome, sidebars, modals overlay during print */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Show only printable ID card or attendance sheet */
+  #printable-student-id-card,
+  #printable-student-id-card *,
+  #printable-attendance-sheet,
+  #printable-attendance-sheet * {
+    visibility: visible;
+  }
+
+  #printable-student-id-card {
+    position: absolute;
+    left: 50%;
+    top: 50px;
+    transform: translateX(-50%);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  #printable-attendance-sheet {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
