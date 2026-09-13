@@ -195,7 +195,7 @@ const LoginPage = () => {
               </button>
               <button
                 type="button"
-                onClick={() => fillDemo("md.18@nalanda.edu", "Student@123")}
+                onClick={() => fillDemo("md.014@nalanda.edu", "Student@123")}
                 className="px-2.5 py-1 text-xs font-medium rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-indigo-500 transition-colors cursor-pointer"
               >
                 Student (Md Huzaifa)
