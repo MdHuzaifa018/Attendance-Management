@@ -27,17 +27,71 @@
 
 /* Print Optimization for ID Cards & Official Reports */
 @media print {
-  body {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 10mm;
+  }
+
+  html, body {
     background: #ffffff !important;
     color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
   }
-  
-  /* Hide all app chrome, sidebars, modals overlay during print */
+
+  /* Hide app navigation and non-printable elements */
+  nav, aside, header, footer, #sidebar, .print\:hidden {
+    display: none !important;
+  }
+
+  /* Flatten all modal overlay containers so print engine flows pages naturally */
+  .print-modal-overlay {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .print-modal-card {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: none !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .print-modal-body {
+    position: static !important;
+    display: block !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  /* When printing the attendance sheet, hide all other page contents */
   body * {
     visibility: hidden;
   }
 
-  /* Show only printable ID card or attendance sheet */
   #printable-student-id-card,
   #printable-student-id-card *,
   #printable-attendance-sheet,
@@ -45,6 +99,57 @@
     visibility: visible;
   }
 
+  /* Printable Sheet MUST BE STATIC (NOT absolute) so browser paginates naturally across pages */
+  #printable-attendance-sheet {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  #printable-attendance-sheet table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  #printable-attendance-sheet tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+
+  #printable-attendance-sheet thead {
+    display: table-header-group !important;
+  }
+
+  #printable-attendance-sheet thead tr th {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .signatures-block {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin-top: 2rem !important;
+  }
+
+  /* Single ID Card Print Rule */
   #printable-student-id-card {
     position: absolute;
     left: 50%;
@@ -52,32 +157,5 @@
     transform: translateX(-50%);
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-  }
-
-  #printable-attendance-sheet {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 20px !important;
-    background: #ffffff !important;
-    color: #000000 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  #printable-attendance-sheet table {
-    width: 100% !important;
-    page-break-inside: auto;
-  }
-
-  #printable-attendance-sheet tr {
-    page-break-inside: avoid;
-    page-break-after: auto;
-  }
-
-  #printable-attendance-sheet thead {
-    display: table-header-group;
   }
 }

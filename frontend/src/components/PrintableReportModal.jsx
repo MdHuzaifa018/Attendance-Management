@@ -134,9 +134,9 @@ const PrintableReportModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-fadeIn print-modal-overlay">
       {/* Outer Modal Container */}
-      <div className="relative w-full max-w-6xl h-[94vh] max-h-[96vh] bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-900 dark:text-white">
+      <div className="relative w-full max-w-6xl h-[94vh] max-h-[96vh] bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-900 dark:text-white print-modal-card">
         
         {/* ── Top Toolbar (Hidden during Print) ── */}
         <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-3.5 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 print:hidden flex-shrink-0">
@@ -215,12 +215,12 @@ const PrintableReportModal = ({
           </div>
         </div>
 
-        {/* ── Document Canvas Container ── */}
-        <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 md:p-8 flex justify-center bg-slate-200 dark:bg-slate-950/80">
+        {/* ── Document Canvas Container (Scrolls properly on screen, natural block flow) ── */}
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 md:p-8 bg-slate-200 dark:bg-slate-950/80 print-modal-body">
           <div
             id="printable-attendance-sheet"
             ref={reportRef}
-            className="w-full max-w-5xl bg-white text-slate-900 p-8 sm:p-12 rounded-2xl shadow-xl border border-slate-300 font-sans min-h-full flex flex-col justify-between print:shadow-none print:border-none print:p-0 print:m-0 print:rounded-none"
+            className="w-full max-w-5xl mx-auto bg-white text-slate-900 p-6 sm:p-10 md:p-12 rounded-2xl shadow-xl border border-slate-300 font-sans my-4"
           >
             <div>
               {/* ── College Official Letterhead ── */}
@@ -430,7 +430,7 @@ const PrintableReportModal = ({
             </div>
 
             {/* ── Official Signatures Block ── */}
-            <div className="mt-12 pt-8 border-t border-slate-300">
+            <div className="mt-12 pt-8 border-t border-slate-300 signatures-block">
               <div className="grid grid-cols-3 gap-8 text-center text-xs">
                 <div>
                   <div className="h-12 flex items-end justify-center">
