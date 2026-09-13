@@ -40,6 +40,13 @@ const schema = z.object({
     .optional()
     .default(0),
 
+  totalDays: z.coerce
+    .number()
+    .int("Total days must be an integer")
+    .min(0, "Total days cannot be negative")
+    .optional()
+    .default(0),
+
   isActive: z.boolean().optional(),
 });
 
@@ -78,6 +85,7 @@ const SubjectFormModal = ({ isOpen, onClose, subjectData, onSuccess }) => {
       classId: "",
       teacherId: "",
       totalClasses: 0,
+      totalDays: 0,
       isActive: true,
     },
   });
@@ -109,6 +117,7 @@ const SubjectFormModal = ({ isOpen, onClose, subjectData, onSuccess }) => {
         classId: subjectData.class?._id || "",
         teacherId: subjectData.teacher?._id || "",
         totalClasses: subjectData.totalClasses || 0,
+        totalDays: subjectData.totalDays || 0,
         isActive: subjectData.isActive ?? true,
       });
     } else {
@@ -118,6 +127,7 @@ const SubjectFormModal = ({ isOpen, onClose, subjectData, onSuccess }) => {
         classId: "",
         teacherId: "",
         totalClasses: 0,
+        totalDays: 0,
         isActive: true,
       });
     }
@@ -281,6 +291,20 @@ const SubjectFormModal = ({ isOpen, onClose, subjectData, onSuccess }) => {
               Increments automatically as attendance is recorded by faculty.
             </p>
             <FieldError msg={errors.totalClasses?.message} />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+              Total Days Conducted
+            </label>
+            <input
+              type="number"
+              min="0"
+              {...register("totalDays")}
+              placeholder="e.g. 15"
+              className={inputCls(errors.totalDays)}
+            />
+            <FieldError msg={errors.totalDays?.message} />
           </div>
 
           {/* Active Status (Edit only) */}

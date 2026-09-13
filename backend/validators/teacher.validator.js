@@ -37,7 +37,7 @@ export const createTeacherSchema = z.object({
     .trim()
     .toUpperCase(),
 
-  departmentId: objectId,
+  departmentIds: z.array(objectId).min(1, "At least one department is required"),
 
   phone: z
     .string()
@@ -67,7 +67,7 @@ export const updateTeacherSchema = z.object({
     .toUpperCase()
     .optional(),
 
-  departmentId: objectId.optional(),
+  departmentIds: z.array(objectId).min(1, "At least one department is required").optional(),
 
   phone: z
     .string()

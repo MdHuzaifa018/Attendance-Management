@@ -67,31 +67,30 @@ export const getStudentAttendanceSummary = async ({ userId }) => {
       absent: 0,
       lastSeen: null,
     };
-    const totalConducted = subj.totalClasses || 0;
+    const totalSessions = subj.totalClasses || 0;
+    const totalDays = subj.totalDays || 0;
     const attended = att.attended;
     const absent = att.absent;
-    const percent = totalConducted > 0 ? Math.round((attended / totalConducted) * 100) : 0;
+    const percent = totalSessions > 0 ? Math.round((attended / totalSessions) * 100) : 0;
 
     // Status: ≥75% green, 50–74% amber, <50% red
     const status = percent >= 75 ? "good" : percent >= 50 ? "warning" : "critical";
 
-    // Classes needed to reach 75% (if below)
     let classesNeeded = 0;
-    if (percent < 75 && totalConducted > 0) {
-      // Solve: (attended + x) / (totalConducted + x) >= 0.75
-      // attended + x >= 0.75 * totalConducted + 0.75x
-      // 0.25x >= 0.75 * totalConducted - attended
-      const needed = 0.75 * totalConducted - attended;
+    if (percent < 75 && totalSessions > 0) {
+      // Solve: (attended + x) / (totalSessions + x) >= 0.75
+      // attended + x >= 0.75 * totalSessions + 0.75x
+      // 0.25x >= 0.75 * totalSessions - attended
+      const needed = 0.75 * totalSessions - attended;
       classesNeeded = needed > 0 ? Math.ceil(needed / 0.25) : 0;
     }
 
-    // Classes can miss while staying at 75%
     let canMiss = 0;
     if (percent >= 75) {
-      // Solve: (attended) / (totalConducted + x) >= 0.75
-      // attended >= 0.75 * totalConducted + 0.75x
-      // 0.75x <= attended - 0.75 * totalConducted
-      const extra = attended - 0.75 * totalConducted;
+      // Solve: (attended) / (totalSessions + x) >= 0.75
+      // attended >= 0.75 * totalSessions + 0.75x
+      // 0.75x <= attended - 0.75 * totalSessions
+      const extra = attended - 0.75 * totalSessions;
       canMiss = extra > 0 ? Math.floor(extra / 0.75) : 0;
     }
 
@@ -100,7 +99,8 @@ export const getStudentAttendanceSummary = async ({ userId }) => {
       name: subj.name,
       code: subj.code,
       teacher: subj.teacher?.user?.name || "Not assigned",
-      totalConducted,
+      totalSessions,
+      totalDays,
       attended,
       absent,
       percent,
@@ -112,9 +112,10 @@ export const getStudentAttendanceSummary = async ({ userId }) => {
   });
 
   // Overall totals
-  const totalConducted = subjectSummaries.reduce((s, x) => s + x.totalConducted, 0);
+  const totalSessions = subjectSummaries.reduce((s, x) => s + x.totalSessions, 0);
+  const totalDays = subjectSummaries.reduce((s, x) => s + x.totalDays, 0);
   const totalAttended = subjectSummaries.reduce((s, x) => s + x.attended, 0);
-  const overallPercent = totalConducted > 0 ? Math.round((totalAttended / totalConducted) * 100) : 0;
+  const overallPercent = totalSessions > 0 ? Math.round((totalAttended / totalSessions) * 100) : 0;
   const overallStatus = overallPercent >= 75 ? "good" : overallPercent >= 50 ? "warning" : "critical";
 
   return {
@@ -127,9 +128,10 @@ export const getStudentAttendanceSummary = async ({ userId }) => {
       admissionYear: studentDoc.admissionYear,
     },
     overview: {
-      totalConducted,
+      totalSessions,
+      totalDays,
       totalAttended,
-      totalAbsent: totalConducted - totalAttended,
+      totalAbsent: totalSessions - totalAttended,
       overallPercent,
       overallStatus,
       subjectCount: subjectSummaries.length,

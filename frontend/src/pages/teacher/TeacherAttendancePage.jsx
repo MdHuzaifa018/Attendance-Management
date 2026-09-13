@@ -138,6 +138,10 @@ const TeacherAttendancePage = () => {
       return;
     }
 
+    // Prevent race condition when switching classes
+    const validSubject = availableSubjects.some((s) => s._id === selectedSubjectId);
+    if (!validSubject) return;
+
     setLoadingSheet(true);
     try {
       const data = await getAttendanceSheet({
@@ -408,7 +412,7 @@ const TeacherAttendancePage = () => {
 
       {/* ── Student Attendance Sheet Table ──────────────────────────────── */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden transition-colors">
-        {loadingSheet ? (
+        {(loadingSheet || (availableSubjects.length > 0 && !availableSubjects.some(s => s._id === selectedSubjectId))) ? (
           <div className="py-24 flex flex-col items-center justify-center text-slate-400 gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-emerald-600 dark:text-emerald-400" />
             <p className="text-sm font-medium">Loading attendance sheet...</p>
@@ -438,7 +442,7 @@ const TeacherAttendancePage = () => {
                   <th className="px-6 py-3.5 w-16">#</th>
                   <th className="px-6 py-3.5">Roll Number</th>
                   <th className="px-6 py-3.5">Candidate Name</th>
-                  <th className="px-6 py-3.5">Father's Name</th>
+                  <th className="px-6 py-3.5">Stats</th>
                   <th className="px-6 py-3.5 text-center w-64">Attendance Status</th>
                 </tr>
               </thead>
@@ -468,9 +472,16 @@ const TeacherAttendancePage = () => {
                         {student.name}
                       </td>
 
-                      {/* Father's Name */}
-                      <td className="px-6 py-4 text-xs text-slate-500 dark:text-slate-400">
-                        {student.fatherName || "—"}
+                      {/* Stats */}
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 w-fit">
+                            Today: {student.todayAttended}
+                          </span>
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 w-fit">
+                            Overall: {student.totalAttended}
+                          </span>
+                        </div>
                       </td>
 
                       {/* Attendance Toggle Pills */}

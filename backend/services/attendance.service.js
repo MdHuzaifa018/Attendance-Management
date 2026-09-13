@@ -87,16 +87,55 @@ export const getAttendanceSheet = async ({
 
   const isMarked = existingRecords.length > 0;
 
+  // Aggregate student stats (total attended and today attended)
+  const statsAggr = await Attendance.aggregate([
+    { $match: { class: new mongoose.Types.ObjectId(classId), subject: new mongoose.Types.ObjectId(subjectId) } },
+    {
+      $group: {
+        _id: "$student",
+        totalAttended: { $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] } },
+        todayAttended: {
+          $sum: {
+            $cond: [
+              {
+                $and: [
+                  { $eq: ["$status", "present"] },
+                  { $eq: ["$date", normalizedDate] },
+                ],
+              },
+              1,
+              0,
+            ],
+          },
+        },
+      },
+    },
+  ]);
+
+  const statsMap = new Map();
+  statsAggr.forEach((stat) => {
+    statsMap.set(String(stat._id), {
+      totalAttended: stat.totalAttended,
+      todayAttended: stat.todayAttended,
+    });
+  });
+
   // Format student records for the frontend attendance table
-  const studentRows = students.map((s) => ({
-    _id: s._id,
-    rollNo: s.rollNo,
-    name: s.user?.name || s.name,
-    email: s.user?.email,
-    fatherName: s.fatherName,
-    status: existingMap.get(String(s._id)) || "present", // default to present for new sheets
-    isPreviouslyMarked: existingMap.has(String(s._id)),
-  }));
+  const studentRows = students.map((s) => {
+    const sId = String(s._id);
+    const stats = statsMap.get(sId) || { totalAttended: 0, todayAttended: 0 };
+    return {
+      _id: s._id,
+      rollNo: s.rollNo,
+      name: s.user?.name || s.name,
+      email: s.user?.email,
+      fatherName: s.fatherName,
+      status: existingMap.get(sId) || "present", // default to present for new sheets
+      isPreviouslyMarked: existingMap.has(sId),
+      totalAttended: stats.totalAttended,
+      todayAttended: stats.todayAttended,
+    };
+  });
 
   return {
     class: {
@@ -215,14 +254,25 @@ export const markAttendance = async ({
     },
   }));
 
+  // Check if this is the first session marked on this specific date for this subject
+  const existingDayCount = await Attendance.countDocuments({
+    class: classId,
+    subject: subjectId,
+    date: normalizedDate,
+  });
+
   await Attendance.bulkWrite(operations);
 
   // If this was a brand new session, increment conducted class count on the subject
   const isNewSession = existingCount === 0;
-  if (isNewSession) {
-    await Subject.findByIdAndUpdate(subjectId, {
-      $inc: { totalClasses: 1 },
-    });
+  const isNewDay = existingDayCount === 0;
+
+  if (isNewSession || isNewDay) {
+    const inc = {};
+    if (isNewSession) inc.totalClasses = 1;
+    if (isNewDay) inc.totalDays = 1;
+    
+    await Subject.findByIdAndUpdate(subjectId, { $inc: inc });
   }
 
   const presentCount = records.filter((r) => r.status === "present").length;

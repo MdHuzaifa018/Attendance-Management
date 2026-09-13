@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Search, UserPlus, Pencil, Trash2, ChevronLeft, ChevronRight, Loader2, Users, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 import { getStudents, deleteStudent } from "../../services/studentService.js";
+import { getClasses } from "../../services/classService.js";
 import StudentFormModal from "./StudentFormModal.jsx";
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
@@ -88,6 +89,8 @@ const StudentsPage = () => {
   const [loading, setLoading]               = useState(true);
   const [search, setSearch]                 = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [classFilter, setClassFilter]       = useState("");
+  const [classes, setClasses]               = useState([]);
   const [currentPage, setCurrentPage]       = useState(1);
 
   // Modal state
@@ -113,6 +116,7 @@ const StudentsPage = () => {
     try {
       const result = await getStudents({
         search: debouncedSearch,
+        classId: classFilter,
         page: currentPage,
         limit: 20,
       });
@@ -123,11 +127,17 @@ const StudentsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, currentPage]);
+  }, [debouncedSearch, classFilter, currentPage]);
 
   useEffect(() => {
     loadStudents();
   }, [loadStudents]);
+
+  useEffect(() => {
+    getClasses({ all: true })
+      .then((res) => setClasses(res.classes || []))
+      .catch(() => {});
+  }, []);
 
   // Handlers
   const handleOpenAdd = () => {
@@ -185,19 +195,36 @@ const StudentsPage = () => {
         </button>
       </div>
 
-      {/* ── Search bar ──────────────────────────────────────────────── */}
-      <div className="relative mb-5">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
-        <input
-          id="student-search"
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by name or roll number…"
-          className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600
-            focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl text-slate-900 dark:text-white text-sm
-            placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none transition-colors shadow-sm"
-        />
+      {/* ── Filters bar ──────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-5">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
+          <input
+            id="student-search"
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name or roll number…"
+            className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600
+              focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl text-slate-900 dark:text-white text-sm
+              placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none transition-colors shadow-sm"
+          />
+        </div>
+        <select
+          value={classFilter}
+          onChange={(e) => {
+            setClassFilter(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none transition-colors shadow-sm cursor-pointer"
+        >
+          <option value="">All Classes</option>
+          {classes.map((cls) => (
+            <option key={cls._id} value={cls._id}>
+              {cls.name} ({cls.code})
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* ── Table card ──────────────────────────────────────────────── */}

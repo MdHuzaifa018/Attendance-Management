@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link, Navigate } from "react-router-dom";
 import {
   Eye,
   EyeOff,
@@ -36,7 +36,7 @@ const ROLE_DASHBOARD = {
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { login } = useAuth();
+  const { login, user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -49,6 +49,15 @@ const LoginPage = () => {
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const destination = ROLE_DASHBOARD[user.role] || "/";
+      navigate(destination, { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
+
+
 
   const onSubmit = async (data) => {
     try {

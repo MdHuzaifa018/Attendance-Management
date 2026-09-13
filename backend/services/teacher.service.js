@@ -10,7 +10,7 @@ import { hashPassword } from "../utils/password.js";
 const populateTeacher = (query) =>
   query
     .populate("user", "name email isActive")
-    .populate("department", "name code");
+    .populate("departments", "name code");
 
 // ─── Service Functions ───────────────────────────────────────────────────────
 
@@ -43,7 +43,7 @@ export const getAllTeachers = async ({
     filter.$or = [{ employeeId: regex }, { user: { $in: userIds } }];
   }
 
-  if (departmentId) filter.department = departmentId;
+  if (departmentId) filter.departments = departmentId;
 
   const [teachers, total] = await Promise.all([
     populateTeacher(Teacher.find(filter))
@@ -119,7 +119,7 @@ export const createTeacher = async (data) => {
     newTeacher = await Teacher.create({
       user: newUser._id,
       employeeId: data.employeeId,
-      department: data.departmentId,
+      departments: data.departmentIds,
       phone: data.phone || "",
       designation: data.designation || "Assistant Professor",
       isActive: true,
@@ -143,7 +143,7 @@ export const createTeacher = async (data) => {
 export const updateTeacher = async (teacherId, updates) => {
   const updateData = {};
   if (updates.employeeId !== undefined) updateData.employeeId = updates.employeeId;
-  if (updates.departmentId !== undefined) updateData.department = updates.departmentId;
+  if (updates.departmentIds !== undefined) updateData.departments = updates.departmentIds;
   if (updates.phone !== undefined) updateData.phone = updates.phone;
   if (updates.designation !== undefined) updateData.designation = updates.designation;
 

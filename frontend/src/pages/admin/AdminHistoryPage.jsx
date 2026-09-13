@@ -239,7 +239,7 @@ const SessionDetailModal = ({ session, onClose }) => {
                   className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-400 flex-shrink-0">
-                    {row.student.rollNo?.toString().slice(-2) || "–"}
+                    {row.student.rollNo?.toString().split('-').pop() || "–"}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{row.student.name}</p>

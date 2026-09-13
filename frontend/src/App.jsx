@@ -120,8 +120,8 @@ function App() {
               </Route>
             </Route>
 
-            {/* Student area */}
-            <Route element={<RoleRoute allowedRoles={["student"]} />}>
+            {/* Student area — admin can also access student pages */}
+            <Route element={<RoleRoute allowedRoles={["student", "admin"]} />}>
               <Route element={<StudentLayout />}>
                 <Route path="/student/dashboard" element={<StudentDashboard />} />
                 <Route path="/student/attendance" element={<StudentAttendancePage />} />

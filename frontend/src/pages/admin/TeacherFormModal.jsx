@@ -12,21 +12,21 @@ import {
 
 // ─── Zod schemas ─────────────────────────────────────────────────────────────
 
-const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, "Please select a department");
+const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ID");
 
 const createSchema = z.object({
   name:         z.string().min(2, "Name must be at least 2 characters").max(100).trim(),
   email:        z.string().email("Invalid email address").trim(),
   password:     z.string().min(6, "Password must be at least 6 characters"),
   employeeId:   z.string().min(1, "Employee ID is required").max(20).trim(),
-  departmentId: objectId,
+  departmentIds: z.array(objectId).min(1, "Please select at least one department"),
   phone:        z.string().max(15).optional().or(z.literal("")),
   designation:  z.string().min(1, "Designation is required").max(50).trim(),
 });
 
 const editSchema = z.object({
   employeeId:   z.string().min(1, "Employee ID is required").max(20).trim(),
-  departmentId: objectId,
+  departmentIds: z.array(objectId).min(1, "Please select at least one department"),
   phone:        z.string().max(15).optional().or(z.literal("")),
   designation:  z.string().min(1, "Designation is required").max(50).trim(),
   isActive:     z.boolean().optional(),
@@ -74,7 +74,7 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
     defaultValues: isEdit
       ? {
           employeeId:   teacher.employeeId || "",
-          departmentId: teacher.department?._id || "",
+          departmentIds: teacher.departments?.map(d => d._id) || [],
           phone:        teacher.phone || "",
           designation:  teacher.designation || "Assistant Professor",
           isActive:     teacher.isActive ?? true,
@@ -84,7 +84,7 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
           email: "",
           password: "",
           employeeId: "",
-          departmentId: "",
+          departmentIds: [],
           phone: "",
           designation: "Assistant Professor",
         },
@@ -107,7 +107,7 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
         isEdit
           ? {
               employeeId:   teacher.employeeId || "",
-              departmentId: teacher.department?._id || "",
+              departmentIds: teacher.departments?.map(d => d._id) || [],
               phone:        teacher.phone || "",
               designation:  teacher.designation || "Assistant Professor",
               isActive:     teacher.isActive ?? true,
@@ -117,7 +117,7 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
               email: "",
               password: "",
               employeeId: "",
-              departmentId: "",
+              departmentIds: [],
               phone: "",
               designation: "Assistant Professor",
             }
@@ -249,25 +249,29 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
                 <FieldError msg={errors.employeeId?.message} />
               </div>
 
-              <div>
+              <div className="sm:col-span-2">
                 <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  Department <span className="text-red-500">*</span>
+                  Departments (Select one or more) <span className="text-red-500">*</span>
                 </label>
-                <select
-                  disabled={loadingDepts}
-                  className={inputCls(errors.departmentId)}
-                  {...register("departmentId")}
-                >
-                  <option value="">
-                    {loadingDepts ? "Loading departments…" : "Select Department"}
-                  </option>
-                  {departments.map((d) => (
-                    <option key={d._id} value={d._id}>
-                      {d.name} ({d.code})
-                    </option>
-                  ))}
-                </select>
-                <FieldError msg={errors.departmentId?.message} />
+                
+                {loadingDepts ? (
+                  <div className="text-xs text-slate-500 py-2 animate-pulse">Loading departments...</div>
+                ) : (
+                  <div className={`grid grid-cols-2 gap-2 p-3 border rounded-xl bg-slate-50 dark:bg-slate-800/50 ${errors.departmentIds ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'}`}>
+                    {departments.map((d) => (
+                      <label key={d._id} className="flex items-center gap-2 cursor-pointer p-1">
+                        <input
+                          type="checkbox"
+                          value={d._id}
+                          className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600 dark:border-slate-600 dark:bg-slate-700 dark:focus:ring-offset-slate-900"
+                          {...register("departmentIds")}
+                        />
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{d.name} ({d.code})</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+                <FieldError msg={errors.departmentIds?.message} />
               </div>
             </div>
 

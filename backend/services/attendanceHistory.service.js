@@ -3,6 +3,7 @@ import Class from "../models/Class.js";
 import Subject from "../models/Subject.js";
 import Teacher from "../models/Teacher.js";
 import { normalizeDate } from "./attendance.service.js";
+import mongoose from "mongoose";
 
 /**
  * getAttendanceSessions
@@ -218,28 +219,71 @@ export const getSessionDetail = async ({
       path: "editHistory.changedBy",
       select: "name email role",
     })
-    .sort({ "student.rollNo": 1 })
     .lean();
 
-  // Parallel lookups for metadata
-  const [cls, subjectDoc] = await Promise.all([
+  // Sort in JS because populating and sorting on string fields doesn't work correctly in MongoDB
+  records.sort((a, b) => {
+    const rollA = a.student?.rollNo || "";
+    const rollB = b.student?.rollNo || "";
+    return rollA.localeCompare(rollB, undefined, { numeric: true });
+  });
+
+  // Parallel lookups for metadata and stats
+  const [cls, subjectDoc, statsAggr] = await Promise.all([
     Class.findById(classId).lean(),
     Subject.findById(subjectId).lean(),
+    Attendance.aggregate([
+      { $match: { class: new mongoose.Types.ObjectId(classId), subject: new mongoose.Types.ObjectId(subjectId) } },
+      {
+        $group: {
+          _id: "$student",
+          totalAttended: { $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] } },
+          todayAttended: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$status", "present"] },
+                    { $eq: ["$date", normalizedDate] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+        },
+      },
+    ]),
   ]);
 
-  const studentRows = records.map((r) => ({
-    _id: r._id,
-    student: {
-      _id: r.student._id,
-      rollNo: r.student.rollNo,
-      name: r.student.user?.name || r.student.name,
-      fatherName: r.student.fatherName,
-    },
-    status: r.status,
-    markedAt: r.markedAt,
-    editHistory: r.editHistory || [],
-    wasEdited: (r.editHistory || []).length > 0,
-  }));
+  const statsMap = new Map();
+  statsAggr.forEach((stat) => {
+    statsMap.set(String(stat._id), {
+      totalAttended: stat.totalAttended,
+      todayAttended: stat.todayAttended,
+    });
+  });
+
+  const studentRows = records.map((r) => {
+    const sId = String(r.student._id);
+    const stats = statsMap.get(sId) || { totalAttended: 0, todayAttended: 0 };
+    return {
+      _id: r._id,
+      student: {
+        _id: r.student._id,
+        rollNo: r.student.rollNo,
+        name: r.student.user?.name || r.student.name,
+        fatherName: r.student.fatherName,
+      },
+      status: r.status,
+      markedAt: r.markedAt,
+      editHistory: r.editHistory || [],
+      wasEdited: (r.editHistory || []).length > 0,
+      totalAttended: stats.totalAttended,
+      todayAttended: stats.todayAttended,
+    };
+  });
 
   return {
     class: cls

@@ -13,6 +13,7 @@ import {
   GraduationCap,
   Users,
   Layers,
+  Calendar,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import {
@@ -137,8 +138,12 @@ const SubjectsPage = () => {
   // Metrics summary
   const totalSubjects = pagination.total || subjects.length;
   const activeSubjects = subjects.filter((s) => s.isActive).length;
-  const totalConducted = subjects.reduce(
+  const totalConductedSessions = subjects.reduce(
     (acc, curr) => acc + (curr.totalClasses || 0),
+    0
+  );
+  const totalConductedDays = subjects.reduce(
+    (acc, curr) => acc + (curr.totalDays || 0),
     0
   );
 
@@ -167,7 +172,7 @@ const SubjectsPage = () => {
       </div>
 
       {/* ── Metrics Cards ──────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs transition-colors flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -199,14 +204,28 @@ const SubjectsPage = () => {
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs transition-colors flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Total Conducted Classes
+              Total Sessions
             </p>
             <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-              {totalConducted}
+              {totalConductedSessions}
             </p>
           </div>
           <div className="w-11 h-11 rounded-xl bg-violet-50 dark:bg-violet-950/70 border border-violet-200 dark:border-violet-800/60 flex items-center justify-center text-violet-600 dark:text-violet-400">
             <Layers className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs transition-colors flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Total Days
+            </p>
+            <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+              {totalConductedDays}
+            </p>
+          </div>
+          <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+            <Calendar className="w-5 h-5" />
           </div>
         </div>
       </div>
@@ -323,7 +342,7 @@ const SubjectsPage = () => {
                   <th className="px-6 py-3.5">Code & Subject Title</th>
                   <th className="px-6 py-3.5">Academic Class</th>
                   <th className="px-6 py-3.5">Assigned Faculty</th>
-                  <th className="px-6 py-3.5 text-center">Conducted Classes</th>
+                  <th className="px-6 py-3.5">Conducted</th>
                   <th className="px-6 py-3.5 text-center">Status</th>
                   <th className="px-6 py-3.5 text-right">Actions</th>
                 </tr>
@@ -386,10 +405,15 @@ const SubjectsPage = () => {
                       </td>
 
                       {/* Conducted Classes */}
-                      <td className="px-6 py-4 text-center">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                          {sub.totalClasses || 0} classes
-                        </span>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                            {sub.totalClasses || 0} Sessions
+                          </span>
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
+                            {sub.totalDays || 0} Days
+                          </span>
+                        </div>
                       </td>
 
                       {/* Status */}

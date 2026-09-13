@@ -232,7 +232,7 @@ const TeachersPage = () => {
                   <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-900/50 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     <th className="px-6 py-4">Employee ID</th>
                     <th className="px-6 py-4">Name</th>
-                    <th className="px-6 py-4">Department</th>
+                    <th className="px-6 py-4">Departments</th>
                     <th className="px-6 py-4">Designation</th>
                     <th className="px-6 py-4">Phone</th>
                     <th className="px-6 py-4">Status</th>
@@ -260,10 +260,16 @@ const TeachersPage = () => {
                         </p>
                       </td>
 
-                      {/* Department */}
+                      {/* Departments */}
                       <td className="px-6 py-4 text-slate-700 dark:text-slate-300">
-                        {teacher.department?.name ? (
-                          <span>{teacher.department.name} ({teacher.department.code})</span>
+                        {teacher.departments?.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {teacher.departments.map((d) => (
+                              <span key={d._id} className="inline-block px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-xs rounded border border-slate-200 dark:border-slate-700">
+                                {d.code}
+                              </span>
+                            ))}
+                          </div>
                         ) : (
                           <span className="text-slate-400 dark:text-slate-500">—</span>
                         )}

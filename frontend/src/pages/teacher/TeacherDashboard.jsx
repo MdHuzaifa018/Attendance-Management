@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { BookOpen, Clock, Users, ArrowRight, ClipboardCheck } from "lucide-react";
-import { getSubjects } from "../../services/subjectService.js";
+import { getAssignedSubjects } from "../../services/attendanceService.js";
 import { getAttendanceSessions } from "../../services/attendanceHistoryService.js";
 import toast from "react-hot-toast";
 
@@ -18,19 +18,15 @@ const TeacherDashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch all subjects and filter by this teacher's user ID
-        const subjectsRes = await getSubjects({ all: true });
-        const subjectsList = subjectsRes.subjects || [];
-        const teacherSubjects = subjectsList.filter(
-          (s) => s.teacher?.user?._id === user._id
-        );
+        const subjectsRes = await getAssignedSubjects();
+        const teacherSubjects = subjectsRes.subjects || [];
         setMySubjects(teacherSubjects);
 
         // Fetch recent attendance history to see sessions marked
         // Assuming we can just get history and find ones marked by this teacher
         // (If the backend doesn't filter by teacher automatically, we fetch all and slice)
         const historyRes = await getAttendanceSessions({ page: 1, limit: 10 });
-        const historyList = historyRes.records || [];
+        const historyList = historyRes.sessions || [];
         
         // Let's grab the most recent 3 unique sessions marked
         const recent = [];
