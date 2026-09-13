@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   CalendarDays,
   Clock,
@@ -7,12 +7,18 @@ import {
   BookOpen,
   Loader2,
   ChevronRight,
+  Pencil,
 } from "lucide-react";
 import { getTimetable } from "../services/timetableService.js";
+import { useAuth } from "../context/AuthContext.jsx";
+import TimetableModal from "./TimetableModal.jsx";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 const TimetableWidget = ({ classId }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+
   // Default to today's day of week if weekday, else Monday
   const todayIndex = new Date().getDay(); // 0 is Sunday, 1 is Monday...
   const initialDay = todayIndex >= 1 && todayIndex <= 6 ? DAYS[todayIndex - 1] : "Monday";
@@ -20,21 +26,23 @@ const TimetableWidget = ({ classId }) => {
   const [selectedDay, setSelectedDay] = useState(initialDay);
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const fetchSchedule = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await getTimetable(classId);
+      setSchedules(data);
+    } catch {
+      // quiet error
+    } finally {
+      setLoading(false);
+    }
+  }, [classId]);
 
   useEffect(() => {
-    const fetchSchedule = async () => {
-      try {
-        setLoading(true);
-        const data = await getTimetable(classId);
-        setSchedules(data);
-      } catch {
-        // quiet error
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchSchedule();
-  }, [classId]);
+  }, [fetchSchedule]);
 
   // Find schedule for active selectedDay
   const activeDaySchedule = schedules.find((s) => s.dayOfWeek === selectedDay);
@@ -43,21 +51,33 @@ const TimetableWidget = ({ classId }) => {
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm">
-            <CalendarDays className="w-4 h-4" />
+      <div className="flex flex-col gap-3 mb-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm">
+              <CalendarDays className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Class Schedule & Timetable
+              </h3>
+              <p className="text-xs text-slate-500">Weekly routine and lecture hours</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              Class Schedule & Timetable
-            </h3>
-            <p className="text-xs text-slate-500">Weekly routine and lecture hours</p>
-          </div>
+
+          {isAdmin && (
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-sm transition-all cursor-pointer"
+              title="Edit or create class timetable"
+            >
+              <Pencil className="w-3.5 h-3.5" /> Edit Routine
+            </button>
+          )}
         </div>
 
         {/* Day Selector Pills */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
+        <div className="flex items-center gap-1 overflow-x-auto pb-1">
           {DAYS.map((day) => {
             const isToday = day === initialDay;
             const isSelected = day === selectedDay;
@@ -132,6 +152,17 @@ const TimetableWidget = ({ classId }) => {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Edit/Create Timetable Modal */}
+      {isAdmin && (
+        <TimetableModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onSuccess={fetchSchedule}
+          initialClassId={classId}
+          initialDay={selectedDay}
+        />
       )}
     </div>
   );

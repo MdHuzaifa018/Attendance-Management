@@ -42,9 +42,18 @@ export const saveTimetable = async (req, res) => {
       });
     }
 
+    const cleanedPeriods = periods.map((p, idx) => ({
+      periodNumber: Number(p.periodNumber) || idx + 1,
+      startTime: p.startTime || "10:00 AM",
+      endTime: p.endTime || "11:00 AM",
+      subject: p.subject?._id || p.subject,
+      teacher: p.teacher && p.teacher !== "" ? (p.teacher?._id || p.teacher) : undefined,
+      roomNo: p.roomNo || "Room 101",
+    }));
+
     const timetable = await Timetable.findOneAndUpdate(
       { class: classId, dayOfWeek },
-      { class: classId, dayOfWeek, periods },
+      { class: classId, dayOfWeek, periods: cleanedPeriods },
       { upsert: true, new: true, runValidators: true }
     )
       .populate("periods.subject", "name code")
