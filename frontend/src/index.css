@@ -25,7 +25,7 @@
   background: rgba(148, 163, 184, 0.5);
 }
 
-/* Print Optimization for ID Cards & Official Reports */
+/* Print Optimization for ID Cards & Document Prints */
 @media print {
   @page {
     size: A4 portrait;
@@ -43,113 +43,85 @@
     overflow: visible !important;
   }
 
-  /* Hide app navigation and non-printable elements */
-  nav, aside, header, footer, #sidebar, .print\:hidden {
+  /* Hide app chrome, sidebars, buttons, and non-printable elements */
+  nav, aside, header, footer, #sidebar, button, .print\:hidden, .no-print {
     display: none !important;
   }
 
-  /* Flatten all modal overlay containers so print engine flows pages naturally */
-  .print-modal-overlay {
+  /* Un-clamp all parent containers so multi-page documents flow naturally */
+  #root,
+  .min-h-screen,
+  main,
+  .print-modal-overlay,
+  .print-modal-card,
+  .print-modal-body {
+    display: block !important;
     position: static !important;
     inset: auto !important;
-    display: block !important;
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 0 !important;
     overflow: visible !important;
     height: auto !important;
+    min-height: 0 !important;
     max-height: none !important;
-  }
-
-  .print-modal-card {
-    position: static !important;
-    display: block !important;
     width: 100% !important;
-    max-width: none !important;
-    height: auto !important;
-    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
     background: transparent !important;
-    border: none !important;
     box-shadow: none !important;
-    overflow: visible !important;
-    border-radius: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
+    border: none !important;
   }
 
-  .print-modal-body {
-    position: static !important;
-    display: block !important;
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    overflow: visible !important;
-    height: auto !important;
-  }
-
-  /* When printing the attendance sheet, hide all other page contents */
-  body * {
-    visibility: hidden;
-  }
-
-  #printable-student-id-card,
-  #printable-student-id-card *,
-  #printable-attendance-sheet,
-  #printable-attendance-sheet * {
-    visibility: visible;
-  }
-
-  /* Printable Sheet MUST BE STATIC (NOT absolute) so browser paginates naturally across pages */
+  /* Attendance Register Sheet */
   #printable-attendance-sheet {
-    position: static !important;
-    left: auto !important;
-    top: auto !important;
     display: block !important;
+    position: static !important;
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     background: #ffffff !important;
-    color: #000000 !important;
-    border: none !important;
+    color: #0f172a !important;
     box-shadow: none !important;
-    border-radius: 0 !important;
+    border: none !important;
     overflow: visible !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
   }
 
-  #printable-attendance-sheet table {
+  .printable-table-wrap {
+    overflow: visible !important;
+    border: none !important;
+  }
+
+  /* Multi-page table pagination */
+  table {
     width: 100% !important;
     border-collapse: collapse !important;
     page-break-inside: auto !important;
     break-inside: auto !important;
   }
 
-  #printable-attendance-sheet tr {
+  tr {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     page-break-after: auto !important;
   }
 
-  #printable-attendance-sheet thead {
+  thead {
     display: table-header-group !important;
   }
 
-  #printable-attendance-sheet thead tr th {
+  thead tr th {
     background-color: #0f172a !important;
     color: #ffffff !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .signatures-block {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    margin-top: 2rem !important;
+    margin-top: 3rem !important;
   }
 
-  /* Single ID Card Print Rule */
+  /* ID Card specific print positioning */
   #printable-student-id-card {
     position: absolute;
     left: 50%;

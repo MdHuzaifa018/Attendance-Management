@@ -128,7 +128,138 @@ const PrintableReportModal = ({
   const defaultersCount = consolidatedRows.filter((r) => (r.percent || 0) < 75).length;
 
   const handlePrint = () => {
-    window.print();
+    const sheetElement = document.getElementById("printable-attendance-sheet");
+    if (!sheetElement) {
+      window.print();
+      return;
+    }
+
+    // Clean up any existing print iframe
+    const oldIframe = document.getElementById("erp-attendance-print-frame");
+    if (oldIframe) {
+      oldIframe.remove();
+    }
+
+    // Create an isolated iframe positioned off-screen with real dimensions
+    // NOTE: Do NOT use visibility:hidden or width:0 as Chromium skips rendering layout on invisible frames
+    const iframe = document.createElement("iframe");
+    iframe.id = "erp-attendance-print-frame";
+    iframe.style.position = "fixed";
+    iframe.style.left = "-10000px";
+    iframe.style.top = "-10000px";
+    iframe.style.width = "1024px";
+    iframe.style.height = "768px";
+    iframe.style.border = "none";
+    iframe.style.opacity = "0";
+    iframe.style.pointerEvents = "none";
+    document.body.appendChild(iframe);
+
+    // Collect all stylesheets and style tags from the main document
+    const headStyles = Array.from(
+      document.querySelectorAll("link[rel='stylesheet'], style")
+    )
+      .map((el) => el.outerHTML)
+      .join("\n");
+
+    const iframeDoc = iframe.contentWindow.document;
+    iframeDoc.open();
+    iframeDoc.write(`
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <title>Official Attendance Register - Nalanda College</title>
+          ${headStyles}
+          <style>
+            @page {
+              size: A4 portrait;
+              margin: 12mm 10mm 15mm 10mm;
+            }
+            *, *::before, *::after {
+              box-sizing: border-box !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              background: #ffffff !important;
+              color: #0f172a !important;
+              font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+              width: 100% !important;
+              height: auto !important;
+              min-height: 0 !important;
+              overflow: visible !important;
+            }
+            #printable-attendance-sheet {
+              width: 100% !important;
+              max-width: 100% !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              background: #ffffff !important;
+              box-shadow: none !important;
+              border: none !important;
+              display: block !important;
+              overflow: visible !important;
+            }
+            .printable-table-wrap {
+              overflow: visible !important;
+              border: none !important;
+            }
+            table {
+              width: 100% !important;
+              border-collapse: collapse !important;
+              page-break-inside: auto !important;
+              break-inside: auto !important;
+            }
+            tr {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+              page-break-after: auto !important;
+            }
+            thead {
+              display: table-header-group !important;
+            }
+            thead tr th {
+              background-color: #0f172a !important;
+              color: #ffffff !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .signatures-block {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+              margin-top: 3rem !important;
+            }
+          </style>
+        </head>
+        <body>
+          <div id="printable-attendance-sheet">
+            ${sheetElement.innerHTML}
+          </div>
+        </body>
+      </html>
+    `);
+    iframeDoc.close();
+
+    const doPrint = () => {
+      try {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      } catch (err) {
+        console.warn("Iframe print error, falling back to window.print:", err);
+        window.print();
+      }
+    };
+
+    // Ensure images (e.g. college logo) finish loading before opening print dialog
+    const logoImg = iframeDoc.querySelector("img");
+    if (logoImg && !logoImg.complete) {
+      logoImg.onload = () => setTimeout(doPrint, 150);
+      logoImg.onerror = () => setTimeout(doPrint, 150);
+    } else {
+      setTimeout(doPrint, 300);
+    }
   };
 
   if (!isOpen) return null;
@@ -320,7 +451,7 @@ const PrintableReportModal = ({
               </div>
 
               {/* ── Tabular Attendance Records ── */}
-              <div className="overflow-x-auto my-5 rounded-xl border border-slate-300">
+              <div className="overflow-x-auto my-5 rounded-xl border border-slate-300 printable-table-wrap">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="bg-slate-900 text-white font-bold">
@@ -479,7 +610,7 @@ const PrintableReportModal = ({
                     NCB-ATT-{new Date().getFullYear()}-{Math.floor(100000 + Math.random() * 900000)}
                   </span>
                 </span>
-                <span>Page 1 of 1 · Verified</span>
+                <span>Official Nalanda College ERP Record · Verified</span>
               </div>
             </div>
           </div>
