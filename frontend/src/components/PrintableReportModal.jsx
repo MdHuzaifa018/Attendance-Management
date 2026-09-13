@@ -226,6 +226,23 @@ const PrintableReportModal = ({
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
+            /* Robust self-contained layout fallbacks for production environments */
+            .grid { display: grid !important; }
+            .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+            .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+            .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+            .gap-2 { gap: 0.5rem !important; }
+            .gap-3 { gap: 0.75rem !important; }
+            .gap-4 { gap: 1rem !important; }
+            .gap-8 { gap: 2rem !important; }
+            .flex { display: flex !important; }
+            .items-center { align-items: center !important; }
+            .justify-center { justify-content: center !important; }
+            .justify-between { justify-content: space-between !important; }
+            .text-center { text-align: center !important; }
+            .text-left { text-align: left !important; }
+            .font-bold { font-weight: 700 !important; }
+            .font-black { font-weight: 900 !important; }
             .signatures-block {
               page-break-inside: avoid !important;
               break-inside: avoid !important;
@@ -252,14 +269,40 @@ const PrintableReportModal = ({
       }
     };
 
-    // Ensure images (e.g. college logo) finish loading before opening print dialog
-    const logoImg = iframeDoc.querySelector("img");
-    if (logoImg && !logoImg.complete) {
-      logoImg.onload = () => setTimeout(doPrint, 150);
-      logoImg.onerror = () => setTimeout(doPrint, 150);
-    } else {
-      setTimeout(doPrint, 300);
-    }
+    // Ensure all stylesheets (including production bundled CSS on Vercel) and images finish loading
+    const linkTags = Array.from(iframeDoc.querySelectorAll("link[rel='stylesheet']"));
+    const linkPromises = linkTags.map(
+      (link) =>
+        new Promise((res) => {
+          if (link.sheet) {
+            res();
+          } else {
+            link.onload = res;
+            link.onerror = res;
+          }
+        })
+    );
+
+    const logoImgs = Array.from(iframeDoc.querySelectorAll("img"));
+    const imgPromises = logoImgs.map(
+      (img) =>
+        new Promise((res) => {
+          if (img.complete) {
+            res();
+          } else {
+            img.onload = res;
+            img.onerror = res;
+          }
+        })
+    );
+
+    // Wait for all assets or max 700ms timeout before triggering print
+    Promise.race([
+      Promise.all([...linkPromises, ...imgPromises]),
+      new Promise((res) => setTimeout(res, 700)),
+    ]).then(() => {
+      setTimeout(doPrint, 150);
+    });
   };
 
   if (!isOpen) return null;
