@@ -35,9 +35,9 @@ const AdminReportsPage = () => {
 
   useEffect(() => {
     // Load lookups
-    getDepartments().then(res => setDepartments(res.data)).catch(() => {});
-    getClasses({ all: true }).then(res => setClasses(res.data)).catch(() => {});
-    getSubjects().then(res => setSubjects(res.data)).catch(() => {});
+    getDepartments().then(res => setDepartments(res.departments || [])).catch(() => {});
+    getClasses({ all: true }).then(res => setClasses(res.classes || [])).catch(() => {});
+    getSubjects({ all: true }).then(res => setSubjects(res.subjects || [])).catch(() => {});
     
     // Initial data load
     loadData();
@@ -52,7 +52,7 @@ const AdminReportsPage = () => {
         if (v) activeFilters[k] = v;
       });
       const res = await getDetailedReport(activeFilters);
-      setData(res.data || []);
+      setData(res || []);
     } catch {
       toast.error("Failed to load report data");
     } finally {

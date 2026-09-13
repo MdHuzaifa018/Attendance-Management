@@ -7,17 +7,17 @@ import api from "./api.js";
 
 export const getSystemOverview = async () => {
   const { data } = await api.get("/reports/overview");
-  return data;
+  return data.data;
 };
 
 export const getAttendanceTrends = async (days = 7) => {
   const { data } = await api.get("/reports/trends", { params: { days } });
-  return data;
+  return data.data;
 };
 
 export const getDetailedReport = async (filters = {}) => {
   const { data } = await api.get("/reports/detailed", { params: filters });
-  return data;
+  return data.data;
 };
 
 /**

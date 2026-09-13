@@ -54,9 +54,8 @@ const LoginPage = () => {
     try {
       const user = await login(data.email, data.password);
       toast.success(`Welcome back, ${user.name}!`);
-      const from =
-        location.state?.from?.pathname || ROLE_DASHBOARD[user.role] || "/";
-      navigate(from, { replace: true });
+      const destination = ROLE_DASHBOARD[user.role] || "/";
+      navigate(destination, { replace: true });
     } catch (error) {
       const message =
         error?.response?.data?.message ||
