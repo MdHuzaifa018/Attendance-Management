@@ -39,8 +39,6 @@ const PrintableReportModal = ({
   const [viewMode, setViewMode] = useState("consolidated");
   const [searchQuery, setSearchQuery] = useState("");
 
-  if (!isOpen) return null;
-
   // Human-readable labels
   const selectedDept =
     departments.find((d) => d._id === filters.departmentId)?.name || "All Departments";
@@ -132,6 +130,8 @@ const PrintableReportModal = ({
   const handlePrint = () => {
     window.print();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-fadeIn">
