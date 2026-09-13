@@ -72,9 +72,11 @@ const AdminLayout = () => {
       >
         {/* Logo */}
         <div className="h-16 flex items-center gap-3 px-5 border-b border-slate-200 dark:border-slate-800 flex-shrink-0">
-          <div className="w-9 h-9 bg-indigo-600/10 dark:bg-indigo-600/20 border border-indigo-500/20 dark:border-indigo-500/30 rounded-xl flex items-center justify-center flex-shrink-0">
-            <GraduationCap className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="Nalanda College ERP Logo"
+            className="w-9 h-9 rounded-xl object-contain bg-white/95 p-0.5 shadow-sm border border-indigo-500/20"
+          />
           <div className="min-w-0">
             <p className="text-slate-900 dark:text-white font-bold text-sm leading-tight truncate">
               Nalanda College

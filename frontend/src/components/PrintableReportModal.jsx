@@ -73,9 +73,11 @@ const PrintableReportModal = ({ isOpen, onClose, reportData, filters, department
             {/* ── College Official Header ── */}
             <div className="border-b-2 border-indigo-900 pb-4 text-center relative">
               <div className="flex items-center justify-center gap-3 mb-1">
-                <div className="w-12 h-12 rounded-full bg-indigo-900 text-amber-400 flex items-center justify-center font-bold text-xl shadow">
-                  <Award className="w-7 h-7" />
-                </div>
+                <img
+                  src="/logo.png"
+                  alt="Nalanda College Official Logo"
+                  className="w-14 h-14 object-contain rounded-xl shadow-sm"
+                />
                 <div>
                   <h1 className="text-2xl font-black tracking-wider uppercase text-indigo-950 font-serif">
                     Nalanda College, Biharsharif

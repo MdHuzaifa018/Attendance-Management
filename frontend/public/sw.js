@@ -3,6 +3,7 @@ const CACHE_NAME = "nalanda-erp-v1";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
+  "/logo.png",
   "/favicon.svg",
   "/manifest.webmanifest"
 ];

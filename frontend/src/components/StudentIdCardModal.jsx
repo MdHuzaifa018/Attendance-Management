@@ -64,9 +64,11 @@ const StudentIdCardModal = ({ isOpen, onClose, student }) => {
             {/* Header / College Branding */}
             <div className="text-center pb-3 border-b border-indigo-500/30 relative">
               <div className="flex items-center justify-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center shadow-md">
-                  <Award className="w-4 h-4 text-slate-950 font-black" />
-                </div>
+                <img
+                  src="/logo.png"
+                  alt="Nalanda College Logo"
+                  className="w-8 h-8 rounded-full object-contain bg-white/95 p-0.5 shadow-md"
+                />
                 <div>
                   <h2 className="text-sm font-black tracking-wider uppercase bg-gradient-to-r from-amber-200 via-white to-amber-200 bg-clip-text text-transparent">
                     Nalanda College

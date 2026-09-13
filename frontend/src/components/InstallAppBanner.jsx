@@ -45,9 +45,11 @@ const InstallAppBanner = () => {
       aria-label="Install App"
       className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-40 bg-slate-900/95 border border-indigo-500/40 backdrop-blur-xl text-white p-4 rounded-2xl shadow-2xl flex items-center gap-3.5 animate-bounce-subtle print:hidden"
     >
-      <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-600/40">
-        <Smartphone className="w-5 h-5 text-white" />
-      </div>
+      <img
+        src="/logo.png"
+        alt="Nalanda College ERP Logo"
+        className="w-10 h-10 rounded-xl object-contain bg-white/95 p-0.5 shadow-lg shadow-indigo-600/40 flex-shrink-0"
+      />
 
       <div className="flex-1 min-w-0 text-xs">
         <h4 className="font-bold text-white text-xs">Install Nalanda ERP App</h4>

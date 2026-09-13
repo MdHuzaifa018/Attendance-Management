@@ -2,7 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="apple-touch-icon" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#4f46e5" />
@@ -14,7 +15,16 @@
     <title>Nalanda College | Attendance Management System</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #0f172a; font-family: system-ui, sans-serif;">
+        <img src="/logo.png" alt="Nalanda College ERP" style="width: 100px; height: 100px; object-fit: contain; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); margin-bottom: 24px; animation: pulse 2s infinite ease-in-out;" />
+        <div style="width: 32px; height: 32px; border: 3px solid rgba(99, 102, 241, 0.2); border-top-color: #6366f1; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <style>
+          @keyframes spin { to { transform: rotate(360deg); } }
+          @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.9; } }
+        </style>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

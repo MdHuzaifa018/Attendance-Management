@@ -85,9 +85,11 @@ const RegisterPage = () => {
 
         {/* Top Branding */}
         <div className="relative z-10 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-lg">
-            <GraduationCap className="w-6 h-6 text-white" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="Logo"
+            className="w-10 h-10 rounded-xl object-contain bg-white/95 p-0.5 shadow-lg"
+          />
           <div>
             <h2 className="text-xl font-bold tracking-tight text-white">
               Nalanda College
@@ -100,9 +102,11 @@ const RegisterPage = () => {
 
         {/* Center Hero Content */}
         <div className="relative z-10 my-auto py-12 flex flex-col items-center text-center max-w-lg mx-auto">
-          <div className="w-20 h-20 rounded-3xl bg-white/15 backdrop-blur-lg border border-white/30 flex items-center justify-center shadow-2xl mb-8 transform hover:scale-105 transition-transform">
-            <GraduationCap className="w-10 h-10 text-white" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="Nalanda College ERP Logo"
+            className="w-28 h-28 rounded-3xl object-contain bg-white/95 p-2 shadow-2xl mb-6 transform hover:scale-105 transition-transform"
+          />
 
           <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-white mb-4 leading-tight">
             Join Nalanda Portal
@@ -147,6 +151,14 @@ const RegisterPage = () => {
         <div className="w-full max-w-md space-y-6">
           {/* Header */}
           <div>
+            <div className="flex items-center gap-2 mb-3 lg:hidden">
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="w-10 h-10 rounded-xl object-contain bg-white/95 p-0.5 shadow-md"
+              />
+              <span className="font-bold text-sm text-slate-900 dark:text-white">Nalanda College</span>
+            </div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400 mb-4">
               <UserCheck className="w-3.5 h-3.5" /> Student Registration
             </div>
