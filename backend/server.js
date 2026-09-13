@@ -40,7 +40,11 @@ app.use(requestLogger);
 
 app.use("/api/test", testRoutes);
 
-//health check Route
+// Render Health Check Route (Root)
+app.get("/", (req, res) => res.status(200).send("API is live"));
+app.head("/", (req, res) => res.status(200).send());
+
+// API specific health check Route
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     success: true,
