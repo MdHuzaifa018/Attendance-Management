@@ -11,7 +11,8 @@ import AdminLayout from "./layouts/AdminLayout.jsx";
 import TeacherLayout from "./layouts/TeacherLayout.jsx";
 import StudentLayout from "./layouts/StudentLayout.jsx";
 
-// Auth pages
+// Public pages
+import HomePage from "./pages/public/HomePage.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
 import UnauthorizedPage from "./pages/auth/UnauthorizedPage.jsx";
@@ -92,7 +93,7 @@ function App() {
 
         <Routes>
           {/* ── Public routes ──────────────────────────────────────────── */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
