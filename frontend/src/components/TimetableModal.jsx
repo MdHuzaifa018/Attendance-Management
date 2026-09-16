@@ -190,8 +190,8 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 dark:bg-black/70 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden text-slate-900 dark:text-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/40 dark:bg-black/70 backdrop-blur-sm animate-fadeIn">
+      <div className="relative w-full max-w-5xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden text-slate-900 dark:text-white">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80">
           <div className="flex items-center gap-2.5">
@@ -284,26 +284,23 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
                 <span className="text-indigo-600 dark:text-indigo-400 font-bold">Add Period</span> to create the routine.
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-3 overflow-x-auto pb-1">
                 {periods.map((p, idx) => (
                   <div
                     key={idx}
-                    className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/60 shadow-sm flex flex-col md:flex-row md:items-center gap-3"
+                    className="min-w-[780px] lg:min-w-0 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/60 shadow-sm flex items-center gap-3"
                   >
                     {/* Period Badge */}
-                    <div className="flex items-center justify-between md:justify-start gap-2">
-                      <span className="w-8 h-8 rounded-xl bg-indigo-600/10 dark:bg-indigo-600/20 border border-indigo-500/20 dark:border-indigo-500/30 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-shrink-0 pt-3.5">
+                      <span className="w-8 h-8 rounded-xl bg-indigo-600/10 dark:bg-indigo-600/20 border border-indigo-500/20 dark:border-indigo-500/30 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm">
                         #{p.periodNumber}
-                      </span>
-                      <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 md:hidden">
-                        Period #{p.periodNumber}
                       </span>
                     </div>
 
                     {/* Timings */}
-                    <div className="grid grid-cols-2 gap-2 w-full md:w-56 flex-shrink-0">
+                    <div className="grid grid-cols-2 gap-2 w-48 flex-shrink-0">
                       <div>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mb-0.5">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mb-1">
                           Start Time
                         </span>
                         <input
@@ -312,11 +309,11 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
                           value={p.startTime}
                           onChange={(e) => handlePeriodChange(idx, "startTime", e.target.value)}
                           placeholder="10:00 AM"
-                          className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-xs focus:outline-none focus:border-indigo-500 shadow-sm"
+                          className="w-full px-2.5 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
                         />
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mb-0.5">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mb-1">
                           End Time
                         </span>
                         <input
@@ -325,40 +322,40 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
                           value={p.endTime}
                           onChange={(e) => handlePeriodChange(idx, "endTime", e.target.value)}
                           placeholder="11:00 AM"
-                          className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-xs focus:outline-none focus:border-indigo-500 shadow-sm"
+                          className="w-full px-2.5 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
                         />
                       </div>
                     </div>
 
-                    {/* Subject Selector */}
-                    <div className="flex-1 w-full">
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mb-0.5">
+                    {/* Subject Selector (Generous width with priority expansion) */}
+                    <div className="flex-1 min-w-[240px]">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mb-1">
                         Subject
                       </span>
                       <select
                         required
                         value={p.subject}
                         onChange={(e) => handlePeriodChange(idx, "subject", e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-xs focus:outline-none focus:border-indigo-500 shadow-sm cursor-pointer"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm cursor-pointer"
                       >
                         <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">-- Choose Subject --</option>
                         {subjects.map((sub) => (
                           <option key={sub._id} value={sub._id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
-                            {sub.name} ({sub.code})
+                            {sub.name} {sub.code ? `(${sub.code})` : ""}
                           </option>
                         ))}
                       </select>
                     </div>
 
                     {/* Teacher Selector */}
-                    <div className="w-full md:w-44 flex-shrink-0">
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mb-0.5">
+                    <div className="w-48 flex-shrink-0">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mb-1">
                         Faculty
                       </span>
                       <select
                         value={p.teacher}
                         onChange={(e) => handlePeriodChange(idx, "teacher", e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-xs focus:outline-none focus:border-indigo-500 shadow-sm cursor-pointer"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm cursor-pointer"
                       >
                         <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">-- Faculty Assigned --</option>
                         {teachers.map((tch) => (
@@ -370,8 +367,8 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
                     </div>
 
                     {/* Room No */}
-                    <div className="w-full md:w-32 flex-shrink-0">
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mb-0.5">
+                    <div className="w-36 flex-shrink-0">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mb-1">
                         Room / Lab
                       </span>
                       <input
@@ -379,16 +376,16 @@ const TimetableModal = ({ isOpen, onClose, onSuccess, initialClassId, initialDay
                         value={p.roomNo}
                         onChange={(e) => handlePeriodChange(idx, "roomNo", e.target.value)}
                         placeholder="Room 201"
-                        className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-xs focus:outline-none focus:border-indigo-500 shadow-sm"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
                       />
                     </div>
 
                     {/* Delete Period Button */}
-                    <div className="self-end md:self-center pt-2 md:pt-4">
+                    <div className="flex-shrink-0 pt-4">
                       <button
                         type="button"
                         onClick={() => handleRemovePeriod(idx)}
-                        className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
+                        className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors cursor-pointer"
                         title="Remove Period"
                       >
                         <Trash2 className="w-4 h-4" />
