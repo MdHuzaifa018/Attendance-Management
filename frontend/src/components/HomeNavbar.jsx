@@ -43,6 +43,7 @@ const HomeNavbar = () => {
     { label: "Class Routine", href: "#timetable" },
     { label: "Notices & Alerts", href: "#notices" },
     { label: "Role Portals", href: "#portals" },
+    { label: "Mentorship & Dev", href: "#leadership" },
   ];
 
   return (
