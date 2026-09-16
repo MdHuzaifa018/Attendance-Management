@@ -129,30 +129,40 @@ const HomePage = () => {
             {/* Left Column: Bold Typography & CTAs */}
             <div className="lg:col-span-7 space-y-6 text-left">
               
-              {/* Kicker Pill with Crown Accent */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-sm">
-                <span className="text-amber-500 text-sm">👑</span>
-                <span className="text-[11px] font-black tracking-wider uppercase text-slate-700 dark:text-slate-200 font-heading">
-                  FOR STUDENTS, FACULTY & ADMINS
+              {/* Kicker with hand-drawn marker underline doodle */}
+              <div className="inline-block relative">
+                <span className="text-xs sm:text-sm font-black tracking-wider uppercase text-slate-800 dark:text-slate-200 font-poppins">
+                  FOR NALANDA COLLEGE STUDENTS & FACULTY
                 </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse"></span>
+                {/* Hand-drawn marker underline stroke */}
+                <svg className="w-full h-2.5 -mt-0.5 text-[#0038ff] dark:text-[#4d77ff]" viewBox="0 0 200 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2.5 6.5C45.2 2.5 120.8 1.5 197.5 5.5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                </svg>
               </div>
 
-              {/* Giant Bold Compressed Headline */}
-              <div className="space-y-0 tracking-tighter">
-                <h1 className="font-display font-black text-6xl sm:text-7xl lg:text-[5.5rem] leading-[0.95] text-slate-950 dark:text-white uppercase">
-                  SMART CAMPUS.
+              {/* Giant Bold Compressed Headline matching inspect */}
+              <div className="relative select-none my-1 sm:my-2">
+                <h1 className="text-slate-950 dark:text-white tracking-[-2px] font-kapra [-webkit-text-stroke:1px] leading-[0.65] lg:[-webkit-text-stroke:2px] text-[17vw] sm:text-[7.5rem] md:text-[9rem] lg:text-[6.8rem] xl:text-[9rem] 2xl:text-[10.5rem] lg:leading-[0.7] uppercase">
+                  SMART CAMPUS
                 </h1>
-                <h1 className="font-display font-black text-6xl sm:text-7xl lg:text-[5.5rem] leading-[0.95] text-indigo-600 dark:text-indigo-400 uppercase italic">
-                  NALANDA ERP.
-                </h1>
+
+                <div className="relative inline-block w-full">
+                  {/* Real hand-drawn crown doodle directly from notyourcollege */}
+                  <div className="absolute -top-7 sm:-top-10 md:-top-14 right-2 sm:right-8 lg:right-6 xl:right-12 w-12 sm:w-16 md:w-20 z-20 pointer-events-none transform rotate-12 drop-shadow-md">
+                    <img src="/images/crown.png" alt="Crown Doodle" className="w-full h-auto object-contain" />
+                  </div>
+
+                  <h1 className="text-[#0038ff] dark:text-[#4d77ff] tracking-[-2px] font-kapra [-webkit-text-stroke:1px] leading-[0.65] lg:[-webkit-text-stroke:2px] text-[17vw] sm:text-[7.5rem] md:text-[9rem] lg:text-[6.8rem] xl:text-[9rem] 2xl:text-[10.5rem] lg:leading-[0.7] uppercase">
+                    NALANDA.
+                  </h1>
+                </div>
               </div>
 
-              {/* Subtitle with Highlighting */}
-              <p className="text-base sm:text-lg text-slate-700 dark:text-slate-300 leading-relaxed max-w-2xl font-medium">
-                Track <span className="marker-highlight font-bold text-slate-950">real attendance</span>,{" "}
-                <span className="marker-highlight font-bold text-slate-950">live routines</span>, and{" "}
-                <span className="marker-highlight font-bold text-slate-950">smart academic records</span> before
+              {/* Subtitle with Highlighting - Font Poppins */}
+              <p className="text-base sm:text-lg lg:text-[1.25rem] 2xl:text-2xl font-poppins text-slate-800 dark:text-slate-200 leading-relaxed max-w-2xl font-normal">
+                Build <span className="bg-[#ffe500] text-black px-1.5 py-0.5 rounded font-semibold">real skills</span>,{" "}
+                <span className="bg-[#ffe500] text-black px-1.5 py-0.5 rounded font-semibold">real attendance</span>, and{" "}
+                <span className="bg-[#ffe500] text-black px-1.5 py-0.5 rounded font-semibold">real momentum</span> before
                 the semester catches up.
               </p>
 
@@ -235,13 +245,13 @@ const HomePage = () => {
                 </div>
               </div>
 
-              {/* Floating Sticker Top Right: ATTEND · LEARN · EXCEL */}
-              <div className="absolute -top-6 -right-4 sm:-right-6 bg-white dark:bg-slate-900 text-slate-950 dark:text-white p-3 rounded-2xl border-2 border-slate-900 dark:border-slate-700 shadow-xl rotate-6 animate-bounce hover:rotate-0 transition-transform">
-                <div className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  ACADEMIC MOTO
-                </div>
-                <div className="text-xs font-black font-display tracking-tight text-indigo-600 dark:text-indigo-400">
-                  ATTEND · LEARN · EXCEL 🚀
+              {/* Floating Sticker Top Right: ATTEND. LEARN. REPEAT. */}
+              <div className="absolute -top-6 -right-4 sm:-right-6 bg-white dark:bg-slate-900 text-slate-950 dark:text-white px-4 py-2.5 rounded-2xl border-2 border-slate-950 dark:border-slate-600 shadow-2xl rotate-6 hover:rotate-0 transition-transform flex items-center gap-2.5 z-20">
+                <span className="text-2xl">🚀</span>
+                <div className="text-left font-kapra leading-[1.1] tracking-tight text-sm uppercase">
+                  <div className="text-slate-950 dark:text-white font-bold">ATTEND.</div>
+                  <div className="text-[#0038ff] dark:text-[#4d77ff] font-bold">LEARN.</div>
+                  <div className="text-amber-500 font-bold">REPEAT.</div>
                 </div>
               </div>
 
