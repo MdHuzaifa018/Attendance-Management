@@ -20,6 +20,7 @@ import noticeRoutes from "./routes/notice.routes.js";
 import leaveRoutes from "./routes/leave.routes.js";
 import timetableRoutes from "./routes/timetable.routes.js";
 import marksRoutes from "./routes/marks.routes.js";
+import publicRoutes from "./routes/public.routes.js";
 import { notFound, errorHandler } from "./middleware/error.middleware.js";
 dotenv.config();
 
@@ -56,6 +57,7 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+app.use("/api/public", publicRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/teachers", teacherRoutes);

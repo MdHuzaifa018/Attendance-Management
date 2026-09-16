@@ -38,18 +38,24 @@ import "swiper/css/pagination";
 import { useAuth } from "../../context/AuthContext.jsx";
 import HomeNavbar from "../../components/HomeNavbar.jsx";
 import HomeFooter from "../../components/HomeFooter.jsx";
-import { getNotices } from "../../services/noticeService.js";
+import {
+  getPublicStats,
+  getPublicNotices,
+  getPublicTimetable,
+} from "../../services/publicService.js";
 
 const HomePage = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Monday");
   const [notices, setNotices] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [scheduleData, setScheduleData] = useState(null);
   const [galleryFilter, setGalleryFilter] = useState("All");
   const [lightboxImage, setLightboxImage] = useState(null);
 
   // 📸 Nalanda College Campus Photo Gallery
-  // NOTE: You can easily replace any of these demo image URLs with your actual college photos!
+  // NOTE: You can easily update any of these college image URLs with your actual campus photos!
   const galleryImages = [
     {
       id: 1,
@@ -123,41 +129,69 @@ const HomePage = () => {
       ? galleryImages
       : galleryImages.filter((img) => img.category === galleryFilter);
 
+  const fallbackNotices = [
+    {
+      _id: "1",
+      title: "🚨 Mandatory 75% Attendance Requirement for Semester Examination",
+      content: "Students failing to maintain 75% attendance in core subjects will be debarred as per university guidelines.",
+      category: "Attendance",
+      priority: "urgent",
+    },
+    {
+      _id: "2",
+      title: "📝 BCA 3rd Year Mid-Term Internal Assessment Schedule",
+      content: "Mid-Term evaluations and practical viva will commence from next Monday in Computer Lab 1 & 2.",
+      category: "Exam",
+      priority: "high",
+    },
+    {
+      _id: "3",
+      title: "🎉 Annual College IT TechFest & Hackathon Registration",
+      content: "Registrations are now open for Web Development, Algorithmic Coding, and Project Exhibition.",
+      category: "Event",
+      priority: "normal",
+    },
+  ];
+
   useEffect(() => {
-    const loadNotices = async () => {
+    const loadPublicData = async () => {
+      // 1. Live Portal Stats from Backend MongoDB
       try {
-        const data = await getNotices();
-        if (data && data.length > 0) {
-          setNotices(data.slice(0, 3));
+        const liveStats = await getPublicStats();
+        if (liveStats) {
+          setStats(liveStats);
         }
       } catch {
-        // Fallback default notices
-        setNotices([
-          {
-            _id: "1",
-            title: "🚨 Mandatory 75% Attendance Requirement for Semester Examination",
-            content: "Students failing to maintain 75% attendance in core subjects will be debarred as per university guidelines.",
-            category: "Attendance",
-            priority: "urgent",
-          },
-          {
-            _id: "2",
-            title: "📝 BCA 3rd Year Mid-Term Internal Assessment Schedule",
-            content: "Mid-Term evaluations and practical viva will commence from next Monday in Computer Lab 1 & 2.",
-            category: "Exam",
-            priority: "high",
-          },
-          {
-            _id: "3",
-            title: "🎉 Annual College IT TechFest & Hackathon Registration",
-            content: "Registrations are now open for Web Development, Algorithmic Coding, and Project Exhibition.",
-            category: "Event",
-            priority: "normal",
-          },
-        ]);
+        // Keeps fallback stats in render
+      }
+
+      // 2. Live Published Circulars from Backend MongoDB
+      try {
+        const liveNotices = await getPublicNotices();
+        if (liveNotices && liveNotices.length > 0) {
+          setNotices(liveNotices.slice(0, 3));
+        } else {
+          setNotices(fallbackNotices);
+        }
+      } catch {
+        setNotices(fallbackNotices);
+      }
+
+      // 3. Live Academic Routine from Backend MongoDB
+      try {
+        const liveTimetable = await getPublicTimetable();
+        if (
+          liveTimetable &&
+          Object.values(liveTimetable).some((arr) => Array.isArray(arr) && arr.length > 0)
+        ) {
+          setScheduleData(liveTimetable);
+        }
+      } catch {
+        // Keeps default schedule in render
       }
     };
-    loadNotices();
+
+    loadPublicData();
   }, []);
 
   const getDashboardPath = () => {
@@ -320,7 +354,7 @@ const HomePage = () => {
               <div className="pt-4 flex flex-wrap items-center gap-4 sm:gap-6 text-xs font-bold text-slate-600 dark:text-slate-400">
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  <span>120+ BCA-III Enrolled</span>
+                  <span>{stats?.studentsCount ? `${stats.studentsCount}+` : "120+"} BCA-III Enrolled</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -386,7 +420,7 @@ const HomePage = () => {
                     </div>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span className="text-emerald-600 dark:text-emerald-400 font-extrabold text-sm">
-                        94.8% Average
+                        {stats?.attendanceRate ? `${stats.attendanceRate}%` : "94.8%"} Average
                       </span>
                       <span className="text-[10px] text-slate-500 font-semibold">· Verified</span>
                     </div>
@@ -406,7 +440,7 @@ const HomePage = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-slate-800">
             <div>
               <div className="font-display font-black text-3xl sm:text-4xl text-amber-400">
-                120+
+                {stats?.studentsCount ? `${stats.studentsCount}+` : "120+"}
               </div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">
                 BCA-III Enrolled Students
@@ -414,7 +448,7 @@ const HomePage = () => {
             </div>
             <div>
               <div className="font-display font-black text-3xl sm:text-4xl text-indigo-400">
-                179+
+                {stats?.lecturesCount ? `${stats.lecturesCount}+` : "179+"}
               </div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">
                 Lectures Tracked
@@ -430,7 +464,7 @@ const HomePage = () => {
             </div>
             <div>
               <div className="font-display font-black text-3xl sm:text-4xl text-white">
-                1870
+                {stats?.heritageYear || 1870}
               </div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">
                 College Heritage Estd.
@@ -812,7 +846,10 @@ const HomePage = () => {
 
           {/* Periods List */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {sampleSchedule[activeTab]?.map((item, idx) => (
+            {((scheduleData && scheduleData[activeTab] && scheduleData[activeTab].length > 0)
+              ? scheduleData[activeTab]
+              : sampleSchedule[activeTab]
+            )?.map((item, idx) => (
               <div
                 key={idx}
                 className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-indigo-500/50 transition-all space-y-3"

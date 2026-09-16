@@ -75,7 +75,7 @@ const LoginPage = () => {
   };
 
   // Quick fill helper for testing
-  const fillDemo = (email, password) => {
+  const fillCredentials = (email, password) => {
     setValue("email", email, { shouldValidate: true });
     setValue("password", password, { shouldValidate: true });
   };
@@ -190,29 +190,29 @@ const LoginPage = () => {
             </p>
           </div>
 
-          {/* Quick demo fill buttons */}
+          {/* Quick test credentials */}
           <div className="p-3.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
-              Quick Demo Fill:
+              Quick Test Login:
             </p>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={() => fillDemo("admin@nalanda.edu", "Admin@1234")}
+                onClick={() => fillCredentials("admin@nalanda.edu", "Admin@1234")}
                 className="px-2.5 py-1 text-xs font-medium rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-indigo-500 transition-colors cursor-pointer"
               >
                 Admin
               </button>
               <button
                 type="button"
-                onClick={() => fillDemo("rajesh@nalanda.edu", "Teacher@1234")}
+                onClick={() => fillCredentials("rajesh@nalanda.edu", "Teacher@1234")}
                 className="px-2.5 py-1 text-xs font-medium rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-indigo-500 transition-colors cursor-pointer"
               >
                 Teacher (Dr. Rajesh)
               </button>
               <button
                 type="button"
-                onClick={() => fillDemo("md.014@nalanda.edu", "Student@123")}
+                onClick={() => fillCredentials("md.014@nalanda.edu", "Student@123")}
                 className="px-2.5 py-1 text-xs font-medium rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-indigo-500 transition-colors cursor-pointer"
               >
                 Student (Md Huzaifa)
