@@ -59,6 +59,15 @@
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
 }
 
+/* Notebook Grid Background Pattern for Eduvibe Style Campus Section */
+.bg-grid-pattern {
+  background-image: radial-gradient(rgba(99, 102, 241, 0.18) 1.2px, transparent 1.2px);
+  background-size: 28px 28px;
+}
+.dark .bg-grid-pattern {
+  background-image: radial-gradient(rgba(148, 163, 184, 0.14) 1.2px, transparent 1.2px);
+}
+
 /* Marker Highlighting Accents */
 .marker-highlight {
   background: linear-gradient(120deg, rgba(250, 204, 21, 0.4) 0%, rgba(250, 204, 21, 0.85) 100%);

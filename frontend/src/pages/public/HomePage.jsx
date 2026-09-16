@@ -18,13 +18,23 @@ import {
   Clock,
   ExternalLink,
   ChevronRight,
+  ChevronLeft,
   Check,
   TrendingUp,
   AlertTriangle,
   Send,
   Laptop,
   Quote,
+  Maximize2,
+  X,
+  Camera,
+  Compass,
 } from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 import { useAuth } from "../../context/AuthContext.jsx";
 import HomeNavbar from "../../components/HomeNavbar.jsx";
 import HomeFooter from "../../components/HomeFooter.jsx";
@@ -35,6 +45,83 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Monday");
   const [notices, setNotices] = useState([]);
+  const [galleryFilter, setGalleryFilter] = useState("All");
+  const [lightboxImage, setLightboxImage] = useState(null);
+
+  // 📸 Nalanda College Campus Photo Gallery
+  // NOTE: You can easily replace any of these demo image URLs with your actual college photos!
+  const galleryImages = [
+    {
+      id: 1,
+      title: "Nalanda College Main Heritage Building",
+      category: "Campus & Heritage",
+      imageUrl: "/images/college-campus.jpg",
+      desc: "Historic landmark campus established in 1870, Biharsharif. Constituent unit of Patliputra University.",
+      tag: "🏛️ Main Campus",
+    },
+    {
+      id: 2,
+      title: "BCA Computer Applications Lab",
+      category: "Labs & Classrooms",
+      imageUrl: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1000&q=80",
+      desc: "Advanced computing center featuring programming environments, software engineering tools, and servers.",
+      tag: "💻 Tech Lab",
+    },
+    {
+      id: 3,
+      title: "Central College Library & Research Hall",
+      category: "Library & Seminars",
+      imageUrl: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1000&q=80",
+      desc: "Comprehensive academic repository with thousands of volumes, journals, and digital research terminals.",
+      tag: "📚 Research Hub",
+    },
+    {
+      id: 4,
+      title: "Annual IT TechFest & Coding Hackathon",
+      category: "Events & TechFest",
+      imageUrl: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1000&q=80",
+      desc: "State-level coding contests, web design competitions, and technology showcase exhibits.",
+      tag: "🚀 TechFest",
+    },
+    {
+      id: 5,
+      title: "Academic Seminar Hall & Guest Lectures",
+      category: "Library & Seminars",
+      imageUrl: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1000&q=80",
+      desc: "Interactive lecture theater hosting keynote seminars, workshops, and student presentations.",
+      tag: "🎤 Seminar Hall",
+    },
+    {
+      id: 6,
+      title: "Campus Green Lawns & Athletics Ground",
+      category: "Student Life & Sports",
+      imageUrl: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1000&q=80",
+      desc: "Lush botanical spaces and expansive sports facilities for cricket, football, and athletic meets.",
+      tag: "⚽ Athletics",
+    },
+    {
+      id: 7,
+      title: "BCA Batch & Student Developer Squad",
+      category: "Labs & Classrooms",
+      imageUrl: "/hero-students.jpg",
+      desc: "Enthusiastic students collaborating on real-world web apps, databases, and automated ERP projects.",
+      tag: "⚡ BCA Batch",
+    },
+  ];
+
+  const galleryCategories = [
+    "All",
+    "Campus & Heritage",
+    "Labs & Classrooms",
+    "Library & Seminars",
+    "Events & TechFest",
+    "Student Life & Sports",
+  ];
+
+  const filteredGallery =
+    galleryFilter === "All"
+      ? galleryImages
+      : galleryImages.filter((img) => img.category === galleryFilter);
 
   useEffect(() => {
     const loadNotices = async () => {
@@ -353,7 +440,244 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ── 4. Core Features Showcase (Neo-Modern Cards) ── */}
+      {/* ── 4. Campus Heritage & Photo Gallery Showcase (Eduvibe Dribbble Style) ── */}
+      <section id="campus-gallery" className="relative py-20 lg:py-28 bg-grid-pattern border-b border-slate-200 dark:border-slate-800 overflow-hidden">
+        {/* Subtle Ambient Glow */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] h-[400px] bg-gradient-to-b from-indigo-500/10 via-amber-400/5 to-transparent blur-3xl pointer-events-none rounded-full" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          
+          {/* Header Block inspired by Dribbble Eduvibe shot */}
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-4">
+            
+            {/* Admissions / Academic Year Pill with Cap Icon */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-sm">
+              <GraduationCap className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <span className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 font-poppins">
+                NALANDA COLLEGE · ESTABLISHED 1870
+              </span>
+            </div>
+
+            {/* Main Headline with Marker Underline */}
+            <h2 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-slate-950 dark:text-white uppercase tracking-tight leading-[1.05]">
+              Empowering{" "}
+              <span className="relative inline-block text-indigo-600 dark:text-indigo-400">
+                Young Minds
+                {/* Hand-drawn curved marker underline doodle */}
+                <svg className="w-full h-3 -mt-1 text-[#0038ff] dark:text-[#4d77ff]" viewBox="0 0 200 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2.5 6.5C45.2 2.5 120.8 1.5 197.5 5.5" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+                </svg>
+              </span>{" "}
+              to Learn, Lead & Succeed.
+            </h2>
+
+            {/* Subtitle */}
+            <p className="text-sm sm:text-base lg:text-lg text-slate-600 dark:text-slate-400 font-poppins max-w-2xl mx-auto leading-relaxed">
+              Our university is dedicated to providing transformative education, equipping students with the knowledge, skills, and discipline essential for lifelong success and global impact.
+            </p>
+          </div>
+
+          {/* Grand Campus Photo Showcase (Matching Dribbble Central Image) */}
+          <div className="relative mb-16">
+            
+            {/* Floating Dribbble-Style Stickers */}
+            <div className="hidden sm:flex absolute -top-4 left-6 z-20 items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-xl -rotate-6">
+              <span>🏆</span>
+              <span>Excellence</span>
+            </div>
+
+            <div className="hidden sm:flex absolute -top-4 right-6 z-20 items-center gap-2 px-4 py-2 rounded-2xl bg-indigo-600 text-white font-black text-xs uppercase tracking-wider shadow-xl rotate-6">
+              <span>💡</span>
+              <span>Innovation</span>
+            </div>
+
+            {/* The Main College Campus Frame */}
+            <div className="relative rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden border-4 border-white dark:border-slate-900 shadow-2xl bg-slate-900 group">
+              <img
+                src="/images/college-campus.jpg"
+                alt="Nalanda College Historical Campus"
+                className="w-full h-[280px] sm:h-[420px] md:h-[500px] lg:h-[540px] object-cover object-center transform group-hover:scale-102 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+
+              {/* Center Floating Circular Explore Button */}
+              <a
+                href="#gallery-slider"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-indigo-600/90 hover:bg-indigo-600 active:scale-95 text-white backdrop-blur-md shadow-2xl flex flex-col items-center justify-center text-center p-2 border-2 border-white/50 transition-all hover:scale-110 group cursor-pointer"
+              >
+                <span className="text-base sm:text-xl font-black">↓</span>
+                <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-wider leading-tight">
+                  Explore Campus
+                </span>
+              </a>
+
+              {/* Bottom Campus Details Bar */}
+              <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-8 right-4 sm:right-8 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-2 text-white">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[10px] uppercase tracking-wider">
+                      Patliputra University Unit
+                    </span>
+                    <span className="text-xs text-slate-300 font-semibold">Heritage Campus</span>
+                  </div>
+                  <h3 className="font-kapra text-2xl sm:text-4xl uppercase tracking-tight text-white drop-shadow-md">
+                    Nalanda College, Biharsharif
+                  </h3>
+                </div>
+                <div className="text-xs font-semibold text-slate-300 bg-slate-950/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
+                  📍 Biharsharif, Nalanda, Bihar 803101
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Photo Gallery Slider with Swiper.js ── */}
+          <div id="gallery-slider" className="pt-6 space-y-8">
+            
+            {/* Category Filter Pills */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Camera className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                <span className="font-kapra text-2xl sm:text-3xl uppercase tracking-tight text-slate-950 dark:text-white">
+                  CAMPUS PHOTO GALLERY
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {galleryCategories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setGalleryFilter(cat)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer font-poppins ${
+                      galleryFilter === cat
+                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30 scale-105"
+                        : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Swiper Slider Component */}
+            <div className="relative">
+              <Swiper
+                modules={[Navigation, Pagination, Autoplay]}
+                spaceBetween={24}
+                slidesPerView={1}
+                breakpoints={{
+                  640: { slidesPerView: 2, spaceBetween: 20 },
+                  1024: { slidesPerView: 3, spaceBetween: 24 },
+                }}
+                autoplay={{ delay: 3500, disableOnInteraction: false }}
+                pagination={{ clickable: true, dynamicBullets: true }}
+                navigation={{
+                  nextEl: ".swiper-button-next-custom",
+                  prevEl: ".swiper-button-prev-custom",
+                }}
+                className="pb-12"
+              >
+                {filteredGallery.map((img) => (
+                  <SwiperSlide key={img.id}>
+                    <div
+                      onClick={() => setLightboxImage(img)}
+                      className="rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 group cursor-pointer flex flex-col h-full hover:border-indigo-500/50"
+                    >
+                      {/* Image Frame with Aspect Ratio */}
+                      <div className="relative h-56 sm:h-60 w-full overflow-hidden bg-slate-900">
+                        <img
+                          src={img.imageUrl}
+                          alt={img.title}
+                          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+
+                        {/* Top Category Badge */}
+                        <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-slate-950/80 backdrop-blur-md text-white text-[11px] font-bold shadow-md border border-white/10 font-poppins">
+                          {img.tag}
+                        </span>
+
+                        {/* Hover Zoom Icon */}
+                        <div className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-950 dark:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all shadow-md">
+                          <Maximize2 className="w-4 h-4" />
+                        </div>
+                      </div>
+
+                      {/* Content Card */}
+                      <div className="p-5 flex-1 flex flex-col justify-between space-y-2">
+                        <div>
+                          <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 font-poppins">
+                            {img.category}
+                          </span>
+                          <h4 className="font-bold text-base text-slate-900 dark:text-white leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors font-heading">
+                            {img.title}
+                          </h4>
+                        </div>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 font-poppins line-clamp-2 leading-relaxed">
+                          {img.desc}
+                        </p>
+                      </div>
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+
+              {/* Custom Navigation Buttons */}
+              <button className="swiper-button-prev-custom absolute left-0 top-1/2 -translate-y-8 -translate-x-3 sm:-translate-x-5 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white flex items-center justify-center shadow-xl hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all cursor-pointer">
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button className="swiper-button-next-custom absolute right-0 top-1/2 -translate-y-8 translate-x-3 sm:translate-x-5 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white flex items-center justify-center shadow-xl hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all cursor-pointer">
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ── Lightbox Modal for Photo Gallery ── */}
+      {lightboxImage && (
+        <div
+          onClick={() => setLightboxImage(null)}
+          className="fixed inset-0 z-[9999] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-4xl w-full bg-slate-900 rounded-3xl overflow-hidden border-2 border-slate-800 shadow-2xl"
+          >
+            <button
+              onClick={() => setLightboxImage(null)}
+              className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-slate-950/80 text-white flex items-center justify-center hover:bg-red-600 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <img
+              src={lightboxImage.imageUrl}
+              alt={lightboxImage.title}
+              className="w-full max-h-[70vh] object-contain bg-black"
+            />
+
+            <div className="p-6 bg-slate-900 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <div>
+                <span className="text-xs font-black uppercase text-amber-400 tracking-wider font-poppins">
+                  {lightboxImage.category} · {lightboxImage.tag}
+                </span>
+                <h3 className="font-bold text-lg text-white font-heading">
+                  {lightboxImage.title}
+                </h3>
+                <p className="text-xs text-slate-400 font-poppins mt-1">
+                  {lightboxImage.desc}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 5. Core Features Showcase (Neo-Modern Cards) ── */}
       <section id="features" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
           <div className="inline-block px-3.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-black tracking-widest uppercase">
@@ -704,206 +1028,270 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ── 8. Mentorship & Developer Leadership Spotlight ── */}
-      <section id="leadership" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        {/* Decorative background glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[350px] bg-gradient-to-r from-indigo-500/10 via-amber-500/10 to-blue-500/10 blur-3xl pointer-events-none rounded-full" />
+      {/* ── 8. Dedicated Standalone Section: Under the Mentorship of Md Alauddin Khan ── */}
+      <section id="mentorship" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        {/* Ambient Glow */}
+        <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-indigo-500/10 blur-3xl pointer-events-none rounded-full" />
 
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-3 relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-100 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-black tracking-widest uppercase font-poppins">
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            <span>VISION & CRAFTSMANSHIP</span>
+            <span>ACADEMIC LEADERSHIP & GUIDANCE</span>
           </div>
           <h2 className="font-kapra tracking-[-1px] sm:tracking-[-2px] text-4xl sm:text-6xl lg:text-7xl uppercase text-slate-950 dark:text-white leading-[0.9]">
-            UNDER THE MENTORSHIP & LEAD ARCHITECT.
+            UNDER THE MENTORSHIP OF MD ALAUDDIN KHAN.
           </h2>
           <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 font-poppins max-w-2xl mx-auto leading-relaxed">
-            A real digital transformation engineered for Nalanda College — guided by visionary academic leadership and brought to life through relentless student craftsmanship.
+            Inspiring academic excellence, technological discipline, and modern computer applications education at Nalanda College.
           </p>
         </div>
 
-        {/* Two-Column Grid: Mentor Card & Developer Card */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-stretch relative z-10">
-          
-          {/* ── CARD 1: Under the Mentorship of Md Alauddin Khan ── */}
-          <div className="rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all flex flex-col justify-between relative overflow-hidden group hover:border-indigo-500/50">
-            {/* Top Accent Gradient Bar */}
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-600 via-blue-500 to-indigo-700" />
+        {/* Grand Mentor Spotlight Card */}
+        <div className="relative z-10 rounded-[2.5rem] bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 p-8 sm:p-12 shadow-2xl overflow-hidden group hover:border-indigo-500/50 transition-all">
+          {/* Top Gradient Stripe */}
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-indigo-600 via-blue-500 to-indigo-700" />
 
-            <div className="space-y-6">
-              {/* Profile Header (Photo + Title Info) */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
-                {/* Mentor Photo Container */}
-                <div className="relative shrink-0">
-                  <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden ring-4 ring-indigo-500/20 dark:ring-indigo-400/20 shadow-xl bg-slate-100 dark:bg-slate-800">
-                    <img
-                      src="/images/director.webp"
-                      alt="Prof. Md Alauddin Khan"
-                      className="w-full h-full object-cover object-top transform group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  {/* Floating Verified Mentor Badge */}
-                  <span className="absolute -bottom-2.5 -right-2 px-2.5 py-1 rounded-full bg-indigo-600 text-white font-black text-[10px] tracking-wider uppercase shadow-md flex items-center gap-1 font-poppins">
-                    <span>👑</span>
-                    <span>MENTOR</span>
-                  </span>
-                </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+            
+            {/* Left: Mentor Portrait with Badges */}
+            <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
+              <div className="relative w-64 sm:w-72 md:w-80 aspect-[4/5] rounded-3xl overflow-hidden ring-4 ring-indigo-500/20 dark:ring-indigo-400/20 shadow-2xl bg-slate-100 dark:bg-slate-800 group">
+                <img
+                  src="/images/director.webp"
+                  alt="Prof. Md Alauddin Khan"
+                  className="w-full h-full object-cover object-top transform group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
 
-                {/* Mentor Meta */}
-                <div className="space-y-1.5">
-                  <div className="inline-block px-2.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 text-[11px] font-black uppercase tracking-wider font-poppins">
-                    Under the Mentorship of
+                {/* Overlaid Bottom Title */}
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-amber-400">
+                    ACADEMIC MENTOR
                   </div>
-                  <h3 className="font-kapra text-3xl sm:text-4xl text-slate-950 dark:text-white uppercase tracking-tight leading-none">
+                  <h4 className="font-kapra text-2xl uppercase tracking-tight text-white">
                     Md Alauddin Khan
-                  </h3>
-                  <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 font-poppins">
-                    Teacher & Academic Mentor
-                  </p>
-                  <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 font-poppins">
-                    Department of Computer Applications · Nalanda College, Biharsharif
+                  </h4>
+                  <p className="text-xs text-slate-300 font-poppins">
+                    Department of Computer Applications (BCA)
                   </p>
                 </div>
               </div>
 
-              {/* Mentor Inspirational Quote Block */}
-              <div className="relative p-5 rounded-2xl bg-gradient-to-br from-indigo-50/70 to-blue-50/40 dark:from-indigo-950/30 dark:to-slate-950/50 border border-indigo-100 dark:border-indigo-900/40">
-                <Quote className="w-6 h-6 text-indigo-500/40 absolute top-3 right-3" />
-                <p className="text-xs sm:text-sm italic text-slate-800 dark:text-slate-200 font-poppins leading-relaxed">
-                  "True education transcends textbooks. When students are empowered with the right discipline, technical vision, and accessible guidance, they don't just study modern technology — they create enterprise systems that solve real campus challenges."
+              {/* Floating Verified Mentor Badge */}
+              <div className="absolute -bottom-4 bg-white dark:bg-slate-950 px-4 py-2 rounded-2xl border-2 border-indigo-600 dark:border-indigo-500 shadow-xl flex items-center gap-2 z-20">
+                <span className="text-lg">👑</span>
+                <div className="text-left font-poppins">
+                  <div className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                    Senior Faculty & Guide
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-semibold">
+                    15+ Years Guiding BCA Students
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Mentor Vision & Impact Pillars */}
+            <div className="lg:col-span-7 space-y-6 text-left">
+              
+              <div className="space-y-2">
+                <div className="inline-block px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase tracking-wider font-poppins">
+                  Visionary Academic Guidance
+                </div>
+                <h3 className="font-kapra text-3xl sm:text-5xl text-slate-950 dark:text-white uppercase tracking-tight leading-none">
+                  Prof. Md Alauddin Khan
+                </h3>
+                <p className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-400 font-poppins">
+                  Teacher & Academic Mentor · Department of Computer Applications · Nalanda College, Biharsharif
                 </p>
               </div>
 
-              {/* Key Pillars */}
-              <div className="space-y-2.5 pt-1">
-                <div className="text-[11px] font-black uppercase tracking-wider text-slate-400 font-poppins">
-                  Mentorship Impact & Guidance
+              {/* Dignified Quote Block */}
+              <div className="relative p-6 rounded-2xl bg-gradient-to-br from-indigo-50/80 to-blue-50/40 dark:from-indigo-950/30 dark:to-slate-950/60 border-2 border-indigo-100 dark:border-indigo-900/50 shadow-sm">
+                <Quote className="w-8 h-8 text-indigo-500/30 absolute top-4 right-4" />
+                <p className="text-sm sm:text-base italic text-slate-800 dark:text-slate-200 font-poppins leading-relaxed font-medium">
+                  "True education transcends the textbook. When students are empowered with the right discipline, technical vision, and accessible guidance, they don't just study modern technology — they create enterprise systems that solve real campus challenges."
+                </p>
+              </div>
+
+              {/* 4 Mentorship Pillars */}
+              <div className="space-y-3 pt-2">
+                <div className="text-xs font-black uppercase tracking-wider text-slate-400 font-poppins">
+                  Pillars of Academic Mentorship
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 font-poppins">
-                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                    <CheckCircle2 className="w-4 h-4 text-indigo-500 shrink-0" />
-                    <span>Academic Standards & 75% Rule</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-semibold text-slate-700 dark:text-slate-300 font-poppins">
+                  <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800">
+                    <CheckCircle2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <span>Academic Discipline & 75% Rule</span>
                   </div>
-                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                    <CheckCircle2 className="w-4 h-4 text-indigo-500 shrink-0" />
-                    <span>Industry Project Advocacy</span>
+                  <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800">
+                    <CheckCircle2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <span>Real-World Project Advocacy</span>
                   </div>
-                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                    <CheckCircle2 className="w-4 h-4 text-indigo-500 shrink-0" />
-                    <span>Digital Campus Vision</span>
+                  <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800">
+                    <CheckCircle2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <span>Digital Campus Transformation</span>
                   </div>
-                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                    <CheckCircle2 className="w-4 h-4 text-indigo-500 shrink-0" />
-                    <span>Student Innovation Support</span>
+                  <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800">
+                    <CheckCircle2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <span>Individual Student Empowerment</span>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Bottom Meta */}
-            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400 font-poppins">
-              <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
-                <GraduationCap className="w-4 h-4" />
-                <span>Nalanda College Faculty</span>
-              </span>
-              <span className="text-[11px] text-slate-400">Patliputra University</span>
+              {/* Bottom Faculty Meta */}
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-slate-500 dark:text-slate-400 font-poppins">
+                <span className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                  <GraduationCap className="w-4 h-4" />
+                  <span>Patliputra University Constituent Faculty</span>
+                </span>
+                <span className="text-[11px] text-slate-400">Nalanda College · BCA Dept.</span>
+              </div>
+
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* ── CARD 2: Lead Architect & Developer (Md Huzaifa) ── */}
-          <div className="rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all flex flex-col justify-between relative overflow-hidden group hover:border-amber-400/50">
-            {/* Top Accent Gradient Bar */}
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500" />
+      {/* ── 9. Dedicated Standalone Section: Lead System Architect & Developer: Md Huzaifa ── */}
+      <section id="developer" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        {/* Ambient Glow */}
+        <div className="absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-amber-500/10 blur-3xl pointer-events-none rounded-full" />
 
-            <div className="space-y-6">
-              {/* Profile Header (Photo + Title Info) */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
-                {/* Developer Photo Container */}
-                <div className="relative shrink-0">
-                  <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden ring-4 ring-amber-400/30 dark:ring-amber-400/20 shadow-xl bg-slate-100 dark:bg-slate-800">
-                    <img
-                      src="/images/developer.jpg"
-                      alt="Md Huzaifa - Lead Developer"
-                      className="w-full h-full object-cover object-top transform group-hover:scale-105 transition-transform duration-500"
-                      onError={(e) => {
-                        e.target.src = "https://res.cloudinary.com/qpxxnswd/image/upload/v1786433170/techugrow/raermdlduqbxo0qeksoy.jpg";
-                      }}
-                    />
-                  </div>
-                  {/* Floating Developer Badge */}
-                  <span className="absolute -bottom-2.5 -right-2 px-2.5 py-1 rounded-full bg-amber-400 text-slate-950 font-black text-[10px] tracking-wider uppercase shadow-md flex items-center gap-1 font-poppins border border-slate-950/20">
-                    <span>⚡</span>
-                    <span>ARCHITECT</span>
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16 space-y-3 relative z-10">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100 dark:bg-amber-950/70 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs font-black tracking-widest uppercase font-poppins">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span>LEAD SYSTEM ARCHITECT & FULL-STACK DEVELOPER</span>
+          </div>
+          <h2 className="font-kapra tracking-[-1px] sm:tracking-[-2px] text-4xl sm:text-6xl lg:text-7xl uppercase text-slate-950 dark:text-white leading-[0.9]">
+            ARCHITECTED & DEVELOPED BY MD HUZAIFA.
+          </h2>
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 font-poppins max-w-2xl mx-auto leading-relaxed">
+            Engineered from ground zero by a proud Nalanda College BCA student — replacing obsolete paper registers with an enterprise-grade digital ERP ecosystem.
+          </p>
+        </div>
+
+        {/* Grand Developer Spotlight Card */}
+        <div className="relative z-10 rounded-[2.5rem] bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 p-8 sm:p-12 shadow-2xl overflow-hidden group hover:border-amber-400/50 transition-all">
+          {/* Top Gradient Stripe */}
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+            
+            {/* Left Column: Developer Story, Best Line Quote, and Tech Stack */}
+            <div className="lg:col-span-7 space-y-6 text-left order-2 lg:order-1">
+              
+              <div className="space-y-2">
+                <div className="inline-block px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 text-xs font-black uppercase tracking-wider font-poppins">
+                  Creator & Full-Stack Architect
+                </div>
+                <h3 className="font-kapra text-3xl sm:text-5xl text-slate-950 dark:text-white uppercase tracking-tight leading-none">
+                  Md Huzaifa
+                </h3>
+                <p className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-400 font-poppins">
+                  Full-Stack Software Engineer & Student · BCA 3rd Year, Nalanda College
+                </p>
+              </div>
+
+              {/* Developer Inspirational Line Block ("Best Line Ke Saath") */}
+              <div className="relative p-6 rounded-2xl bg-gradient-to-br from-amber-50/80 to-yellow-50/40 dark:from-amber-950/20 dark:to-slate-950/60 border-2 border-amber-200/80 dark:border-amber-900/50 shadow-sm">
+                <Quote className="w-8 h-8 text-amber-500/30 absolute top-4 right-4" />
+                <p className="text-sm sm:text-base italic text-slate-900 dark:text-slate-100 font-poppins leading-relaxed font-medium">
+                  "We don't wait for the future to happen — we write the code that creates it. This ERP system was built with sheer passion late nights to replace outdated paper registers with a blazing-fast, secure, and intuitive digital experience for every teacher and student in our college."
+                </p>
+              </div>
+
+              {/* Technical Craftsmanship & Tech Stack */}
+              <div className="space-y-3 pt-2">
+                <div className="text-xs font-black uppercase tracking-wider text-slate-400 font-poppins">
+                  Engineering Stack & Modules Built
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                    ⚛️ React 18 & Vite
+                  </span>
+                  <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                    🎨 Tailwind CSS v4
+                  </span>
+                  <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                    🟢 Node.js & Express API
+                  </span>
+                  <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                    🍃 MongoDB Atlas
+                  </span>
+                  <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                    🔒 Multi-Role RBAC Security
+                  </span>
+                  <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                    📄 Automated PDF Letterhead Engine
                   </span>
                 </div>
+              </div>
 
-                {/* Developer Meta */}
-                <div className="space-y-1.5">
-                  <div className="inline-block px-2.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 text-[11px] font-black uppercase tracking-wider font-poppins">
-                    Architected & Developed By
+              {/* Action Buttons: GitHub & Open-Source Badge */}
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
+                <a
+                  href="https://github.com/MdHuzaifa018"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-slate-950 text-white dark:bg-white dark:text-slate-950 font-black text-xs hover:bg-amber-400 hover:text-slate-950 dark:hover:bg-amber-400 dark:hover:text-slate-950 transition-all shadow-lg cursor-pointer"
+                >
+                  <span>Follow on GitHub @MdHuzaifa018</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+
+                <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 font-poppins">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>100% Student Engineered for Nalanda College</span>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Column: Developer Photo */}
+            <div className="lg:col-span-5 flex flex-col items-center justify-center relative order-1 lg:order-2">
+              <div className="relative w-64 sm:w-72 md:w-80 aspect-[4/5] rounded-3xl overflow-hidden ring-4 ring-amber-400/30 dark:ring-amber-400/20 shadow-2xl bg-slate-100 dark:bg-slate-800 group">
+                <img
+                  src="/images/developer.jpg"
+                  alt="Md Huzaifa - Lead Developer"
+                  className="w-full h-full object-cover object-top transform group-hover:scale-105 transition-transform duration-700"
+                  onError={(e) => {
+                    e.target.src = "https://res.cloudinary.com/qpxxnswd/image/upload/v1786433170/techugrow/raermdlduqbxo0qeksoy.jpg";
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+
+                {/* Overlaid Bottom Title */}
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-amber-400">
+                    FULL-STACK ARCHITECT
                   </div>
-                  <h3 className="font-kapra text-3xl sm:text-4xl text-slate-950 dark:text-white uppercase tracking-tight leading-none">
+                  <h4 className="font-kapra text-2xl uppercase tracking-tight text-white">
                     Md Huzaifa
-                  </h3>
-                  <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 font-poppins">
-                    Full-Stack Software Engineer & Student
-                  </p>
-                  <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 font-poppins">
-                    BCA 3rd Year · Nalanda College, Biharsharif
+                  </h4>
+                  <p className="text-xs text-slate-300 font-poppins">
+                    Department of Computer Applications (BCA)
                   </p>
                 </div>
               </div>
 
-              {/* Developer Inspirational Line Block ("Best line ke saath") */}
-              <div className="relative p-5 rounded-2xl bg-gradient-to-br from-amber-50/70 to-yellow-50/40 dark:from-amber-950/20 dark:to-slate-950/50 border border-amber-200/70 dark:border-amber-900/40">
-                <Quote className="w-6 h-6 text-amber-500/40 absolute top-3 right-3" />
-                <p className="text-xs sm:text-sm italic text-slate-900 dark:text-slate-100 font-poppins leading-relaxed font-medium">
-                  "We don't wait for the future to happen — we write the code that creates it. This ERP system was built with sheer passion to replace outdated paper registers with a blazing-fast, secure, and intuitive digital experience for every teacher and student in our college."
-                </p>
-              </div>
-
-              {/* Technical Craftsmanship Pillars */}
-              <div className="space-y-2.5 pt-1">
-                <div className="text-[11px] font-black uppercase tracking-wider text-slate-400 font-poppins">
-                  System Architecture & Features Built
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 font-poppins">
-                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                    <CheckCircle2 className="w-4 h-4 text-amber-500 shrink-0" />
-                    <span>MERN Full-Stack Architecture</span>
+              {/* Floating Developer Badge */}
+              <div className="absolute -bottom-4 bg-white dark:bg-slate-950 px-4 py-2 rounded-2xl border-2 border-amber-400 shadow-xl flex items-center gap-2 z-20">
+                <span className="text-lg">⚡</span>
+                <div className="text-left font-poppins">
+                  <div className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                    Lead Developer
                   </div>
-                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                    <CheckCircle2 className="w-4 h-4 text-amber-500 shrink-0" />
-                    <span>Multi-Role Security (RBAC)</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                    <CheckCircle2 className="w-4 h-4 text-amber-500 shrink-0" />
-                    <span>Automated PDF Letterhead Engine</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                    <CheckCircle2 className="w-4 h-4 text-amber-500 shrink-0" />
-                    <span>Live Routine & Shortage Engine</span>
+                  <div className="text-[10px] text-slate-500 font-semibold">
+                    Architect & Creator of Nalanda ERP
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Bottom Meta & GitHub Link */}
-            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400 font-poppins">
-              <a
-                href="https://github.com/MdHuzaifa018"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-950 text-white dark:bg-white dark:text-slate-950 font-black text-xs hover:bg-amber-400 hover:text-slate-950 transition-colors shadow-sm"
-              >
-                <span>GitHub @MdHuzaifa018</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-black">● Active Open-Source</span>
-            </div>
           </div>
-
         </div>
       </section>
 

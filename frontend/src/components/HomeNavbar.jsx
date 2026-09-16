@@ -39,11 +39,13 @@ const HomeNavbar = () => {
 
   const navLinks = [
     { label: "Home", href: "#hero" },
+    { label: "Campus & Gallery", href: "#campus-gallery" },
     { label: "ERP Features", href: "#features" },
     { label: "Class Routine", href: "#timetable" },
-    { label: "Notices & Alerts", href: "#notices" },
-    { label: "Role Portals", href: "#portals" },
-    { label: "Mentorship & Dev", href: "#leadership" },
+    { label: "Notices", href: "#notices" },
+    { label: "Portals", href: "#portals" },
+    { label: "Mentorship", href: "#mentorship" },
+    { label: "Developer", href: "#developer" },
   ];
 
   return (
