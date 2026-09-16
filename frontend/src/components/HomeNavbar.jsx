@@ -47,36 +47,30 @@ const HomeNavbar = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 w-full max-w-[100vw] z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-white/85 dark:bg-slate-950/85 backdrop-blur-md py-3 shadow-md border-b border-slate-200/80 dark:border-slate-800/80"
-          : "bg-transparent py-4 sm:py-5"
+          ? "bg-white/95 dark:bg-slate-950/95 backdrop-blur-md py-2.5 shadow-md border-b border-slate-200/80 dark:border-slate-800/80"
+          : "bg-transparent py-3 sm:py-4"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Left: Brand / Logo */}
-        <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
-          <div className="relative">
-            <img
-              src="/logo.png"
-              alt="Nalanda College Emblem"
-              className="w-9 h-9 sm:w-11 sm:h-11 object-contain rounded-xl shadow-md group-hover:scale-105 transition-transform"
-            />
-            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
-          </div>
+        <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
+          <img
+            src="/logo.png"
+            alt="Nalanda College Emblem"
+            className="w-8 h-8 sm:w-10 sm:h-10 object-contain rounded-xl shadow-md group-hover:scale-105 transition-transform"
+          />
           <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-display font-black text-base sm:text-xl tracking-tight text-slate-900 dark:text-white leading-none">
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              <span className="font-display font-black text-sm sm:text-lg lg:text-xl tracking-tight text-slate-900 dark:text-white leading-none">
                 NALANDA
               </span>
-              <span className="font-display font-black text-base sm:text-xl tracking-tight text-indigo-600 dark:text-indigo-400 leading-none">
+              <span className="font-display font-black text-sm sm:text-lg lg:text-xl tracking-tight text-indigo-600 dark:text-indigo-400 leading-none">
                 ERP
               </span>
             </div>
-            <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase mt-0.5">
+            <p className="text-[8px] sm:text-[9px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase mt-0.5">
               College Attendance
             </p>
           </div>
@@ -96,14 +90,14 @@ const HomeNavbar = () => {
         </nav>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
           {/* Theme Toggle */}
           <ThemeToggle />
 
           {isAuthenticated ? (
             <button
               onClick={() => navigate(getDashboardPath())}
-              className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full text-xs font-bold shadow-md shadow-indigo-600/30 transition-all cursor-pointer hover:scale-105"
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full text-xs font-bold shadow-md shadow-indigo-600/30 transition-all cursor-pointer hover:scale-105"
             >
               <LayoutDashboard className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Dashboard</span>
@@ -111,19 +105,19 @@ const HomeNavbar = () => {
             </button>
           ) : (
             <>
-              {/* Login Button (Desktop) */}
+              {/* Login Button (Visible on Desktop lg+) */}
               <Link
                 to="/login"
-                className="hidden md:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border-2 border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 hover:border-slate-900 dark:hover:border-slate-400 text-slate-900 dark:text-white text-xs font-black tracking-wide transition-all shadow-sm"
+                className="hidden lg:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border-2 border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 hover:border-slate-900 dark:hover:border-slate-400 text-slate-900 dark:text-white text-xs font-black tracking-wide transition-all shadow-sm"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 <span>LOGIN</span>
               </Link>
 
-              {/* Primary High-Impact CTA Button (Hidden on tiny screens to avoid crowding) */}
+              {/* Primary High-Impact CTA Button (Visible on Desktop lg+) */}
               <Link
                 to="/login"
-                className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black text-xs tracking-wide shadow-md shadow-amber-400/25 transition-all border border-amber-500/30 cursor-pointer"
+                className="hidden lg:flex items-center gap-1.5 px-4 py-2 rounded-full bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black text-xs tracking-wide shadow-md shadow-amber-400/25 transition-all border border-amber-500/30 cursor-pointer"
               >
                 <span>ACCESS PORTAL</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -131,10 +125,10 @@ const HomeNavbar = () => {
             </>
           )}
 
-          {/* Mobile Minimalist Menu Toggle */}
+          {/* Mobile Minimalist Menu Toggle (Visible on < lg) */}
           <button
             onClick={() => setMobileMenuOpen((p) => !p)}
-            className="lg:hidden p-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors border border-slate-200 dark:border-slate-800"
+            className="lg:hidden p-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors border border-slate-200 dark:border-slate-800 cursor-pointer"
             aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

@@ -236,20 +236,20 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-amber-400 selection:text-slate-950 transition-colors">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-amber-400 selection:text-slate-950 transition-colors overflow-x-hidden w-full max-w-[100vw]">
       {/* ── 1. Top Navbar ── */}
       <HomeNavbar />
 
       {/* ── 2. Hero Section (Inspired by notyourcollege.com style) ── */}
-      <section id="hero" className="relative pt-28 sm:pt-36 pb-20 overflow-hidden">
+      <section id="hero" className="relative pt-24 sm:pt-36 pb-16 sm:pb-20 overflow-hidden">
         {/* Background decorative bursts & ambient glow */}
         <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-gradient-to-tr from-indigo-500/10 via-amber-400/10 to-transparent blur-3xl pointer-events-none rounded-full" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
             
             {/* Left Column: Bold Typography & CTAs */}
-            <div className="lg:col-span-7 space-y-6 text-left">
+            <div className="lg:col-span-7 space-y-5 sm:space-y-6 text-left">
               
               {/* Kicker with hand-drawn marker underline doodle */}
               <div className="inline-block relative">
@@ -263,18 +263,18 @@ const HomePage = () => {
               </div>
 
               {/* Giant Bold Compressed Headline - Perfectly spaced, No Collision */}
-              <div className="relative select-none my-2 sm:my-3">
-                {/* Line 1: SMART CAMPUS */}
-                <h1 className="text-slate-950 dark:text-white font-kapra tracking-[-1px] sm:tracking-[-1.5px] lg:tracking-[-2px] leading-[0.85] text-5xl sm:text-6xl md:text-7xl lg:text-[5.2rem] xl:text-[6.4rem] 2xl:text-[7.6rem] uppercase whitespace-normal sm:whitespace-nowrap">
+              <div className="relative select-none my-1 sm:my-3">
+                {/* Line 1: SMART CAMPUS - Original Kapra Italic */}
+                <h1 className="text-slate-950 dark:text-white font-kapra tracking-tight sm:tracking-[-1.5px] lg:tracking-[-2px] leading-[0.9] text-4xl sm:text-6xl md:text-7xl lg:text-[5.2rem] xl:text-[6.4rem] 2xl:text-[7.6rem] uppercase whitespace-normal break-words">
                   SMART CAMPUS
                 </h1>
 
                 {/* Line 2: NALANDA. with Crown Doodle */}
-                <div className="relative inline-block mt-2 sm:mt-3">
+                <div className="relative inline-block mt-1 sm:mt-3">
                   {/* Clean Transparent Hand-Drawn Crown SVG Doodle (No black box) */}
-                  <div className="absolute -top-7 sm:-top-9 md:-top-11 -right-8 sm:-right-12 md:-right-16 z-20 pointer-events-none transform rotate-12 drop-shadow-md">
+                  <div className="absolute -top-5 sm:-top-9 md:-top-11 -right-3 sm:-right-8 md:-right-12 z-20 pointer-events-none transform rotate-12 drop-shadow-md">
                     <svg
-                      className="w-12 sm:w-16 md:w-20 h-auto text-[#0038ff] dark:text-[#4d77ff]"
+                      className="w-10 sm:w-16 md:w-20 h-auto text-[#0038ff] dark:text-[#4d77ff]"
                       viewBox="0 0 120 75"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
@@ -305,7 +305,7 @@ const HomePage = () => {
                     </svg>
                   </div>
 
-                  <h1 className="text-[#0038ff] dark:text-[#4d77ff] font-kapra tracking-[-1px] sm:tracking-[-1.5px] lg:tracking-[-2px] leading-[0.85] text-6xl sm:text-7xl md:text-8xl lg:text-[6.2rem] xl:text-[7.6rem] 2xl:text-[8.8rem] uppercase">
+                  <h1 className="text-[#0038ff] dark:text-[#4d77ff] font-kapra tracking-tight sm:tracking-[-1.5px] lg:tracking-[-2px] leading-[0.9] text-5xl sm:text-7xl md:text-8xl lg:text-[6.2rem] xl:text-[7.6rem] 2xl:text-[8.8rem] uppercase">
                     NALANDA.
                   </h1>
                 </div>
@@ -372,36 +372,36 @@ const HomePage = () => {
             <div className="lg:col-span-5 relative flex items-center justify-center">
               
               {/* Dynamic Comic / Tech Starburst Background Accent */}
-              <div className="absolute inset-0 -m-4 sm:-m-8 bg-gradient-to-tr from-amber-400 via-indigo-600 to-indigo-800 rounded-[2.5rem] rotate-2 opacity-90 shadow-2xl" />
-              <div className="absolute inset-0 -m-2 sm:-m-4 bg-slate-950 rounded-[2.2rem] -rotate-1 shadow-xl" />
+              <div className="absolute inset-0 -m-2 sm:-m-6 bg-gradient-to-tr from-amber-400 via-indigo-600 to-indigo-800 rounded-[2rem] sm:rounded-[2.5rem] rotate-2 opacity-90 shadow-2xl pointer-events-none" />
+              <div className="absolute inset-0 -m-1 sm:-m-3 bg-slate-950 rounded-[1.8rem] sm:rounded-[2.2rem] -rotate-1 shadow-xl pointer-events-none" />
 
               {/* Main Image Container */}
               <div className="relative w-full rounded-3xl overflow-hidden border-4 border-white dark:border-slate-900 shadow-2xl bg-slate-900 group">
                 <img
                   src="/hero-students.jpg"
                   alt="Nalanda College Students"
-                  className="w-full h-80 sm:h-96 object-cover transform group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-72 sm:h-96 object-cover transform group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
 
                 {/* Overlaid Bottom Title */}
-                <div className="absolute bottom-4 left-4 right-4 text-white">
+                <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 text-white">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-[10px] uppercase tracking-wider">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-[9px] sm:text-[10px] uppercase tracking-wider">
                       ● Live Sync
                     </span>
-                    <span className="text-xs font-bold text-slate-300">Nalanda College ERP v2.4</span>
+                    <span className="text-[10px] sm:text-xs font-bold text-slate-300">Nalanda College ERP v1.0</span>
                   </div>
-                  <p className="text-sm font-black font-display tracking-wide">
+                  <p className="text-xs sm:text-sm font-black font-display tracking-wide">
                     Department of Computer Applications (BCA)
                   </p>
                 </div>
               </div>
 
               {/* Floating Sticker Top Right: ATTEND. LEARN. REPEAT. */}
-              <div className="absolute -top-6 -right-4 sm:-right-6 bg-white dark:bg-slate-900 text-slate-950 dark:text-white px-4 py-2.5 rounded-2xl border-2 border-slate-950 dark:border-slate-600 shadow-2xl rotate-6 hover:rotate-0 transition-transform flex items-center gap-2.5 z-20">
-                <span className="text-2xl">🚀</span>
-                <div className="text-left font-kapra leading-[1.1] tracking-tight text-sm uppercase">
+              <div className="absolute -top-4 -right-1 sm:-right-6 bg-white dark:bg-slate-900 text-slate-950 dark:text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl border-2 border-slate-950 dark:border-slate-600 shadow-2xl rotate-6 hover:rotate-0 transition-transform flex items-center gap-2 z-20">
+                <span className="text-xl sm:text-2xl">🚀</span>
+                <div className="text-left font-kapra leading-[1.1] tracking-tight text-xs sm:text-sm uppercase">
                   <div className="text-slate-950 dark:text-white font-bold">ATTEND.</div>
                   <div className="text-[#0038ff] dark:text-[#4d77ff] font-bold">LEARN.</div>
                   <div className="text-amber-500 font-bold">REPEAT.</div>
@@ -409,20 +409,20 @@ const HomePage = () => {
               </div>
 
               {/* Floating Glassmorphic Badge Bottom Left: Live Attendance Rate */}
-              <div className="absolute -bottom-6 -left-4 sm:-left-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-2xl -rotate-3 hover:rotate-0 transition-transform">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-sm shadow-md">
+              <div className="absolute -bottom-4 -left-1 sm:-left-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2.5 sm:p-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-2xl -rotate-3 hover:rotate-0 transition-transform">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-xs sm:text-sm shadow-md">
                     ⚡
                   </div>
                   <div>
-                    <div className="text-xs font-black text-slate-900 dark:text-white">
+                    <div className="text-[10px] sm:text-xs font-black text-slate-900 dark:text-white">
                       Live Attendance Rate
                     </div>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-emerald-600 dark:text-emerald-400 font-extrabold text-sm">
+                      <span className="text-emerald-600 dark:text-emerald-400 font-extrabold text-xs sm:text-sm">
                         {stats?.attendanceRate ? `${stats.attendanceRate}%` : "94.8%"} Average
                       </span>
-                      <span className="text-[10px] text-slate-500 font-semibold">· Verified</span>
+                      <span className="text-[9px] sm:text-[10px] text-slate-500 font-semibold">· Verified</span>
                     </div>
                   </div>
                 </div>
@@ -435,11 +435,11 @@ const HomePage = () => {
       </section>
 
       {/* ── 3. Quick Stats Marquee Strip ── */}
-      <section className="bg-slate-950 text-white py-6 border-y-2 border-slate-800 overflow-hidden relative">
+      <section className="bg-slate-950 text-white py-6 border-y-2 border-slate-800 overflow-hidden relative w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-slate-800">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center divide-x divide-slate-800">
             <div>
-              <div className="font-display font-black text-3xl sm:text-4xl text-amber-400">
+              <div className="font-numbers font-black text-3xl sm:text-5xl text-amber-400">
                 {stats?.studentsCount ? `${stats.studentsCount}+` : "120+"}
               </div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">
@@ -447,7 +447,7 @@ const HomePage = () => {
               </p>
             </div>
             <div>
-              <div className="font-display font-black text-3xl sm:text-4xl text-indigo-400">
+              <div className="font-numbers font-black text-3xl sm:text-5xl text-indigo-400">
                 {stats?.lecturesCount ? `${stats.lecturesCount}+` : "179+"}
               </div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">
@@ -455,7 +455,7 @@ const HomePage = () => {
               </p>
             </div>
             <div>
-              <div className="font-display font-black text-3xl sm:text-4xl text-emerald-400">
+              <div className="font-numbers font-black text-3xl sm:text-5xl text-emerald-400">
                 75%+
               </div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">
@@ -463,7 +463,7 @@ const HomePage = () => {
               </p>
             </div>
             <div>
-              <div className="font-display font-black text-3xl sm:text-4xl text-white">
+              <div className="font-numbers font-black text-3xl sm:text-5xl text-white">
                 {stats?.heritageYear || 1870}
               </div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">
@@ -502,7 +502,7 @@ const HomePage = () => {
                   <path d="M2.5 6.5C45.2 2.5 120.8 1.5 197.5 5.5" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
                 </svg>
               </span>{" "}
-              to Learn, Lead & Succeed.
+              to Learn, Lead and Succeed.
             </h2>
 
             {/* Subtitle */}
@@ -733,7 +733,7 @@ const HomePage = () => {
               ⚡
             </div>
             <h3 className="font-display font-black text-xl text-slate-900 dark:text-white mb-2">
-              1-Click Attendance Engine
+              One Click Attendance Engine
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               Faculty can mark periods in under 10 seconds. Real-time percentages, auto-defaulter flags
@@ -775,7 +775,7 @@ const HomePage = () => {
               🖨️
             </div>
             <h3 className="font-display font-black text-xl text-slate-900 dark:text-white mb-2">
-              Official PDF & Barcode ID Cards
+              Official PDF and Barcode ID Cards
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               Printable A4 attendance registers with Nalanda College letterhead & 3 formal signature blocks.
@@ -803,7 +803,7 @@ const HomePage = () => {
               📊
             </div>
             <h3 className="font-display font-black text-xl text-slate-900 dark:text-white mb-2">
-              Internal Marks & SGPA
+              Internal Marks and SGPA
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               View internal assessment marks, practical marks, calculated subject grades, and cumulative
@@ -822,7 +822,7 @@ const HomePage = () => {
                 WEEKLY SCHEDULE
               </span>
               <h2 className="font-display font-black text-3xl sm:text-4xl text-slate-950 dark:text-white uppercase tracking-tight mt-1">
-                CLASS ROUTINE & LAB TIMINGS
+                CLASS ROUTINE AND LAB TIMINGS
               </h2>
             </div>
 
@@ -1203,7 +1203,7 @@ const HomePage = () => {
             <span>LEAD SYSTEM ARCHITECT & FULL-STACK DEVELOPER</span>
           </div>
           <h2 className="font-kapra tracking-[-1px] sm:tracking-[-2px] text-4xl sm:text-6xl lg:text-7xl uppercase text-slate-950 dark:text-white leading-[0.9]">
-            ARCHITECTED & DEVELOPED BY MD HUZAIFA.
+            ARCHITECTED AND DEVELOPED BY MD HUZAIFA.
           </h2>
           <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 font-poppins max-w-2xl mx-auto leading-relaxed">
             Engineered from ground zero by a proud Nalanda College BCA student — replacing obsolete paper registers with an enterprise-grade digital ERP ecosystem.
