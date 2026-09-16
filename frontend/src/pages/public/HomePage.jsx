@@ -140,19 +140,50 @@ const HomePage = () => {
                 </svg>
               </div>
 
-              {/* Giant Bold Compressed Headline matching inspect */}
-              <div className="relative select-none my-1 sm:my-2">
-                <h1 className="text-slate-950 dark:text-white tracking-[-2px] font-kapra [-webkit-text-stroke:1px] leading-[0.65] lg:[-webkit-text-stroke:2px] text-[17vw] sm:text-[7.5rem] md:text-[9rem] lg:text-[6.8rem] xl:text-[9rem] 2xl:text-[10.5rem] lg:leading-[0.7] uppercase">
+              {/* Giant Bold Compressed Headline - Perfectly spaced, No Collision */}
+              <div className="relative select-none my-2 sm:my-3">
+                {/* Line 1: SMART CAMPUS */}
+                <h1 className="text-slate-950 dark:text-white font-kapra tracking-[-1px] sm:tracking-[-1.5px] lg:tracking-[-2px] leading-[0.85] text-5xl sm:text-6xl md:text-7xl lg:text-[5.2rem] xl:text-[6.4rem] 2xl:text-[7.6rem] uppercase whitespace-normal sm:whitespace-nowrap">
                   SMART CAMPUS
                 </h1>
 
-                <div className="relative inline-block w-full">
-                  {/* Real hand-drawn crown doodle directly from notyourcollege */}
-                  <div className="absolute -top-7 sm:-top-10 md:-top-14 right-2 sm:right-8 lg:right-6 xl:right-12 w-12 sm:w-16 md:w-20 z-20 pointer-events-none transform rotate-12 drop-shadow-md">
-                    <img src="/images/crown.png" alt="Crown Doodle" className="w-full h-auto object-contain" />
+                {/* Line 2: NALANDA. with Crown Doodle */}
+                <div className="relative inline-block mt-2 sm:mt-3">
+                  {/* Clean Transparent Hand-Drawn Crown SVG Doodle (No black box) */}
+                  <div className="absolute -top-7 sm:-top-9 md:-top-11 -right-8 sm:-right-12 md:-right-16 z-20 pointer-events-none transform rotate-12 drop-shadow-md">
+                    <svg
+                      className="w-12 sm:w-16 md:w-20 h-auto text-[#0038ff] dark:text-[#4d77ff]"
+                      viewBox="0 0 120 75"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      {/* Curved base line */}
+                      <path
+                        d="M 16 62 C 45 56 75 56 104 62"
+                        stroke="currentColor"
+                        strokeWidth="4.5"
+                        strokeLinecap="round"
+                      />
+                      {/* Hand-drawn crown outline */}
+                      <path
+                        d="M 18 59 L 10 24 L 40 40 L 60 10 L 80 40 L 110 24 L 102 59 Z"
+                        stroke="currentColor"
+                        strokeWidth="4.5"
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                        fill="currentColor"
+                        fillOpacity="0.12"
+                      />
+                      {/* Tip crown circles */}
+                      <circle cx="10" cy="22" r="3.5" fill="currentColor" />
+                      <circle cx="60" cy="8" r="4.5" fill="currentColor" />
+                      <circle cx="110" cy="22" r="3.5" fill="currentColor" />
+                      {/* Whimsical radiant strokes */}
+                      <path d="M 52 2 L 60 -4 L 68 2" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                    </svg>
                   </div>
 
-                  <h1 className="text-[#0038ff] dark:text-[#4d77ff] tracking-[-2px] font-kapra [-webkit-text-stroke:1px] leading-[0.65] lg:[-webkit-text-stroke:2px] text-[17vw] sm:text-[7.5rem] md:text-[9rem] lg:text-[6.8rem] xl:text-[9rem] 2xl:text-[10.5rem] lg:leading-[0.7] uppercase">
+                  <h1 className="text-[#0038ff] dark:text-[#4d77ff] font-kapra tracking-[-1px] sm:tracking-[-1.5px] lg:tracking-[-2px] leading-[0.85] text-6xl sm:text-7xl md:text-8xl lg:text-[6.2rem] xl:text-[7.6rem] 2xl:text-[8.8rem] uppercase">
                     NALANDA.
                   </h1>
                 </div>
