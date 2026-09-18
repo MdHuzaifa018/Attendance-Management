@@ -3,12 +3,17 @@ import Attendance from "../models/Attendance.js";
 import Student from "../models/Student.js";
 import Teacher from "../models/Teacher.js";
 import Class from "../models/Class.js";
+import Subject from "../models/Subject.js";
+import { getCache, setCache } from "../utils/cache.js";
 
 /**
  * getSystemOverview
  * Returns high-level metrics for the admin dashboard.
  */
 export const getSystemOverview = async () => {
+  const cacheKey = "system_overview";
+  const cachedData = getCache(cacheKey);
+  if (cachedData) return cachedData;
   const [studentCount, teacherCount, classCount] = await Promise.all([
     Student.countDocuments({ isActive: true }),
     Teacher.countDocuments({ isActive: true }),
@@ -54,13 +59,16 @@ export const getSystemOverview = async () => {
   ]);
   const activeClassesToday = activeClassesAgg.length;
 
-  return {
+  const result = {
     studentCount,
     teacherCount,
     classCount,
     overallPercent,
     activeClassesToday,
   };
+
+  setCache(cacheKey, result, 60); // cache for 60 seconds
+  return result;
 };
 
 /**
@@ -68,6 +76,10 @@ export const getSystemOverview = async () => {
  * Returns daily attendance percentages for the last N days.
  */
 export const getAttendanceTrends = async (days = 7) => {
+  const cacheKey = `attendance_trends_${days}`;
+  const cachedData = getCache(cacheKey);
+  if (cachedData) return cachedData;
+
   const cutoffDate = new Date();
   cutoffDate.setUTCDate(cutoffDate.getUTCDate() - (days - 1));
   cutoffDate.setUTCHours(0, 0, 0, 0);
@@ -128,6 +140,7 @@ export const getAttendanceTrends = async (days = 7) => {
     }
   }
 
+  setCache(cacheKey, finalTrends, 300); // cache for 5 mins
   return finalTrends;
 };
 
@@ -263,4 +276,69 @@ export const getDetailedReport = async (filters) => {
 
   const reportData = await Attendance.aggregate(pipeline);
   return reportData;
+};
+
+/**
+ * getStudentDetailedReport
+ * Fetches attendance stats for a specific student for all subjects in their class.
+ */
+export const getStudentDetailedReport = async (studentId) => {
+  const student = await Student.findById(studentId).lean();
+  if (!student) {
+    throw new Error("Student not found");
+  }
+
+  // Find all active subjects for this student's class
+  const subjects = await Subject.find({ class: student.class, isActive: true })
+    .select("name code _id")
+    .lean();
+
+  // Get attendance grouped by subject
+  const attendanceAgg = await Attendance.aggregate([
+    {
+      $match: { student: new mongoose.Types.ObjectId(studentId) },
+    },
+    {
+      $group: {
+        _id: "$subject",
+        totalConducted: { $sum: 1 },
+        present: {
+          $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] },
+        },
+        absent: {
+          $sum: { $cond: [{ $eq: ["$status", "absent"] }, 1, 0] },
+        },
+      },
+    },
+  ]);
+
+  const attendanceMap = new Map();
+  attendanceAgg.forEach((att) => {
+    attendanceMap.set(att._id.toString(), att);
+  });
+
+  const result = subjects.map((sub) => {
+    const stats = attendanceMap.get(sub._id.toString()) || {
+      totalConducted: 0,
+      present: 0,
+      absent: 0,
+    };
+
+    let percent = 0;
+    if (stats.totalConducted > 0) {
+      percent = Math.round((stats.present / stats.totalConducted) * 100);
+    }
+
+    return {
+      subjectId: sub._id,
+      subjectName: sub.name,
+      subjectCode: sub.code,
+      totalConducted: stats.totalConducted,
+      present: stats.present,
+      absent: stats.absent,
+      percent,
+    };
+  });
+
+  return result;
 };

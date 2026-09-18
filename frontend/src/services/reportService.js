@@ -20,6 +20,11 @@ export const getDetailedReport = async (filters = {}) => {
   return data.data;
 };
 
+export const getStudentDetailedReport = async (studentId) => {
+  const { data } = await api.get(`/reports/student/${studentId}`);
+  return data.data;
+};
+
 /**
  * Downloads the CSV report by invoking the export endpoint.
  * We use `window.open` or create an anchor tag, or fetch it as a blob.

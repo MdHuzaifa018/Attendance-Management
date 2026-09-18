@@ -88,6 +88,12 @@ attendanceSchema.index(
   }
 );
 
+// Performance Indexes for Dashboard Aggregations
+attendanceSchema.index({ date: -1 });
+attendanceSchema.index({ class: 1, date: -1 });
+attendanceSchema.index({ subject: 1, date: -1 });
+attendanceSchema.index({ status: 1 });
+
 const Attendance = mongoose.model(
   "Attendance",
   attendanceSchema

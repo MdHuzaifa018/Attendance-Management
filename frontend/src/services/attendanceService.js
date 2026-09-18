@@ -9,6 +9,11 @@ export const getAssignedSubjects = async () => {
   return data;
 };
 
+export const overrideStudentAttendance = async (overrideData) => {
+  const { data } = await api.post("/attendance/bulk-override", overrideData);
+  return data;
+};
+
 export const getAttendanceSheet = async (params) => {
   const { data } = await api.get("/attendance/sheet", { params });
   return data;

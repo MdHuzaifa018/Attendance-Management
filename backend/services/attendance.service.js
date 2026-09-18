@@ -4,6 +4,7 @@ import Class from "../models/Class.js";
 import Subject from "../models/Subject.js";
 import Teacher from "../models/Teacher.js";
 import Student from "../models/Student.js";
+import { clearCache } from "../utils/cache.js";
 
 /**
  * Normalizes any date input string to midnight UTC to prevent timezone skew.
@@ -325,4 +326,89 @@ export const getTeacherAssignedSubjects = async ({ userId, userRole }) => {
     .lean();
 
   return { teacher: null, subjects };
+};
+
+/**
+ * bulkOverrideStudentAttendance
+ * Wipes a student's attendance history for specified subjects and generates 
+ * mock records to match the provided totalConducted and totalAttended numbers.
+ */
+export const bulkOverrideStudentAttendance = async ({
+  studentId,
+  classId,
+  subjects, // Array of { subjectId, totalConducted, totalAttended }
+  userId,
+  userRole,
+}) => {
+  if (userRole !== "admin") {
+    const err = new Error("Access denied: Only admins can perform bulk overrides");
+    err.statusCode = 403;
+    throw err;
+  }
+
+  const student = await Student.findById(studentId);
+  if (!student || String(student.class) !== String(classId)) {
+    const err = new Error("Invalid student or class mismatch");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const operationsCount = { deleted: 0, inserted: 0 };
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+
+  // Process each subject override
+  for (const sub of subjects) {
+    const { subjectId, totalConducted, totalAttended } = sub;
+
+    if (totalAttended > totalConducted) {
+      const err = new Error(`Attended classes cannot exceed conducted classes for subject ${subjectId}`);
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const subjectDoc = await Subject.findById(subjectId);
+    if (!subjectDoc || String(subjectDoc.class) !== String(classId)) {
+      continue; // Skip invalid subjects
+    }
+
+    // 1. Wipe existing attendance for this student + subject
+    const deleteResult = await Attendance.deleteMany({
+      student: studentId,
+      class: classId,
+      subject: subjectId,
+    });
+    operationsCount.deleted += deleteResult.deletedCount;
+
+    // 2. Generate mock records
+    if (totalConducted > 0) {
+      const mockRecords = [];
+      for (let i = 0; i < totalConducted; i++) {
+        // Backdate records by `i + 1` days to avoid future dates and duplicate keys
+        const mockDate = new Date(today.getTime() - (i + 1) * 24 * 60 * 60 * 1000);
+        
+        mockRecords.push({
+          student: studentId,
+          class: classId,
+          subject: subjectId,
+          teacher: subjectDoc.teacher,
+          date: mockDate,
+          session: "Bulk-Override",
+          status: i < totalAttended ? "present" : "absent",
+          markedAt: new Date(),
+        });
+      }
+
+      const insertResult = await Attendance.insertMany(mockRecords);
+      operationsCount.inserted += insertResult.length;
+    }
+  }
+
+  // Clear dashboard caches since global stats have changed
+  clearCache();
+
+  return {
+    message: "Bulk override applied successfully",
+    operationsCount,
+  };
 };

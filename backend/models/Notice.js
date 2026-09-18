@@ -42,6 +42,8 @@ const noticeSchema = new mongoose.Schema(
   }
 );
 
+noticeSchema.index({ status: 1, createdAt: -1 });
+
 const Notice = mongoose.model("Notice", noticeSchema);
 
 export default Notice;

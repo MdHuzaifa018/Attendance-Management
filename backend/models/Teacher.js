@@ -46,6 +46,8 @@ const teacherSchema = new mongoose.Schema(
   }
 );
 
+teacherSchema.index({ isActive: 1 });
+
 const Teacher = mongoose.model("Teacher", teacherSchema);
 
 export default Teacher;

@@ -3,6 +3,7 @@ import {
   getAttendanceSheet,
   submitAttendance,
   getAssignedSubjects,
+  bulkOverrideStudentAttendance,
 } from "../controllers/attendance.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 import { authorize } from "../middleware/role.middleware.js";
@@ -32,12 +33,19 @@ router.get(
   getAttendanceSheet
 );
 
-// POST /api/attendance/mark — Submit bulk attendance records
+// POST /api/attendance/mark — Submit// POST /api/attendance/mark
 router.post(
   "/mark",
-  authorize("teacher", "admin"),
-  validate(markAttendanceSchema),
+  authorize("admin", "teacher"),
+  validate(markAttendanceSchema, "body"),
   submitAttendance
+);
+
+// POST /api/attendance/bulk-override
+router.post(
+  "/bulk-override",
+  authorize("admin"),
+  bulkOverrideStudentAttendance
 );
 
 export default router;

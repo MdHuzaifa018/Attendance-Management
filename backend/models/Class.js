@@ -52,6 +52,8 @@ const classSchema = new mongoose.Schema(
   }
 );
 
+classSchema.index({ isActive: 1 });
+
 const Class = mongoose.model("Class", classSchema);
 
 export default Class;

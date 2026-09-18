@@ -26,6 +26,13 @@ export const getDetailedReport = async (req, res) => {
   res.status(200).json({ success: true, data: result });
 };
 
+// GET /api/reports/student/:studentId
+export const getStudentDetailedReport = async (req, res) => {
+  const { studentId } = req.params;
+  const result = await reportService.getStudentDetailedReport(studentId);
+  res.status(200).json({ success: true, data: result });
+};
+
 // GET /api/reports/export
 export const exportCSV = async (req, res) => {
   const filters = req.validatedQuery || req.query;

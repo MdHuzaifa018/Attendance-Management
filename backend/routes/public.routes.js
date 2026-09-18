@@ -1,4 +1,5 @@
 import express from "express";
+import { getCache, setCache } from "../utils/cache.js";
 import Student from "../models/Student.js";
 import Teacher from "../models/Teacher.js";
 import Department from "../models/Department.js";
@@ -15,6 +16,12 @@ const router = express.Router();
  */
 router.get("/stats", async (req, res) => {
   try {
+    const cacheKey = "public_stats";
+    const cachedData = getCache(cacheKey);
+    if (cachedData) {
+      return res.status(200).json({ success: true, data: cachedData });
+    }
+
     const [studentsCount, teachersCount, lecturesCount, departmentsCount, activeNoticesCount] =
       await Promise.all([
         Student.countDocuments({ status: "active" }).catch(() => 0),
@@ -54,17 +61,21 @@ router.get("/stats", async (req, res) => {
       // Keep benchmark average
     }
 
+    const result = {
+      studentsCount: studentsCount || 120,
+      teachersCount: teachersCount || 18,
+      lecturesCount: lecturesCount || 179,
+      departmentsCount: departmentsCount || 6,
+      activeNoticesCount: activeNoticesCount || 3,
+      attendanceRate: attendanceRate || 94.8,
+      heritageYear: 1870,
+    };
+
+    setCache(cacheKey, result, 300); // Cache for 5 mins
+
     res.status(200).json({
       success: true,
-      data: {
-        studentsCount: studentsCount || 120,
-        teachersCount: teachersCount || 18,
-        lecturesCount: lecturesCount || 179,
-        departmentsCount: departmentsCount || 6,
-        activeNoticesCount: activeNoticesCount || 3,
-        attendanceRate: attendanceRate || 94.8,
-        heritageYear: 1870,
-      },
+      data: result,
     });
   } catch (error) {
     res.status(500).json({

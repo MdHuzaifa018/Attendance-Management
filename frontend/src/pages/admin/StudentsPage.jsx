@@ -5,6 +5,8 @@ import { getStudents, deleteStudent } from "../../services/studentService.js";
 import { getClasses } from "../../services/classService.js";
 import StudentFormModal from "./StudentFormModal.jsx";
 import StudentIdCardModal from "../../components/StudentIdCardModal.jsx";
+import StudentBulkAttendanceModal from "./StudentBulkAttendanceModal.jsx";
+import { ClipboardEdit } from "lucide-react";
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
@@ -94,10 +96,10 @@ const StudentsPage = () => {
   const [classes, setClasses]               = useState([]);
   const [currentPage, setCurrentPage]       = useState(1);
 
-  // Modal state
   const [modalOpen, setModalOpen]           = useState(false);
   const [editingStudent, setEditingStudent] = useState(null); // null = create
   const [idCardStudent, setIdCardStudent]   = useState(null);
+  const [bulkAttendanceStudent, setBulkAttendanceStudent] = useState(null);
 
   // Delete confirm state
   const [deleteTarget, setDeleteTarget]     = useState(null);
@@ -276,6 +278,13 @@ const StudentsPage = () => {
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-end gap-2">
                           <button
+                            onClick={() => setBulkAttendanceStudent(s)}
+                            className="p-1.5 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-colors cursor-pointer"
+                            title="Bulk override attendance"
+                          >
+                            <ClipboardEdit className="w-3.5 h-3.5" />
+                          </button>
+                          <button
                             id={`idcard-student-${s._id}`}
                             onClick={() => setIdCardStudent(s)}
                             className="p-1.5 text-slate-400 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 rounded-lg transition-colors cursor-pointer"
@@ -365,6 +374,13 @@ const StudentsPage = () => {
         isOpen={!!idCardStudent}
         onClose={() => setIdCardStudent(null)}
         student={idCardStudent}
+      />
+
+      {/* ── Bulk Attendance Modal ────────────────────────────── */}
+      <StudentBulkAttendanceModal
+        isOpen={!!bulkAttendanceStudent}
+        onClose={() => setBulkAttendanceStudent(null)}
+        student={bulkAttendanceStudent}
       />
     </div>
   );

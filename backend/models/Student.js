@@ -61,6 +61,8 @@ const studentSchema = new mongoose.Schema(
   }
 );
 
+studentSchema.index({ isActive: 1 });
+
 const Student = mongoose.model("Student", studentSchema);
 
 export default Student;

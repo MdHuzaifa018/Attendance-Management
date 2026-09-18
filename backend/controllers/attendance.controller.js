@@ -48,3 +48,18 @@ export const getAssignedSubjects = async (req, res) => {
 
   res.status(200).json({ success: true, ...result });
 };
+
+// POST /api/attendance/bulk-override
+export const bulkOverrideStudentAttendance = async (req, res) => {
+  const { studentId, classId, subjects } = req.body;
+  
+  const result = await attendanceService.bulkOverrideStudentAttendance({
+    studentId,
+    classId,
+    subjects,
+    userId: req.user._id,
+    userRole: req.user.role,
+  });
+
+  res.status(200).json({ success: true, ...result });
+};
