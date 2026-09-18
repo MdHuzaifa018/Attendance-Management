@@ -39,7 +39,7 @@ const StudentLayout = () => {
     : "ST";
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex transition-colors duration-200">
+    <div className="h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex transition-colors duration-200">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div

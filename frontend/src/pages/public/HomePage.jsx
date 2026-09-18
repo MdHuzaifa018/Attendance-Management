@@ -29,6 +29,18 @@ import {
   X,
   Camera,
   Compass,
+  Landmark,
+  Mic,
+  Trophy,
+  Megaphone,
+  Printer,
+  BarChart3,
+  MapPin,
+  Code2,
+  Palette,
+  Server,
+  Database,
+  Cpu,
 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
@@ -44,10 +56,46 @@ import {
   getPublicTimetable,
 } from "../../services/publicService.js";
 
+// Sample schedule for routine preview
+const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const sampleSchedule = {
+  Monday: [
+    { period: 1, time: "10:00 AM - 11:00 AM", subject: "Java Programming (BCA-301)", room: "Room 201", teacher: "Prof. Rajesh Kumar" },
+    { period: 2, time: "11:00 AM - 12:00 PM", subject: "Database Systems (BCA-302)", room: "Room 201", teacher: "Dr. Sunita Sharma" },
+    { period: 3, time: "12:30 PM - 01:30 PM", subject: "Software Engineering Lab", room: "Lab 1", teacher: "Prof. Rajesh Kumar" },
+    { period: 4, time: "01:30 PM - 02:30 PM", subject: "Computer Networks & Security", room: "Lab 2", teacher: "Prof. Amit Verma" },
+  ],
+  Tuesday: [
+    { period: 1, time: "10:00 AM - 11:00 AM", subject: "Operating Systems (BCA-303)", room: "Room 201", teacher: "Dr. Sunita Sharma" },
+    { period: 2, time: "11:00 AM - 12:00 PM", subject: "Java Programming (BCA-301)", room: "Room 201", teacher: "Prof. Rajesh Kumar" },
+    { period: 3, time: "12:30 PM - 01:30 PM", subject: "Web Development Lab", room: "Lab 1", teacher: "Prof. Amit Verma" },
+  ],
+  Wednesday: [
+    { period: 1, time: "10:00 AM - 11:00 AM", subject: "Database Systems (BCA-302)", room: "Room 201", teacher: "Dr. Sunita Sharma" },
+    { period: 2, time: "11:00 AM - 12:00 PM", subject: "Computer Networks (BCA-304)", room: "Room 201", teacher: "Prof. Amit Verma" },
+    { period: 3, time: "12:30 PM - 01:30 PM", subject: "Algorithm Analysis & Design", room: "Lab 2", teacher: "Prof. Rajesh Kumar" },
+  ],
+  Thursday: [
+    { period: 1, time: "10:00 AM - 11:00 AM", subject: "Operating Systems (BCA-303)", room: "Room 201", teacher: "Dr. Sunita Sharma" },
+    { period: 2, time: "11:00 AM - 12:00 PM", subject: "Web Technology Lab (PHP/JS)", room: "Lab 1", teacher: "Prof. Amit Verma" },
+  ],
+  Friday: [
+    { period: 1, time: "10:00 AM - 11:00 AM", subject: "Cloud Computing & DevOps", room: "Room 201", teacher: "Prof. Rajesh Kumar" },
+    { period: 2, time: "11:00 AM - 12:00 PM", subject: "Cyber Security Fundamentals", room: "Lab 2", teacher: "Prof. Amit Verma" },
+    { period: 3, time: "12:30 PM - 01:30 PM", subject: "Project Review & Viva", room: "Seminar Hall", teacher: "HOD Dept." },
+  ],
+  Saturday: [
+    { period: 1, time: "10:00 AM - 12:00 PM", subject: "Weekly Practical Assessment", room: "Lab 1 & 2", teacher: "All Faculty" },
+    { period: 2, time: "12:30 PM - 02:00 PM", subject: "TechFest Coding Workshop", room: "Auditorium", teacher: "Guest Speaker" },
+  ]
+};
+
 const HomePage = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Monday");
+  const [classes, setClasses] = useState([]);
+  const [selectedClassId, setSelectedClassId] = useState("");
   const [notices, setNotices] = useState([]);
   const [stats, setStats] = useState(null);
   const [scheduleData, setScheduleData] = useState(null);
@@ -59,59 +107,84 @@ const HomePage = () => {
   const galleryImages = [
     {
       id: 1,
-      title: "Nalanda College Main Heritage Building",
+      title: "Nalanda College Campus",
       category: "Campus & Heritage",
-      imageUrl: "/images/college-campus.jpg",
+      imageUrl: "https://iili.io/nzGmaEl.md.webp",
       desc: "Historic landmark campus established in 1870, Biharsharif. Constituent unit of Patliputra University.",
-      tag: "🏛️ Main Campus",
+      tagIcon: <Landmark className="w-3.5 h-3.5" />,
+      tagText: "Main Campus",
     },
     {
       id: 2,
-      title: "BCA Computer Applications Lab",
-      category: "Labs & Classrooms",
-      imageUrl: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1000&q=80",
-      desc: "Advanced computing center featuring programming environments, software engineering tools, and servers.",
-      tag: "💻 Tech Lab",
+      title: "College Event",
+      category: "Events & TechFest",
+      imageUrl: "https://media.licdn.com/dms/image/v2/D4D22AQEO-umP2maccw/feedshare-shrink_1280/B4DaA9AlHWJgAQ-/0/1787729957697?e=1791417600&v=beta&t=07jC5rF3Mi29IhDceWWXz3Wq1Lm0LrD5m5X1Axo4ZJ0",
+      desc: "Nalanda College Organized AI WorkShop For BCA & MCA Students",
+      tagIcon: <Laptop className="w-3.5 h-3.5" />,
+      tagText: "AI Workshop",
     },
     {
       id: 3,
-      title: "Central College Library & Research Hall",
-      category: "Library & Seminars",
-      imageUrl: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1000&q=80",
-      desc: "Comprehensive academic repository with thousands of volumes, journals, and digital research terminals.",
-      tag: "📚 Research Hub",
+      title: "College Event",
+      category: "Events & TechFest",
+      imageUrl: "https://media.licdn.com/dms/image/v2/D4D22AQHMQoukCD-jpw/feedshare-shrink_480/B4DaA9AqGnIEAk-/0/1787729978348?e=1791417600&v=beta&t=zHiFcpAb0u_FUCYHbQwx3FtjqDXqF9lGlk_Y1xN7K54",
+      desc: "Nalanda College Organized AI WorkShop For BCA & MCA Students",
+      tagIcon: <Laptop className="w-3.5 h-3.5" />,
+      tagText: "AI Workshop",
     },
     {
       id: 4,
-      title: "Annual IT TechFest & Coding Hackathon",
-      category: "Events & TechFest",
-      imageUrl: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1000&q=80",
-      desc: "State-level coding contests, web design competitions, and technology showcase exhibits.",
-      tag: "🚀 TechFest",
+      title: "BCA Computer Applications Lab",
+      category: "Labs & Classrooms",
+      imageUrl: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1000&q=80",
+      desc: "State-of-the-art 120-node computer lab with high-speed internet and development tools.",
+      tagIcon: <Laptop className="w-3.5 h-3.5" />,
+      tagText: "Tech Lab",
     },
     {
       id: 5,
-      title: "Academic Seminar Hall & Guest Lectures",
+      title: "Central College Library & Research Hall",
       category: "Library & Seminars",
-      imageUrl: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1000&q=80",
-      desc: "Interactive lecture theater hosting keynote seminars, workshops, and student presentations.",
-      tag: "🎤 Seminar Hall",
+      imageUrl: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1000&q=80",
+      desc: "Extensive collection of 50,000+ academic books, research journals, and digital e-resources.",
+      tagIcon: <BookOpen className="w-3.5 h-3.5" />,
+      tagText: "Research Hub",
     },
     {
       id: 6,
-      title: "Campus Green Lawns & Athletics Ground",
-      category: "Student Life & Sports",
-      imageUrl: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1000&q=80",
-      desc: "Lush botanical spaces and expansive sports facilities for cricket, football, and athletic meets.",
-      tag: "⚽ Athletics",
+      title: "Annual IT TechFest & Coding Hackathon",
+      category: "Events & TechFest",
+      imageUrl: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1000&q=80",
+      desc: "Students participating in our flagship 48-hour coding hackathon and tech symposium.",
+      tagIcon: <Award className="w-3.5 h-3.5" />,
+      tagText: "TechFest",
     },
     {
       id: 7,
+      title: "Academic Seminar Hall & Guest Lectures",
+      category: "Library & Seminars",
+      imageUrl: "https://nalandacollege.ac.in/storage/63/6887bc2655ca0_IMG-20250728-WA0019.jpg",
+      desc: "Interactive lecture theater hosting keynote seminars, workshops, and student presentations.",
+      tagIcon: <Mic className="w-3.5 h-3.5" />,
+      tagText: "Seminar Hall",
+    },
+    {
+      id: 8,
+      title: "Campus Green Lawns & Athletics Ground",
+      category: "Student Life & Sports",
+      imageUrl: "https://nalandacollege.ac.in/storage/14/68359be85d644_gallery2.jpg",
+      desc: "Lush botanical spaces and expansive sports facilities for cricket, football, and athletic meets.",
+      tagIcon: <Trophy className="w-3.5 h-3.5" />,
+      tagText: "Athletics",
+    },
+    {
+      id: 9,
       title: "BCA Batch & Student Developer Squad",
       category: "Labs & Classrooms",
-      imageUrl: "/hero-students.jpg",
-      desc: "Enthusiastic students collaborating on real-world web apps, databases, and automated ERP projects.",
-      tag: "⚡ BCA Batch",
+      imageUrl: "/images/hero-students.jpg",
+      desc: "Our brilliant students collaborating on final year industry-level software projects.",
+      tagIcon: <Users className="w-3.5 h-3.5" />,
+      tagText: "Students",
     },
   ];
 
@@ -155,39 +228,31 @@ const HomePage = () => {
 
   useEffect(() => {
     const loadPublicData = async () => {
-      // 1. Live Portal Stats from Backend MongoDB
-      try {
-        const liveStats = await getPublicStats();
-        if (liveStats) {
-          setStats(liveStats);
-        }
-      } catch {
-        // Keeps fallback stats in render
-      }
+      // Run API calls concurrently to speed up initial load
+      const [statsRes, noticesRes, timetableRes] = await Promise.allSettled([
+        getPublicStats(),
+        getPublicNotices(),
+        getPublicTimetable(),
+      ]);
 
-      // 2. Live Published Circulars from Backend MongoDB
-      try {
-        const liveNotices = await getPublicNotices();
-        if (liveNotices && liveNotices.length > 0) {
-          setNotices(liveNotices.slice(0, 3));
-        } else {
-          setNotices(fallbackNotices);
-        }
-      } catch {
+      if (statsRes.status === "fulfilled" && statsRes.value) {
+        setStats(statsRes.value);
+      }
+      
+      if (noticesRes.status === "fulfilled" && noticesRes.value && noticesRes.value.length > 0) {
+        setNotices(noticesRes.value.slice(0, 3));
+      } else {
         setNotices(fallbackNotices);
       }
 
-      // 3. Live Academic Routine from Backend MongoDB
-      try {
-        const liveTimetable = await getPublicTimetable();
-        if (
-          liveTimetable &&
-          Object.values(liveTimetable).some((arr) => Array.isArray(arr) && arr.length > 0)
-        ) {
-          setScheduleData(liveTimetable);
-        }
-      } catch {
-        // Keeps default schedule in render
+      if (timetableRes.status === "fulfilled" && timetableRes.value && timetableRes.value.classes && timetableRes.value.classes.length > 0) {
+        setClasses(timetableRes.value.classes);
+        setSelectedClassId(timetableRes.value.classes[0]._id);
+        setScheduleData(timetableRes.value.timetablesByClass || {});
+      } else {
+        setClasses([{ _id: "bca1", name: "BCA First Year", code: "" }, { _id: "bca2", name: "BCA Second Year", code: "" }]);
+        setSelectedClassId("bca1");
+        setScheduleData({ "bca1": sampleSchedule, "bca2": sampleSchedule });
       }
     };
 
@@ -199,40 +264,6 @@ const HomePage = () => {
     if (user.role === "admin") return "/admin/dashboard";
     if (user.role === "teacher") return "/teacher/dashboard";
     return "/student/dashboard";
-  };
-
-  // Sample schedule for routine preview
-  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  const sampleSchedule = {
-    Monday: [
-      { period: 1, time: "10:00 AM - 11:00 AM", subject: "Java Programming (BCA-301)", room: "Room 201", teacher: "Prof. Rajesh Kumar" },
-      { period: 2, time: "11:00 AM - 12:00 PM", subject: "Database Systems (BCA-302)", room: "Room 201", teacher: "Dr. Sunita Sharma" },
-      { period: 3, time: "12:30 PM - 01:30 PM", subject: "Software Engineering Lab", room: "Lab 1", teacher: "Prof. Rajesh Kumar" },
-      { period: 4, time: "01:30 PM - 02:30 PM", subject: "Computer Networks & Security", room: "Lab 2", teacher: "Prof. Amit Verma" },
-    ],
-    Tuesday: [
-      { period: 1, time: "10:00 AM - 11:00 AM", subject: "Operating Systems (BCA-303)", room: "Room 201", teacher: "Dr. Sunita Sharma" },
-      { period: 2, time: "11:00 AM - 12:00 PM", subject: "Java Programming (BCA-301)", room: "Room 201", teacher: "Prof. Rajesh Kumar" },
-      { period: 3, time: "12:30 PM - 01:30 PM", subject: "Web Development Lab", room: "Lab 1", teacher: "Prof. Amit Verma" },
-    ],
-    Wednesday: [
-      { period: 1, time: "10:00 AM - 11:00 AM", subject: "Database Systems (BCA-302)", room: "Room 201", teacher: "Dr. Sunita Sharma" },
-      { period: 2, time: "11:00 AM - 12:00 PM", subject: "Computer Networks (BCA-304)", room: "Room 201", teacher: "Prof. Amit Verma" },
-      { period: 3, time: "12:30 PM - 01:30 PM", subject: "Algorithm Analysis & Design", room: "Lab 2", teacher: "Prof. Rajesh Kumar" },
-    ],
-    Thursday: [
-      { period: 1, time: "10:00 AM - 11:00 AM", subject: "Operating Systems (BCA-303)", room: "Room 201", teacher: "Dr. Sunita Sharma" },
-      { period: 2, time: "11:00 AM - 12:00 PM", subject: "Web Technology Lab (PHP/JS)", room: "Lab 1", teacher: "Prof. Amit Verma" },
-    ],
-    Friday: [
-      { period: 1, time: "10:00 AM - 11:00 AM", subject: "Cloud Computing & DevOps", room: "Room 201", teacher: "Prof. Rajesh Kumar" },
-      { period: 2, time: "11:00 AM - 12:00 PM", subject: "Cyber Security Fundamentals", room: "Lab 2", teacher: "Prof. Amit Verma" },
-      { period: 3, time: "12:30 PM - 01:30 PM", subject: "Project Review & Viva", room: "Seminar Hall", teacher: "HOD Dept." },
-    ],
-    Saturday: [
-      { period: 1, time: "10:00 AM - 12:00 PM", subject: "Weekly Practical Assessment", room: "Lab 1 & 2", teacher: "All Faculty" },
-      { period: 2, time: "12:30 PM - 02:00 PM", subject: "TechFest Coding Workshop", room: "Auditorium", teacher: "Guest Speaker" },
-    ],
   };
 
   return (
@@ -310,13 +341,13 @@ const HomePage = () => {
                   </h1>
                 </div>
               </div>
-
+{/* Stay on track with smart attendance, academic updates,
+and everything you need to manage your college journey. */}
               {/* Subtitle with Highlighting - Font Poppins */}
               <p className="text-base sm:text-lg lg:text-[1.25rem] 2xl:text-2xl font-poppins text-slate-800 dark:text-slate-200 leading-relaxed max-w-2xl font-normal">
-                Build <span className="bg-[#ffe500] text-black px-1.5 py-0.5 rounded font-semibold">real skills</span>,{" "}
-                <span className="bg-[#ffe500] text-black px-1.5 py-0.5 rounded font-semibold">real attendance</span>, and{" "}
-                <span className="bg-[#ffe500] text-black px-1.5 py-0.5 rounded font-semibold">real momentum</span> before
-                the semester catches up.
+                Stay on track with <span className="bg-[#ffe500] text-black px-1.5 py-0.5 rounded font-semibold">smart attendance</span>,{" "}
+                <span className="bg-[#ffe500] text-black px-1.5 py-0.5 rounded font-semibold">academic updates</span>, and everything you need to manage your {" "}
+                <span className="bg-[#ffe500] text-black px-1.5 py-0.5 rounded font-semibold">college journey.</span> 
               </p>
 
               {/* Action Buttons Row */}
@@ -387,13 +418,13 @@ const HomePage = () => {
                 {/* Overlaid Bottom Title */}
                 <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 text-white">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-[9px] sm:text-[10px] uppercase tracking-wider">
+                    {/* <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-[9px] sm:text-[10px] uppercase tracking-wider">
                       ● Live Sync
-                    </span>
+                    </span> */}
                     <span className="text-[10px] sm:text-xs font-bold text-slate-300">Nalanda College ERP v1.0</span>
                   </div>
                   <p className="text-xs sm:text-sm font-black font-display tracking-wide">
-                    Department of Computer Applications (BCA)
+                    Department of Computer Applications 
                   </p>
                 </div>
               </div>
@@ -409,7 +440,7 @@ const HomePage = () => {
               </div>
 
               {/* Floating Glassmorphic Badge Bottom Left: Live Attendance Rate */}
-              <div className="absolute -bottom-4 -left-1 sm:-left-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2.5 sm:p-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-2xl -rotate-3 hover:rotate-0 transition-transform">
+              {/* <div className="absolute -bottom-4 -left-1 sm:-left-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2.5 sm:p-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-2xl -rotate-3 hover:rotate-0 transition-transform">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-xs sm:text-sm shadow-md">
                     ⚡
@@ -426,7 +457,7 @@ const HomePage = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
             </div>
 
@@ -520,10 +551,10 @@ const HomePage = () => {
               <span>Excellence</span>
             </div>
 
-            <div className="hidden sm:flex absolute -top-4 right-6 z-20 items-center gap-2 px-4 py-2 rounded-2xl bg-indigo-600 text-white font-black text-xs uppercase tracking-wider shadow-xl rotate-6">
+            {/* <div className="hidden sm:flex absolute -top-4 right-6 z-20 items-center gap-2 px-4 py-2 rounded-2xl bg-indigo-600 text-white font-black text-xs uppercase tracking-wider shadow-xl rotate-6">
               <span>💡</span>
               <span>Innovation</span>
-            </div>
+            </div> */}
 
             {/* The Main College Campus Frame */}
             <div className="relative rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden border-4 border-white dark:border-slate-900 shadow-2xl bg-slate-900 group">
@@ -535,15 +566,15 @@ const HomePage = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
 
               {/* Center Floating Circular Explore Button */}
-              <a
+              {/* <a
                 href="#gallery-slider"
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-indigo-600/90 hover:bg-indigo-600 active:scale-95 text-white backdrop-blur-md shadow-2xl flex flex-col items-center justify-center text-center p-2 border-2 border-white/50 transition-all hover:scale-110 group cursor-pointer"
+                className="absolute top-3/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-indigo-600/90 hover:bg-indigo-600 active:scale-95 text-white backdrop-blur-md shadow-2xl flex flex-col items-center justify-center text-center p-2 border-2 border-white/50 transition-all hover:scale-110 group cursor-pointer"
               >
                 <span className="text-base sm:text-xl font-black">↓</span>
                 <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-wider leading-tight">
                   Explore Campus
                 </span>
-              </a>
+              </a> */}
 
               {/* Bottom Campus Details Bar */}
               <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-8 right-4 sm:right-8 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-2 text-white">
@@ -629,8 +660,8 @@ const HomePage = () => {
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
 
                         {/* Top Category Badge */}
-                        <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-slate-950/80 backdrop-blur-md text-white text-[11px] font-bold shadow-md border border-white/10 font-poppins">
-                          {img.tag}
+                        <span className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/80 backdrop-blur-md text-white text-[11px] font-bold shadow-md border border-white/10 font-poppins">
+                          {img.tagIcon} {img.tagText}
                         </span>
 
                         {/* Hover Zoom Icon */}
@@ -696,8 +727,8 @@ const HomePage = () => {
 
             <div className="p-6 bg-slate-900 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <div>
-                <span className="text-xs font-black uppercase text-amber-400 tracking-wider font-poppins">
-                  {lightboxImage.category} · {lightboxImage.tag}
+                <span className="text-xs font-black uppercase text-amber-400 tracking-wider font-poppins flex items-center gap-1.5">
+                  {lightboxImage.category} · {lightboxImage.tagIcon} {lightboxImage.tagText}
                 </span>
                 <h3 className="font-bold text-lg text-white font-heading">
                   {lightboxImage.title}
@@ -744,7 +775,7 @@ const HomePage = () => {
           {/* Card 2 */}
           <div className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl hover:border-amber-500/50 transition-all group">
             <div className="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-lg mb-5 shadow-md shadow-amber-400/30 group-hover:scale-110 transition-transform">
-              📅
+              <CalendarDays className="w-6 h-6" />
             </div>
             <h3 className="font-display font-black text-xl text-slate-900 dark:text-white mb-2">
               Live Interactive Timetable
@@ -758,7 +789,7 @@ const HomePage = () => {
           {/* Card 3 */}
           <div className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl hover:border-emerald-500/50 transition-all group">
             <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-bold text-lg mb-5 shadow-md shadow-emerald-500/30 group-hover:scale-110 transition-transform">
-              📢
+              <Megaphone className="w-6 h-6" />
             </div>
             <h3 className="font-display font-black text-xl text-slate-900 dark:text-white mb-2">
               Digital Notice Board
@@ -772,7 +803,7 @@ const HomePage = () => {
           {/* Card 4 */}
           <div className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl hover:border-violet-500/50 transition-all group">
             <div className="w-12 h-12 rounded-2xl bg-violet-600 text-white flex items-center justify-center font-bold text-lg mb-5 shadow-md shadow-violet-600/30 group-hover:scale-110 transition-transform">
-              🖨️
+              <Printer className="w-6 h-6" />
             </div>
             <h3 className="font-display font-black text-xl text-slate-900 dark:text-white mb-2">
               Official PDF and Barcode ID Cards
@@ -786,7 +817,7 @@ const HomePage = () => {
           {/* Card 5 */}
           <div className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl hover:border-pink-500/50 transition-all group">
             <div className="w-12 h-12 rounded-2xl bg-pink-500 text-white flex items-center justify-center font-bold text-lg mb-5 shadow-md shadow-pink-500/30 group-hover:scale-110 transition-transform">
-              📝
+              <FileText className="w-6 h-6" />
             </div>
             <h3 className="font-display font-black text-xl text-slate-900 dark:text-white mb-2">
               Student Leave Hub
@@ -800,7 +831,7 @@ const HomePage = () => {
           {/* Card 6 */}
           <div className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl hover:border-cyan-500/50 transition-all group">
             <div className="w-12 h-12 rounded-2xl bg-cyan-500 text-white flex items-center justify-center font-bold text-lg mb-5 shadow-md shadow-cyan-500/30 group-hover:scale-110 transition-transform">
-              📊
+              <BarChart3 className="w-6 h-6" />
             </div>
             <h3 className="font-display font-black text-xl text-slate-900 dark:text-white mb-2">
               Internal Marks and SGPA
@@ -826,28 +857,47 @@ const HomePage = () => {
               </h2>
             </div>
 
-            {/* Day Selector Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-              {days.map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setActiveTab(d)}
-                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
-                    activeTab === d
-                      ? "bg-amber-400 text-slate-950 shadow-md"
-                      : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                  }`}
-                >
-                  {d}
-                </button>
-              ))}
+            {/* Class Selector and Day Pills */}
+            <div className="flex flex-col gap-4 mt-4 md:mt-0">
+              {classes.length > 0 && (
+                <div className="flex items-center gap-2 md:self-end">
+                  <span className="text-sm font-bold text-slate-600 dark:text-slate-400">Class:</span>
+                  <select
+                    value={selectedClassId}
+                    onChange={(e) => setSelectedClassId(e.target.value)}
+                    className="px-3 py-1.5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-amber-400 cursor-pointer"
+                  >
+                    {classes.map((cls) => (
+                      <option key={cls._id} value={cls._id}>
+                        {cls.name} {cls.code ? `(${cls.code})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:self-end">
+                {days.map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setActiveTab(d)}
+                    className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
+                      activeTab === d
+                        ? "bg-amber-400 text-slate-950 shadow-md"
+                        : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    }`}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Periods List */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {((scheduleData && scheduleData[activeTab] && scheduleData[activeTab].length > 0)
-              ? scheduleData[activeTab]
+            {((scheduleData && selectedClassId && scheduleData[selectedClassId] && scheduleData[selectedClassId][activeTab] && scheduleData[selectedClassId][activeTab].length > 0)
+              ? scheduleData[selectedClassId][activeTab]
               : sampleSchedule[activeTab]
             )?.map((item, idx) => (
               <div
@@ -874,8 +924,8 @@ const HomePage = () => {
                 </div>
 
                 <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px]">
-                  <span className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
-                    📍 {item.room}
+                  <span className="px-2 py-0.5 flex items-center gap-1 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                    <MapPin className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> {item.room}
                   </span>
                   <span className="text-emerald-600 dark:text-emerald-400 font-bold">
                     Active Routine
@@ -958,7 +1008,7 @@ const HomePage = () => {
             <div className="p-8 rounded-3xl bg-slate-950 border border-slate-800 hover:border-amber-400/50 transition-all flex flex-col justify-between space-y-6">
               <div className="space-y-4">
                 <div className="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-lg shadow-lg shadow-amber-400/20">
-                  🎓
+                  <GraduationCap className="w-6 h-6" />
                 </div>
                 <h3 className="font-display font-black text-2xl">Student Portal</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
@@ -994,7 +1044,7 @@ const HomePage = () => {
             <div className="p-8 rounded-3xl bg-slate-950 border border-slate-800 hover:border-indigo-400/50 transition-all flex flex-col justify-between space-y-6">
               <div className="space-y-4">
                 <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-lg shadow-indigo-600/20">
-                  👨‍🏫
+                  <BookOpen className="w-6 h-6" />
                 </div>
                 <h3 className="font-display font-black text-2xl">Faculty Desk</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
@@ -1030,7 +1080,7 @@ const HomePage = () => {
             <div className="p-8 rounded-3xl bg-slate-950 border border-slate-800 hover:border-emerald-400/50 transition-all flex flex-col justify-between space-y-6">
               <div className="space-y-4">
                 <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-black text-lg shadow-lg shadow-emerald-500/20">
-                  ⚙️
+                  <ShieldCheck className="w-6 h-6" />
                 </div>
                 <h3 className="font-display font-black text-2xl">Administration</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
@@ -1117,7 +1167,7 @@ const HomePage = () => {
 
               {/* Floating Verified Mentor Badge */}
               <div className="absolute -bottom-4 bg-white dark:bg-slate-950 px-4 py-2 rounded-2xl border-2 border-indigo-600 dark:border-indigo-500 shadow-xl flex items-center gap-2 z-20">
-                <span className="text-lg">👑</span>
+                <span className="text-indigo-600 dark:text-indigo-400"><Award className="w-6 h-6" /></span>
                 <div className="text-left font-poppins">
                   <div className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider">
                     Senior Faculty & Guide
@@ -1246,23 +1296,23 @@ const HomePage = () => {
                   Engineering Stack & Modules Built
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
-                    ⚛️ React 18 & Vite
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                    <Code2 className="w-3.5 h-3.5 text-indigo-500" /> React 18 & Vite
                   </span>
-                  <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
-                    🎨 Tailwind CSS v4
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                    <Palette className="w-3.5 h-3.5 text-sky-500" /> Tailwind CSS v4
                   </span>
-                  <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
-                    🟢 Node.js & Express API
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                    <Server className="w-3.5 h-3.5 text-green-500" /> Node.js & Express API
                   </span>
-                  <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
-                    🍃 MongoDB Atlas
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                    <Database className="w-3.5 h-3.5 text-emerald-500" /> MongoDB Atlas
                   </span>
-                  <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
-                    🔒 Multi-Role RBAC Security
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                    <ShieldCheck className="w-3.5 h-3.5 text-rose-500" /> Multi-Role RBAC Security
                   </span>
-                  <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
-                    📄 Automated PDF Letterhead Engine
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                    <FileText className="w-3.5 h-3.5 text-amber-500" /> Automated PDF Letterhead Engine
                   </span>
                 </div>
               </div>
@@ -1316,7 +1366,7 @@ const HomePage = () => {
 
               {/* Floating Developer Badge */}
               <div className="absolute -bottom-4 bg-white dark:bg-slate-950 px-4 py-2 rounded-2xl border-2 border-amber-400 shadow-xl flex items-center gap-2 z-20">
-                <span className="text-lg">⚡</span>
+                <span className="text-amber-500"><Cpu className="w-6 h-6" /></span>
                 <div className="text-left font-poppins">
                   <div className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider">
                     Lead Developer

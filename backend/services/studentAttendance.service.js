@@ -67,10 +67,10 @@ export const getStudentAttendanceSummary = async ({ userId }) => {
       absent: 0,
       lastSeen: null,
     };
-    const totalSessions = subj.totalClasses || 0;
-    const totalDays = subj.totalDays || 0;
     const attended = att.attended;
     const absent = att.absent;
+    const totalSessions = attended + absent; // Actual conducted sessions where student was marked
+    const totalDays = subj.totalDays || 0;
     const percent = totalSessions > 0 ? Math.round((attended / totalSessions) * 100) : 0;
 
     // Status: ≥75% green, 50–74% amber, <50% red

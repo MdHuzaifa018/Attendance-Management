@@ -10,12 +10,13 @@ import {
   Pencil,
 } from "lucide-react";
 import { getTimetable } from "../services/timetableService.js";
+import { getClasses } from "../services/classService.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import TimetableModal from "./TimetableModal.jsx";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-const TimetableWidget = ({ classId }) => {
+const TimetableWidget = ({ classId, teacherUserId }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
 
@@ -27,26 +28,68 @@ const TimetableWidget = ({ classId }) => {
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
+  
+  // Class selection state for Admins
+  const [selectedClassId, setSelectedClassId] = useState(classId || "");
+  const [classes, setClasses] = useState([]);
+
+  useEffect(() => {
+    if (!classId && !teacherUserId) {
+      getClasses({ all: true })
+        .then((res) => {
+          setClasses(res.classes || []);
+          if (res.classes && res.classes.length > 0) {
+            setSelectedClassId(res.classes[0]._id);
+          } else {
+            setLoading(false);
+          }
+        })
+        .catch(() => {
+          setLoading(false);
+        });
+    }
+  }, [classId, teacherUserId]);
+
+  useEffect(() => {
+    if (classId) {
+      setSelectedClassId(classId);
+    }
+  }, [classId]);
 
   const fetchSchedule = useCallback(async () => {
+    if (!selectedClassId && !teacherUserId) return; // Don't fetch if no class or teacher is selected
+
     try {
       setLoading(true);
-      const data = await getTimetable(classId);
+      const data = await getTimetable(teacherUserId ? null : selectedClassId);
       setSchedules(data);
     } catch {
       // quiet error
     } finally {
       setLoading(false);
     }
-  }, [classId]);
+  }, [selectedClassId, teacherUserId]);
 
   useEffect(() => {
     fetchSchedule();
   }, [fetchSchedule]);
 
   // Find schedule for active selectedDay
-  const activeDaySchedule = schedules.find((s) => s.dayOfWeek === selectedDay);
-  const periods = activeDaySchedule?.periods || [];
+  let periods = [];
+  if (teacherUserId) {
+    const activeDaySchedules = schedules.filter((s) => s.dayOfWeek === selectedDay);
+    activeDaySchedules.forEach((s) => {
+      s.periods.forEach((p) => {
+        if (p.teacher?.user?._id === teacherUserId) {
+          periods.push({ ...p, class: s.class });
+        }
+      });
+    });
+    periods.sort((a, b) => a.periodNumber - b.periodNumber);
+  } else {
+    const activeDaySchedule = schedules.find((s) => s.dayOfWeek === selectedDay);
+    periods = activeDaySchedule?.periods || [];
+  }
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
@@ -65,15 +108,30 @@ const TimetableWidget = ({ classId }) => {
             </div>
           </div>
 
-          {isAdmin && (
-            <button
-              onClick={() => setShowEditModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-sm transition-all cursor-pointer"
-              title="Edit or create class timetable"
-            >
-              <Pencil className="w-3.5 h-3.5" /> Edit Routine
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {!classId && classes.length > 0 && (
+              <select
+                value={selectedClassId}
+                onChange={(e) => setSelectedClassId(e.target.value)}
+                className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors cursor-pointer"
+              >
+                {classes.map((cls) => (
+                  <option key={cls._id} value={cls._id}>
+                    {cls.name} ({cls.code})
+                  </option>
+                ))}
+              </select>
+            )}
+            {isAdmin && (
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-sm transition-all cursor-pointer"
+                title="Edit or create class timetable"
+              >
+                <Pencil className="w-3.5 h-3.5" /> Edit Routine
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Day Selector Pills */}
@@ -103,8 +161,10 @@ const TimetableWidget = ({ classId }) => {
 
       {/* Routine Content */}
       {loading ? (
-        <div className="flex items-center justify-center py-10">
-          <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-28 bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse"></div>
+          ))}
         </div>
       ) : periods.length === 0 ? (
         <div className="text-center py-10 text-slate-400 text-xs">
@@ -138,15 +198,22 @@ const TimetableWidget = ({ classId }) => {
                   )}
                 </h4>
 
-                <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
-                  <span className="flex items-center gap-1">
-                    <User className="w-3 h-3 text-slate-400" />
-                    {p.teacher?.user?.name || "Faculty Assigned"}
-                  </span>
-                  <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-                    <MapPin className="w-3 h-3" />
-                    {p.roomNo || "Room 201"}
-                  </span>
+                <div className="flex items-center justify-between pt-0.5">
+                  <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400">
+                    <span className="flex items-center gap-1">
+                      <User className="w-3 h-3 text-slate-400" />
+                      {p.teacher?.user?.name || "Faculty Assigned"}
+                    </span>
+                    <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                      <MapPin className="w-3 h-3" />
+                      {p.roomNo || "Room 201"}
+                    </span>
+                  </div>
+                  {p.class && (
+                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md">
+                      {p.class.code || p.class.name}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -155,12 +222,12 @@ const TimetableWidget = ({ classId }) => {
       )}
 
       {/* Edit/Create Timetable Modal */}
-      {isAdmin && (
+      {isAdmin && showEditModal && (
         <TimetableModal
           isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}
           onSuccess={fetchSchedule}
-          initialClassId={classId}
+          initialClassId={selectedClassId}
           initialDay={selectedDay}
         />
       )}

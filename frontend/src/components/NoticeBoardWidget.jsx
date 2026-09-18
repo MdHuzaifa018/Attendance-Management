@@ -125,8 +125,10 @@ const NoticeBoardWidget = () => {
 
       {/* Notices List */}
       {loading ? (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-6 h-6 text-violet-500 animate-spin" />
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-24 bg-slate-100 dark:bg-slate-800/50 rounded-xl animate-pulse"></div>
+          ))}
         </div>
       ) : notices.length === 0 ? (
         <div className="text-center py-8 text-slate-400 text-xs">

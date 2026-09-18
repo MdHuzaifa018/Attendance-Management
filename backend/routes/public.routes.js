@@ -126,15 +126,27 @@ router.get("/timetable", async (req, res) => {
       .populate("periods.teacher", "name")
       .lean();
 
-    // Group by day of week
-    const scheduleByDay = {};
+    const classesMap = new Map();
+    const timetablesByClass = {};
     const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    for (const day of days) {
-      scheduleByDay[day] = [];
-    }
 
     if (timetable && timetable.length > 0) {
       for (const entry of timetable) {
+        if (!entry.class) continue;
+
+        const classId = entry.class._id.toString();
+        if (!classesMap.has(classId)) {
+          classesMap.set(classId, {
+            _id: classId,
+            name: entry.class.name,
+            section: entry.class.section
+          });
+          timetablesByClass[classId] = {};
+          for (const day of days) {
+            timetablesByClass[classId][day] = [];
+          }
+        }
+
         if (entry.dayOfWeek && Array.isArray(entry.periods)) {
           const formattedPeriods = entry.periods.map((p) => ({
             period: p.periodNumber,
@@ -144,8 +156,8 @@ router.get("/timetable", async (req, res) => {
             teacher: p.teacher?.name ? `Prof. ${p.teacher.name}` : "Faculty Assigned",
           }));
 
-          scheduleByDay[entry.dayOfWeek] = [
-            ...(scheduleByDay[entry.dayOfWeek] || []),
+          timetablesByClass[classId][entry.dayOfWeek] = [
+            ...(timetablesByClass[classId][entry.dayOfWeek] || []),
             ...formattedPeriods,
           ].sort((a, b) => a.period - b.period);
         }
@@ -154,7 +166,10 @@ router.get("/timetable", async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: scheduleByDay,
+      data: {
+        classes: Array.from(classesMap.values()),
+        timetablesByClass,
+      }
     });
   } catch (error) {
     res.status(500).json({

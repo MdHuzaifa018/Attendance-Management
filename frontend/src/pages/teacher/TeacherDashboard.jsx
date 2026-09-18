@@ -99,8 +99,10 @@ const TeacherDashboard = () => {
             </div>
             
             {loading ? (
-              <div className="flex justify-center py-10">
-                <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[1, 2].map((i) => (
+                  <div key={i} className="h-28 bg-slate-100 dark:bg-slate-800/50 rounded-xl animate-pulse"></div>
+                ))}
               </div>
             ) : mySubjects.length === 0 ? (
               <div className="text-center py-10 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
@@ -137,8 +139,10 @@ const TeacherDashboard = () => {
             </h2>
 
             {loading ? (
-              <div className="flex justify-center py-5">
-                <div className="w-6 h-6 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-16 bg-slate-100 dark:bg-slate-800/50 rounded-xl animate-pulse"></div>
+                ))}
               </div>
             ) : recentSessions.length === 0 ? (
               <div className="text-center py-8">

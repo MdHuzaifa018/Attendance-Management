@@ -143,8 +143,7 @@ const StudentDashboard = () => {
 
       {/* ── Attendance overview card ── */}
       {loading ? (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-8 flex items-center justify-center">
-          <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 h-64 animate-pulse">
         </div>
       ) : !overview ? (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-8 text-center">
