@@ -28,7 +28,7 @@ router.get("/stats", async (req, res) => {
         Teacher.countDocuments({ status: "active" }).catch(() => 0),
         Attendance.countDocuments().catch(() => 0),
         Department.countDocuments().catch(() => 0),
-        Notice.countDocuments({ status: "published" }).catch(() => 0),
+        Notice.countDocuments({ isActive: true }).catch(() => 0),
       ]);
 
     // Calculate approximate overall attendance rate from recent records if available
@@ -93,9 +93,8 @@ router.get("/stats", async (req, res) => {
  */
 router.get("/notices", async (req, res) => {
   try {
-    const notices = await Notice.find({ status: "published" })
+    const notices = await Notice.find({ isActive: true })
       .sort({ createdAt: -1 })
-      .limit(6)
       .select("title content category priority createdAt author")
       .lean();
 

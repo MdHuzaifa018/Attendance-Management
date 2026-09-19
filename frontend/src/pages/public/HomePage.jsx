@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import {
   Sparkles,
   ArrowRight,
@@ -58,6 +59,21 @@ import {
 
 // Sample schedule for routine preview
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+// Premium Animated Counter Component
+function AnimatedNumber({ value }) {
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, Math.round);
+
+  useEffect(() => {
+    const parsed = parseInt(String(value).replace(/[^0-9]/g, "")) || 0;
+    const animation = animate(count, parsed, { duration: 2.5, ease: [0.16, 1, 0.3, 1] });
+    return animation.stop;
+  }, [value, count]);
+
+  return <motion.span>{rounded}</motion.span>;
+}
+
 const sampleSchedule = {
   Monday: [
     { period: 1, time: "10:00 AM - 11:00 AM", subject: "Java Programming (BCA-301)", room: "Room 201", teacher: "Prof. Rajesh Kumar" },
@@ -90,17 +106,58 @@ const sampleSchedule = {
   ]
 };
 
+// Fallback notices shown instantly before API loads (prevents empty state)
+const fallbackNotices = [
+  {
+    _id: "fallback-1",
+    title: "🚨 Mandatory 75% Attendance Requirement for Semester Examination",
+    content: "Students failing to maintain 75% attendance in core subjects will be debarred as per university guidelines.",
+    category: "Attendance",
+    priority: "urgent",
+  },
+  {
+    _id: "fallback-2",
+    title: "📝 BCA 3rd Year Mid-Term Internal Assessment Schedule",
+    content: "Mid-Term evaluations and practical viva will commence from next Monday in Computer Lab 1 & 2.",
+    category: "Exam",
+    priority: "high",
+  },
+  {
+    _id: "fallback-3",
+    title: "🎉 Annual College IT TechFest & Hackathon Registration",
+    content: "Registrations are now open for Web Development, Algorithmic Coding, and Project Exhibition.",
+    category: "Event",
+    priority: "normal",
+  },
+];
+
 const HomePage = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Monday");
   const [classes, setClasses] = useState([]);
   const [selectedClassId, setSelectedClassId] = useState("");
-  const [notices, setNotices] = useState([]);
+  const [notices, setNotices] = useState(fallbackNotices);
   const [stats, setStats] = useState(null);
   const [scheduleData, setScheduleData] = useState(null);
   const [galleryFilter, setGalleryFilter] = useState("All");
   const [lightboxImage, setLightboxImage] = useState(null);
+
+  // Premium Animation Variants
+  const premiumEasing = [0.16, 1, 0.3, 1];
+  
+  const fadeUpVariant = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: premiumEasing } }
+  };
+  
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 }
+    }
+  };
 
   // 📸 Nalanda College Campus Photo Gallery
   // NOTE: You can easily update any of these college image URLs with your actual campus photos!
@@ -202,48 +259,27 @@ const HomePage = () => {
       ? galleryImages
       : galleryImages.filter((img) => img.category === galleryFilter);
 
-  const fallbackNotices = [
-    {
-      _id: "1",
-      title: "🚨 Mandatory 75% Attendance Requirement for Semester Examination",
-      content: "Students failing to maintain 75% attendance in core subjects will be debarred as per university guidelines.",
-      category: "Attendance",
-      priority: "urgent",
-    },
-    {
-      _id: "2",
-      title: "📝 BCA 3rd Year Mid-Term Internal Assessment Schedule",
-      content: "Mid-Term evaluations and practical viva will commence from next Monday in Computer Lab 1 & 2.",
-      category: "Exam",
-      priority: "high",
-    },
-    {
-      _id: "3",
-      title: "🎉 Annual College IT TechFest & Hackathon Registration",
-      content: "Registrations are now open for Web Development, Algorithmic Coding, and Project Exhibition.",
-      category: "Event",
-      priority: "normal",
-    },
-  ];
-
   useEffect(() => {
+    let cancelled = false; // Prevents stale updates when StrictMode remounts
+
     const loadPublicData = async () => {
-      // Run API calls concurrently to speed up initial load
       const [statsRes, noticesRes, timetableRes] = await Promise.allSettled([
         getPublicStats(),
-        getPublicNotices(),
+        getPublicNotices(), // has built-in retry for Atlas cold-starts
         getPublicTimetable(),
       ]);
+
+      if (cancelled) return; // Component unmounted, don't update state
 
       if (statsRes.status === "fulfilled" && statsRes.value) {
         setStats(statsRes.value);
       }
       
+      // Only replace fallback if we got real data from the API
       if (noticesRes.status === "fulfilled" && noticesRes.value && noticesRes.value.length > 0) {
-        setNotices(noticesRes.value.slice(0, 3));
-      } else {
-        setNotices(fallbackNotices);
+        setNotices(noticesRes.value);
       }
+      // If API returned nothing, fallback notices (from useState init) remain
 
       if (timetableRes.status === "fulfilled" && timetableRes.value && timetableRes.value.classes && timetableRes.value.classes.length > 0) {
         setClasses(timetableRes.value.classes);
@@ -257,6 +293,8 @@ const HomePage = () => {
     };
 
     loadPublicData();
+
+    return () => { cancelled = true; }; // Cleanup: mark as cancelled on unmount
   }, []);
 
   const getDashboardPath = () => {
@@ -280,10 +318,15 @@ const HomePage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
             
             {/* Left Column: Bold Typography & CTAs */}
-            <div className="lg:col-span-7 space-y-5 sm:space-y-6 text-left">
+            <motion.div 
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+              className="lg:col-span-7 space-y-5 sm:space-y-6 text-left"
+            >
               
               {/* Kicker with hand-drawn marker underline doodle */}
-              <div className="inline-block relative">
+              <motion.div variants={fadeUpVariant} className="inline-block relative">
                 <span className="text-xs sm:text-sm font-black tracking-wider uppercase text-slate-800 dark:text-slate-200 font-poppins">
                   FOR NALANDA COLLEGE STUDENTS & FACULTY
                 </span>
@@ -291,17 +334,17 @@ const HomePage = () => {
                 <svg className="w-full h-2.5 -mt-0.5 text-[#0038ff] dark:text-[#4d77ff]" viewBox="0 0 200 9" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M2.5 6.5C45.2 2.5 120.8 1.5 197.5 5.5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
                 </svg>
-              </div>
+              </motion.div>
 
               {/* Giant Bold Compressed Headline - Perfectly spaced, No Collision */}
               <div className="relative select-none my-1 sm:my-3">
                 {/* Line 1: SMART CAMPUS - Original Kapra Italic */}
-                <h1 className="text-slate-950 dark:text-white font-kapra tracking-tight sm:tracking-[-1.5px] lg:tracking-[-2px] leading-[0.9] text-4xl sm:text-6xl md:text-7xl lg:text-[5.2rem] xl:text-[6.4rem] 2xl:text-[7.6rem] uppercase whitespace-normal break-words">
+                <motion.h1 variants={fadeUpVariant} className="text-slate-950 dark:text-white font-kapra tracking-tight sm:tracking-[-1.5px] lg:tracking-[-2px] leading-[0.9] text-4xl sm:text-6xl md:text-7xl lg:text-[5.2rem] xl:text-[6.4rem] 2xl:text-[7.6rem] uppercase whitespace-normal break-words">
                   SMART CAMPUS
-                </h1>
+                </motion.h1>
 
                 {/* Line 2: NALANDA. with Crown Doodle */}
-                <div className="relative inline-block mt-1 sm:mt-3">
+                <motion.div variants={fadeUpVariant} className="relative inline-block mt-1 sm:mt-3">
                   {/* Clean Transparent Hand-Drawn Crown SVG Doodle (No black box) */}
                   <div className="absolute -top-5 sm:-top-9 md:-top-11 -right-3 sm:-right-8 md:-right-12 z-20 pointer-events-none transform rotate-12 drop-shadow-md">
                     <svg
@@ -339,23 +382,23 @@ const HomePage = () => {
                   <h1 className="text-[#0038ff] dark:text-[#4d77ff] font-kapra tracking-tight sm:tracking-[-1.5px] lg:tracking-[-2px] leading-[0.9] text-5xl sm:text-7xl md:text-8xl lg:text-[6.2rem] xl:text-[7.6rem] 2xl:text-[8.8rem] uppercase">
                     NALANDA.
                   </h1>
-                </div>
+                </motion.div>
               </div>
 {/* Stay on track with smart attendance, academic updates,
 and everything you need to manage your college journey. */}
               {/* Subtitle with Highlighting - Font Poppins */}
-              <p className="text-base sm:text-lg lg:text-[1.25rem] 2xl:text-2xl font-poppins text-slate-800 dark:text-slate-200 leading-relaxed max-w-2xl font-normal">
+              <motion.p variants={fadeUpVariant} className="text-base sm:text-lg lg:text-[1.25rem] 2xl:text-2xl font-poppins text-slate-800 dark:text-slate-200 leading-relaxed max-w-2xl font-normal">
                 Stay on track with <span className="bg-[#ffe500] text-black px-1.5 py-0.5 rounded font-semibold">smart attendance</span>,{" "}
                 <span className="bg-[#ffe500] text-black px-1.5 py-0.5 rounded font-semibold">academic updates</span>, and everything you need to manage your {" "}
                 <span className="bg-[#ffe500] text-black px-1.5 py-0.5 rounded font-semibold">college journey.</span> 
-              </p>
+              </motion.p>
 
               {/* Action Buttons Row */}
-              <div className="flex flex-wrap items-center gap-3.5 pt-2">
+              <motion.div variants={fadeUpVariant} className="flex flex-wrap items-center gap-3.5 pt-2">
                 {isAuthenticated ? (
                   <button
                     onClick={() => navigate(getDashboardPath())}
-                    className="flex items-center gap-2 px-6 sm:px-8 py-3.5 bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black text-sm sm:text-base tracking-wide rounded-2xl shadow-xl shadow-amber-400/25 border-2 border-slate-950 transition-all cursor-pointer"
+                    className="interactive-premium flex items-center gap-2 px-6 sm:px-8 py-3.5 bg-amber-400 text-slate-950 font-black text-sm sm:text-base tracking-wide rounded-2xl shadow-xl shadow-amber-400/25 border-2 border-slate-950 cursor-pointer"
                   >
                     <span>GO TO {user?.role.toUpperCase()} DASHBOARD</span>
                     <ArrowRight className="w-5 h-5" />
@@ -364,25 +407,25 @@ and everything you need to manage your college journey. */}
                   <>
                     <Link
                       to="/login"
-                      className="flex items-center gap-2 px-6 sm:px-8 py-3.5 bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black text-sm sm:text-base tracking-wide rounded-2xl shadow-xl shadow-amber-400/25 border-2 border-slate-950 transition-all cursor-pointer group"
+                      className="interactive-premium flex items-center gap-2 px-6 sm:px-8 py-3.5 bg-amber-400 text-slate-950 font-black text-sm sm:text-base tracking-wide rounded-2xl shadow-xl shadow-amber-400/25 border-2 border-slate-950 cursor-pointer group"
                     >
                       <span>ACCESS ERP PORTAL</span>
-                      <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                      <ArrowRight className="w-5 h-5 transition-transform duration-premium group-hover:translate-x-1" />
                     </Link>
 
                     <Link
                       to="/register"
-                      className="flex items-center gap-2 px-6 py-3.5 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-900 dark:text-white font-black text-sm sm:text-base rounded-2xl border-2 border-slate-300 dark:border-slate-700 shadow-sm transition-all cursor-pointer"
+                      className="interactive-premium flex items-center gap-2 px-6 py-3.5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-black text-sm sm:text-base rounded-2xl border-2 border-slate-300 dark:border-slate-700 shadow-sm cursor-pointer"
                     >
                       <span>STUDENT SIGNUP</span>
                       <span className="text-amber-500">⚡</span>
                     </Link>
                   </>
                 )}
-              </div>
+              </motion.div>
 
               {/* Trust Indicators Bar */}
-              <div className="pt-4 flex flex-wrap items-center gap-4 sm:gap-6 text-xs font-bold text-slate-600 dark:text-slate-400">
+              <motion.div variants={fadeUpVariant} className="pt-4 flex flex-wrap items-center gap-4 sm:gap-6 text-xs font-bold text-slate-600 dark:text-slate-400">
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                   <span>{stats?.studentsCount ? `${stats.studentsCount}+` : "120+"} BCA-III Enrolled</span>
@@ -395,9 +438,9 @@ and everything you need to manage your college journey. */}
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                   <span>Patliputra Univ. Unit</span>
                 </div>
-              </div>
+              </motion.div>
 
-            </div>
+            </motion.div>
 
             {/* Right Column: High-Energy Collage Visual with Floating Badges */}
             <div className="lg:col-span-5 relative flex items-center justify-center">
@@ -409,7 +452,7 @@ and everything you need to manage your college journey. */}
               {/* Main Image Container */}
               <div className="relative w-full rounded-3xl overflow-hidden border-4 border-white dark:border-slate-900 shadow-2xl bg-slate-900 group">
                 <img
-                  src="/hero-students.jpg"
+                  src="/images/hero-students.jpg"
                   alt="Nalanda College Students"
                   className="w-full h-72 sm:h-96 object-cover transform group-hover:scale-105 transition-transform duration-500"
                 />
@@ -468,40 +511,46 @@ and everything you need to manage your college journey. */}
       {/* ── 3. Quick Stats Marquee Strip ── */}
       <section className="bg-slate-950 text-white py-6 border-y-2 border-slate-800 overflow-hidden relative w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center divide-x divide-slate-800">
-            <div>
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center divide-x divide-slate-800"
+          >
+            <motion.div variants={fadeUpVariant}>
               <div className="font-numbers font-black text-3xl sm:text-5xl text-amber-400">
-                {stats?.studentsCount ? `${stats.studentsCount}+` : "120+"}
+                <AnimatedNumber value={stats?.studentsCount ? stats.studentsCount : 120} />+
               </div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">
                 BCA-III Enrolled Students
               </p>
-            </div>
-            <div>
+            </motion.div>
+            <motion.div variants={fadeUpVariant}>
               <div className="font-numbers font-black text-3xl sm:text-5xl text-indigo-400">
-                {stats?.lecturesCount ? `${stats.lecturesCount}+` : "179+"}
+                <AnimatedNumber value={stats?.lecturesCount ? stats.lecturesCount : 179} />+
               </div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">
                 Lectures Tracked
               </p>
-            </div>
-            <div>
+            </motion.div>
+            <motion.div variants={fadeUpVariant}>
               <div className="font-numbers font-black text-3xl sm:text-5xl text-emerald-400">
-                75%+
+                <AnimatedNumber value={75} />%+
               </div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">
                 Eligibility Benchmark
               </p>
-            </div>
-            <div>
+            </motion.div>
+            <motion.div variants={fadeUpVariant}>
               <div className="font-numbers font-black text-3xl sm:text-5xl text-white">
-                {stats?.heritageYear || 1870}
+                <AnimatedNumber value={stats?.heritageYear || 1870} />
               </div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">
                 College Heritage Estd.
               </p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
@@ -513,18 +562,24 @@ and everything you need to manage your college journey. */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           
           {/* Header Block inspired by Dribbble Eduvibe shot */}
-          <div className="text-center max-w-3xl mx-auto mb-14 space-y-4">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
+            className="text-center max-w-3xl mx-auto mb-14 space-y-4"
+          >
             
             {/* Admissions / Academic Year Pill with Cap Icon */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-sm">
+            <motion.div variants={fadeUpVariant} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-sm">
               <GraduationCap className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               <span className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 font-poppins">
                 NALANDA COLLEGE · ESTABLISHED 1870
               </span>
-            </div>
+            </motion.div>
 
             {/* Main Headline with Marker Underline */}
-            <h2 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-slate-950 dark:text-white uppercase tracking-tight leading-[1.05]">
+            <motion.h2 variants={fadeUpVariant} className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-slate-950 dark:text-white uppercase tracking-tight leading-[1.05]">
               Empowering{" "}
               <span className="relative inline-block text-indigo-600 dark:text-indigo-400">
                 Young Minds
@@ -534,13 +589,13 @@ and everything you need to manage your college journey. */}
                 </svg>
               </span>{" "}
               to Learn, Lead and Succeed.
-            </h2>
+            </motion.h2>
 
             {/* Subtitle */}
-            <p className="text-sm sm:text-base lg:text-lg text-slate-600 dark:text-slate-400 font-poppins max-w-2xl mx-auto leading-relaxed">
+            <motion.p variants={fadeUpVariant} className="text-sm sm:text-base lg:text-lg text-slate-600 dark:text-slate-400 font-poppins max-w-2xl mx-auto leading-relaxed">
               Our university is dedicated to providing transformative education, equipping students with the knowledge, skills, and discipline essential for lifelong success and global impact.
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
 
           {/* Grand Campus Photo Showcase (Matching Dribbble Central Image) */}
           <div className="relative mb-16">
@@ -557,7 +612,12 @@ and everything you need to manage your college journey. */}
             </div> */}
 
             {/* The Main College Campus Frame */}
-            <div className="relative rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden border-4 border-white dark:border-slate-900 shadow-2xl bg-slate-900 group">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1, transition: { duration: 0.6, ease: premiumEasing } }}
+              viewport={{ once: true }}
+              className="relative rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden border-4 border-white dark:border-slate-900 shadow-2xl bg-slate-900 group"
+            >
               <img
                 src="/images/college-campus.jpg"
                 alt="Nalanda College Historical Campus"
@@ -593,7 +653,7 @@ and everything you need to manage your college journey. */}
                   📍 Biharsharif, Nalanda, Bihar 803101
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
 
           {/* ── Photo Gallery Slider with Swiper.js ── */}
@@ -744,10 +804,16 @@ and everything you need to manage your college journey. */}
 
       {/* ── 5. Core Features Showcase (Neo-Modern Cards) ── */}
       <section id="features" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-          <div className="inline-block px-3.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-black tracking-widest uppercase">
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={staggerContainer}
+          className="text-center max-w-3xl mx-auto mb-16 space-y-3"
+        >
+          <motion.div variants={fadeUpVariant} className="inline-block px-3.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-black tracking-widest uppercase">
             POWERFUL ACADEMIC MODULES
-          </div>
+          </motion.div>
           <h2 className="font-display font-black text-3xl sm:text-5xl text-slate-950 dark:text-white uppercase tracking-tight">
             EVERYTHING MANAGED IN 1 PLACE.
           </h2>
@@ -755,9 +821,15 @@ and everything you need to manage your college journey. */}
             Designed specifically for Nalanda College to eliminate manual attendance registers,
             paper circulars, and schedule confusion.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={staggerContainer}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
           {/* Card 1 */}
           <div className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl hover:border-indigo-500/50 transition-all group">
             <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg mb-5 shadow-md shadow-indigo-600/30 group-hover:scale-110 transition-transform">
@@ -841,13 +913,19 @@ and everything you need to manage your college journey. */}
               SGPA performance records instantly.
             </p>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* ── 5. Interactive Routine & Timetable Showcase ── */}
       <section id="timetable" className="py-20 bg-slate-100 dark:bg-slate-900/50 border-y border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={staggerContainer}
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+        >
+          <motion.div variants={fadeUpVariant} className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
               <span className="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400 tracking-wider">
                 WEEKLY SCHEDULE
@@ -892,10 +970,10 @@ and everything you need to manage your college journey. */}
                 ))}
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Periods List */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <motion.div variants={fadeUpVariant} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {((scheduleData && selectedClassId && scheduleData[selectedClassId] && scheduleData[selectedClassId][activeTab] && scheduleData[selectedClassId][activeTab].length > 0)
               ? scheduleData[selectedClassId][activeTab]
               : sampleSchedule[activeTab]
@@ -933,8 +1011,8 @@ and everything you need to manage your college journey. */}
                 </div>
               </div>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* ── 6. Live Notices Section ── */}
@@ -1121,21 +1199,33 @@ and everything you need to manage your college journey. */}
         <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-indigo-500/10 blur-3xl pointer-events-none rounded-full" />
 
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-3 relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-100 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-black tracking-widest uppercase font-poppins">
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={staggerContainer}
+          className="text-center max-w-3xl mx-auto mb-16 space-y-3 relative z-10"
+        >
+          <motion.div variants={fadeUpVariant} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-100 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-black tracking-widest uppercase font-poppins">
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
             <span>ACADEMIC LEADERSHIP & GUIDANCE</span>
-          </div>
-          <h2 className="font-kapra tracking-[-1px] sm:tracking-[-2px] text-4xl sm:text-6xl lg:text-7xl uppercase text-slate-950 dark:text-white leading-[0.9]">
+          </motion.div>
+          <motion.h2 variants={fadeUpVariant} className="font-kapra tracking-[-1px] sm:tracking-[-2px] text-4xl sm:text-6xl lg:text-7xl uppercase text-slate-950 dark:text-white leading-[0.9]">
             UNDER THE MENTORSHIP OF MD ALAUDDIN KHAN.
-          </h2>
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 font-poppins max-w-2xl mx-auto leading-relaxed">
+          </motion.h2>
+          <motion.p variants={fadeUpVariant} className="text-sm sm:text-base text-slate-600 dark:text-slate-400 font-poppins max-w-2xl mx-auto leading-relaxed">
             Inspiring academic excellence, technological discipline, and modern computer applications education at Nalanda College.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         {/* Grand Mentor Spotlight Card */}
-        <div className="relative z-10 rounded-[2.5rem] bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 p-8 sm:p-12 shadow-2xl overflow-hidden group hover:border-indigo-500/50 transition-all">
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={fadeUpVariant}
+          className="relative z-10 rounded-[2.5rem] bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 p-8 sm:p-12 shadow-2xl overflow-hidden group hover:border-indigo-500/50 transition-all"
+        >
           {/* Top Gradient Stripe */}
           <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-indigo-600 via-blue-500 to-indigo-700" />
 
@@ -1238,7 +1328,7 @@ and everything you need to manage your college journey. */}
 
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* ── 9. Dedicated Standalone Section: Lead System Architect & Developer: Md Huzaifa ── */}
@@ -1247,21 +1337,33 @@ and everything you need to manage your college journey. */}
         <div className="absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-amber-500/10 blur-3xl pointer-events-none rounded-full" />
 
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-3 relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100 dark:bg-amber-950/70 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs font-black tracking-widest uppercase font-poppins">
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={staggerContainer}
+          className="text-center max-w-3xl mx-auto mb-16 space-y-3 relative z-10"
+        >
+          <motion.div variants={fadeUpVariant} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100 dark:bg-amber-950/70 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs font-black tracking-widest uppercase font-poppins">
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
             <span>LEAD SYSTEM ARCHITECT & FULL-STACK DEVELOPER</span>
-          </div>
-          <h2 className="font-kapra tracking-[-1px] sm:tracking-[-2px] text-4xl sm:text-6xl lg:text-7xl uppercase text-slate-950 dark:text-white leading-[0.9]">
+          </motion.div>
+          <motion.h2 variants={fadeUpVariant} className="font-kapra tracking-[-1px] sm:tracking-[-2px] text-4xl sm:text-6xl lg:text-7xl uppercase text-slate-950 dark:text-white leading-[0.9]">
             ARCHITECTED AND DEVELOPED BY MD HUZAIFA.
-          </h2>
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 font-poppins max-w-2xl mx-auto leading-relaxed">
+          </motion.h2>
+          <motion.p variants={fadeUpVariant} className="text-sm sm:text-base text-slate-600 dark:text-slate-400 font-poppins max-w-2xl mx-auto leading-relaxed">
             Engineered from ground zero by a proud Nalanda College BCA student — replacing obsolete paper registers with an enterprise-grade digital ERP ecosystem.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         {/* Grand Developer Spotlight Card */}
-        <div className="relative z-10 rounded-[2.5rem] bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 p-8 sm:p-12 shadow-2xl overflow-hidden group hover:border-amber-400/50 transition-all">
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={fadeUpVariant}
+          className="relative z-10 rounded-[2.5rem] bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 p-8 sm:p-12 shadow-2xl overflow-hidden group hover:border-amber-400/50 transition-all"
+        >
           {/* Top Gradient Stripe */}
           <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500" />
 
@@ -1379,12 +1481,18 @@ and everything you need to manage your college journey. */}
             </div>
 
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* ── 9. Big Bottom High-Impact Call to Action ── */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="rounded-3xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 p-8 sm:p-14 text-slate-950 border-4 border-slate-950 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={staggerContainer}
+          className="rounded-3xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 p-8 sm:p-14 text-slate-950 border-4 border-slate-950 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden"
+        >
           <div className="space-y-2 max-w-xl z-10 text-left">
             <span className="text-xs font-black uppercase tracking-widest bg-slate-950 text-white px-3 py-1 rounded-full">
               START TODAY
@@ -1405,7 +1513,7 @@ and everything you need to manage your college journey. */}
               ACCESS ERP PORTAL →
             </Link>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* ── 9. Modern Footer ── */}

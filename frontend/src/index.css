@@ -218,3 +218,10 @@
     print-color-adjust: exact;
   }
 }
+/* Premium Animation Classes */
+.ease-premium { transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1) !important; }
+.duration-premium { transition-duration: 400ms !important; }
+.interactive-premium { transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1) !important; }
+.interactive-premium:hover { transform: scale(1.02) !important; box-shadow: 0 15px 35px -5px rgba(0,0,0,0.08) !important; }
+.dark .interactive-premium:hover { box-shadow: 0 15px 35px -5px rgba(255,255,255,0.05) !important; }
+
