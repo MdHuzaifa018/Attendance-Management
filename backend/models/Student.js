@@ -51,6 +51,24 @@ const studentSchema = new mongoose.Schema(
       trim: true,
     },
 
+    motherName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    aadharNo: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    idCardNo: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
     photo: {
       type: String,
       default: "",
@@ -71,6 +89,16 @@ const studentSchema = new mongoose.Schema(
     address: {
       type: String,
       trim: true,
+      default: "",
+    },
+
+    signature: {
+      type: String,
+      default: "",
+    },
+
+    directorSignature: {
+      type: String,
       default: "",
     },
 

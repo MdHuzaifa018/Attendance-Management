@@ -125,15 +125,20 @@ export const createStudent = async (data) => {
       user: newUser._id,
       rollNo: data.rollNo,
       fatherName: data.fatherName,
+      motherName: data.motherName || "",
       department: data.departmentId,
       class: data.classId,
       admissionYear: data.admissionYear,
       duration: data.duration || "2024-27",
       phone: data.phone || "",
+      aadharNo: data.aadharNo || "",
+      idCardNo: data.idCardNo || "",
       photo: data.photo || "",
       bloodGroup: data.bloodGroup || "",
       dob: data.dob || "",
       address: data.address || "",
+      signature: data.signature || "",
+      directorSignature: data.directorSignature || "",
     });
   } catch (err) {
     // Rollback: remove the orphaned User if Student creation failed
@@ -156,15 +161,20 @@ export const updateStudent = async (studentId, updates) => {
   const updateData = {};
   if (updates.rollNo !== undefined) updateData.rollNo = updates.rollNo;
   if (updates.fatherName !== undefined) updateData.fatherName = updates.fatherName;
+  if (updates.motherName !== undefined) updateData.motherName = updates.motherName;
   if (updates.departmentId !== undefined) updateData.department = updates.departmentId;
   if (updates.classId !== undefined) updateData.class = updates.classId;
   if (updates.admissionYear !== undefined) updateData.admissionYear = updates.admissionYear;
   if (updates.duration !== undefined) updateData.duration = updates.duration;
   if (updates.phone !== undefined) updateData.phone = updates.phone;
+  if (updates.aadharNo !== undefined) updateData.aadharNo = updates.aadharNo;
+  if (updates.idCardNo !== undefined) updateData.idCardNo = updates.idCardNo;
   if (updates.photo !== undefined) updateData.photo = updates.photo;
   if (updates.bloodGroup !== undefined) updateData.bloodGroup = updates.bloodGroup;
   if (updates.dob !== undefined) updateData.dob = updates.dob;
   if (updates.address !== undefined) updateData.address = updates.address;
+  if (updates.signature !== undefined) updateData.signature = updates.signature;
+  if (updates.directorSignature !== undefined) updateData.directorSignature = updates.directorSignature;
 
   // Name update synced to the linked User
   if (updates.name && updates.name.trim()) {

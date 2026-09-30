@@ -209,13 +209,23 @@
   }
 
   /* ID Card specific print positioning */
+  body:has(#printable-student-id-card) #root,
+  body:has(#printable-student-id-card) nav,
+  body:has(#printable-student-id-card) aside,
+  body:has(#printable-student-id-card) header {
+    display: none !important;
+  }
+
   #printable-student-id-card {
-    position: absolute;
-    left: 50%;
-    top: 50px;
-    transform: translateX(-50%);
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    z-index: 999999 !important;
   }
 }
 /* Premium Animation Classes */

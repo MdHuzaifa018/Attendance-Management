@@ -64,10 +64,15 @@ export const createStudentSchema = z.object({
     .optional()
     .or(z.literal("")),
 
+  motherName: z.string().max(100).trim().optional().or(z.literal("")),
+  aadharNo: z.string().max(30).trim().optional().or(z.literal("")),
+  idCardNo: z.string().max(50).trim().optional().or(z.literal("")),
   photo: z.string().optional().or(z.literal("")),
   bloodGroup: z.string().max(10).trim().optional().or(z.literal("")),
   dob: z.string().max(30).trim().optional().or(z.literal("")),
   address: z.string().max(250).trim().optional().or(z.literal("")),
+  signature: z.string().optional().or(z.literal("")),
+  directorSignature: z.string().optional().or(z.literal("")),
 });
 
 /**
@@ -98,6 +103,8 @@ export const updateStudentSchema = z.object({
     .trim()
     .optional(),
 
+  motherName: z.string().max(100).trim().optional().or(z.literal("")),
+
   departmentId: objectId.optional(),
 
   classId: objectId.optional(),
@@ -108,6 +115,10 @@ export const updateStudentSchema = z.object({
 
   phone: z.string().max(15).optional().or(z.literal("")),
 
+  aadharNo: z.string().max(30).trim().optional().or(z.literal("")),
+
+  idCardNo: z.string().max(50).trim().optional().or(z.literal("")),
+
   photo: z.string().optional().or(z.literal("")),
 
   bloodGroup: z.string().max(10).trim().optional().or(z.literal("")),
@@ -115,6 +126,10 @@ export const updateStudentSchema = z.object({
   dob: z.string().max(30).trim().optional().or(z.literal("")),
 
   address: z.string().max(250).trim().optional().or(z.literal("")),
+
+  signature: z.string().optional().or(z.literal("")),
+
+  directorSignature: z.string().optional().or(z.literal("")),
 
   isActive: z.boolean().optional(),
 });
