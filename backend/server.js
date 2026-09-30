@@ -24,6 +24,7 @@ import leaveRoutes           from "./routes/leave.routes.js";
 import timetableRoutes       from "./routes/timetable.routes.js";
 import marksRoutes           from "./routes/marks.routes.js";
 import publicRoutes          from "./routes/public.routes.js";
+import settingRoutes         from "./routes/setting.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -41,6 +42,7 @@ app.get("/api/health", (req, res) => res.json({ success: true, message: "Server 
 
 // Public routes — login ki zaroorat nahi
 app.use("/api/public", publicRoutes);
+app.use("/api/settings", settingRoutes);
 
 // Protected routes — login + JWT token required
 app.use("/api/auth",               authRoutes);

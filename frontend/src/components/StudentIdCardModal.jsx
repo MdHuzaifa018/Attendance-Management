@@ -19,6 +19,7 @@ import {
 import toast from "react-hot-toast";
 import { updateStudent } from "../services/studentService.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useCollegeSettings } from "../context/CollegeSettingsContext.jsx";
 
 // Helper: Compress uploaded image or signature to lightweight Base64 DataURL
 const compressImage = (file, maxWidth = 400, maxHeight = 500) => {
@@ -69,6 +70,7 @@ const StudentIdCardModal = ({
   onUpdateSuccess,
 }) => {
   const { user } = useAuth();
+  const { logo: collegeLogo } = useCollegeSettings();
   const isAdmin = user?.role === "admin";
 
   const cardRef = useRef(null);
@@ -983,7 +985,7 @@ const StudentIdCardModal = ({
                       {cardData.estdText}
                     </span>
                     <img
-                      src="/logo.png"
+                      src={collegeLogo || "/logo.png"}
                       alt="Logo"
                       className="w-7 h-7 rounded-full bg-white p-0.5 shadow-sm object-contain"
                     />

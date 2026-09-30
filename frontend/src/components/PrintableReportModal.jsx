@@ -14,6 +14,7 @@ import {
   Building2,
   GraduationCap,
 } from "lucide-react";
+import { useCollegeSettings } from "../context/CollegeSettingsContext.jsx";
 
 /**
  * PrintableReportModal
@@ -34,6 +35,7 @@ const PrintableReportModal = ({
   subjects = [],
 }) => {
   const reportRef = useRef(null);
+  const { logo, settings } = useCollegeSettings();
 
   // View Mode: "consolidated" (1 row per student) or "detailed" (subject-wise breakdown)
   const [viewMode, setViewMode] = useState("consolidated");
@@ -401,13 +403,13 @@ const PrintableReportModal = ({
               <div className="border-b-2 border-indigo-950 pb-5 text-center relative">
                 <div className="flex items-center justify-center gap-4 mb-2">
                   <img
-                    src="/logo.png"
-                    alt="Nalanda College Crest"
+                    src={logo}
+                    alt="College Crest"
                     className="w-16 h-16 object-contain rounded-xl shadow-sm"
                   />
                   <div className="text-left">
                     <h1 className="text-2xl sm:text-3xl font-black tracking-wide uppercase text-indigo-950 font-serif leading-tight">
-                      Nalanda College, Biharsharif
+                      {settings?.collegeName || "Nalanda College, Biharsharif"}
                     </h1>
                     <p className="text-xs font-bold text-slate-600 tracking-wider uppercase">
                       (Constituent Unit of Patliputra University, Patna · Estd. 1870)

@@ -14,10 +14,12 @@ import {
   Layers,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useCollegeSettings } from "../context/CollegeSettingsContext.jsx";
 import ThemeToggle from "./common/ThemeToggle.jsx";
 
 const HomeNavbar = () => {
   const { user, isAuthenticated } = useAuth();
+  const { logo } = useCollegeSettings();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -58,8 +60,8 @@ const HomeNavbar = () => {
         <Link to="/" className="flex items-center gap-3 group shrink-0 relative">
           <div className="absolute inset-0 bg-indigo-500/20 rounded-full blur-xl group-hover:bg-indigo-500/40 transition-all duration-500 opacity-0 group-hover:opacity-100"></div>
           <img
-            src="/logo.png"
-            alt="Nalanda College Emblem"
+            src={logo}
+            alt="College Emblem"
             className="w-10 h-10 object-contain relative z-10 transition-transform duration-500 group-hover:scale-110 drop-shadow-md"
           />
           <div className="relative z-10 flex flex-col">

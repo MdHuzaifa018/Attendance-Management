@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate, Link } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -13,10 +13,12 @@ import {
   GraduationCap,
   LogOut,
   Menu,
+  Settings,
 } from "lucide-react";
 
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useCollegeSettings } from "../context/CollegeSettingsContext.jsx";
 import ThemeToggle from "../components/common/ThemeToggle.jsx";
 
 const navItems = [
@@ -29,11 +31,13 @@ const navItems = [
   { path: "/admin/attendance", label: "Attendance", icon: ClipboardList },
   { path: "/admin/history", label: "History & Audit", icon: History },
   { path: "/admin/reports", label: "Reports", icon: BarChart3 },
+  { path: "/admin/settings", label: "Settings & Logo", icon: Settings },
 ];
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
+  const { logo, settings } = useCollegeSettings();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -71,19 +75,23 @@ const AdminLayout = () => {
         `}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center gap-3 px-5 border-b border-slate-200 dark:border-slate-800 flex-shrink-0">
+        <Link
+          to="/admin/settings"
+          title="Click to manage College Logo & Settings"
+          className="h-16 flex items-center gap-3 px-5 border-b border-slate-200 dark:border-slate-800 flex-shrink-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer"
+        >
           <img
-            src="/logo.png"
-            alt="Nalanda College ERP Logo"
-            className="w-9 h-9 rounded-xl object-contain bg-white/95 p-0.5 shadow-sm border border-indigo-500/20"
+            src={logo}
+            alt={settings?.collegeName || "College Logo"}
+            className="w-9 h-9 rounded-xl object-contain bg-white/95 p-0.5 shadow-sm border border-indigo-500/20 group-hover:scale-105 transition-transform"
           />
           <div className="min-w-0">
             <p className="text-slate-900 dark:text-white font-bold text-sm leading-tight truncate">
-              Nalanda College
+              {settings?.collegeName || "Nalanda College"}
             </p>
             <p className="text-slate-500 text-xs">Attendance System</p>
           </div>
-        </div>
+        </Link>
 
         {/* Navigation */}
         <nav className="flex-1 py-4 overflow-y-auto">

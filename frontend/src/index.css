@@ -235,3 +235,22 @@
 .interactive-premium:hover { transform: scale(1.02) !important; box-shadow: 0 15px 35px -5px rgba(0,0,0,0.08) !important; }
 .dark .interactive-premium:hover { box-shadow: 0 15px 35px -5px rgba(255,255,255,0.05) !important; }
 
+/* Premium Loader Keyframes */
+@keyframes loaderBar {
+  0% { left: -40%; width: 40%; }
+  50% { width: 65%; }
+  100% { left: 100%; width: 40%; }
+}
+.animate-loaderBar {
+  position: absolute;
+  animation: loaderBar 1.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes bounceSubtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.animate-bounce-subtle {
+  animation: bounceSubtle 2.4s ease-in-out infinite;
+}
+

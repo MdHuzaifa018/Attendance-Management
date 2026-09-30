@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { Download, X, Smartphone } from "lucide-react";
+import { useCollegeSettings } from "../context/CollegeSettingsContext.jsx";
 
 const InstallAppBanner = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
+  const { logo, settings } = useCollegeSettings();
 
   useEffect(() => {
     const handler = (e) => {
@@ -19,7 +21,6 @@ const InstallAppBanner = () => {
     };
 
     window.addEventListener("beforeinstallprompt", handler);
-
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
@@ -46,13 +47,13 @@ const InstallAppBanner = () => {
       className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-40 bg-slate-900/95 border border-indigo-500/40 backdrop-blur-xl text-white p-4 rounded-2xl shadow-2xl flex items-center gap-3.5 animate-bounce-subtle print:hidden"
     >
       <img
-        src="/logo.png"
-        alt="Nalanda College ERP Logo"
+        src={logo}
+        alt={settings?.collegeName || "College Logo"}
         className="w-10 h-10 rounded-xl object-contain bg-white/95 p-0.5 shadow-lg shadow-indigo-600/40 flex-shrink-0"
       />
 
       <div className="flex-1 min-w-0 text-xs">
-        <h4 className="font-bold text-white text-xs">Install Nalanda ERP App</h4>
+        <h4 className="font-bold text-white text-xs">Install {settings?.collegeName || "Nalanda ERP"} App</h4>
         <p className="text-[11px] text-slate-300 mt-0.5 leading-tight truncate">
           Add to your home screen for faster attendance marking.
         </p>

@@ -10,8 +10,10 @@ import {
   MapPin,
   CheckCircle2,
 } from "lucide-react";
+import { useCollegeSettings } from "../context/CollegeSettingsContext.jsx";
 
 const HomeFooter = () => {
+  const { logo, settings } = useCollegeSettings();
   return (
     <footer className="bg-slate-950 text-white border-t border-slate-800 pt-16 pb-12 overflow-hidden relative">
       {/* Background Subtle Gradient Glow */}
@@ -23,16 +25,16 @@ const HomeFooter = () => {
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
               <img
-                src="/logo.png"
-                alt="Nalanda College Crest"
+                src={logo}
+                alt="College Crest"
                 className="w-12 h-12 object-contain rounded-2xl shadow-md bg-white p-1"
               />
               <div>
                 <h3 className="font-display font-black text-xl text-white tracking-wide leading-tight">
-                  NALANDA COLLEGE
+                  {settings?.collegeName || "NALANDA COLLEGE"}
                 </h3>
                 <p className="text-[11px] font-bold text-amber-400 uppercase tracking-widest">
-                  Biharsharif, Nalanda · Estd. 1870
+                  {settings?.locationText || "Biharsharif, Nalanda · Estd. 1870"}
                 </p>
               </div>
             </div>

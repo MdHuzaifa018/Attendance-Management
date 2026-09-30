@@ -10,44 +10,48 @@ import api from "../services/api.js";
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("user");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [loading, setLoading] = useState(() => {
+    const token = localStorage.getItem("token");
+    const savedUser = localStorage.getItem("user");
+    return !(token && savedUser);
+  });
 
   const login = async (email, password) => {
-    const response = await api.post(
-      "/auth/login",
-      {
-        email,
-        password,
-      }
-    );
+    const response = await api.post("/auth/login", {
+      email,
+      password,
+    });
 
     const { user, token } = response.data.data;
 
     localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
 
     setUser(user);
 
     return user;
   };
 
-  const register = async (
-    name,
-    email,
-    password
-  ) => {
-    const response = await api.post(
-      "/auth/register",
-      {
-        name,
-        email,
-        password,
-      }
-    );
+  const register = async (name, email, password) => {
+    const response = await api.post("/auth/register", {
+      name,
+      email,
+      password,
+    });
 
     const { user, token } = response.data.data;
 
     localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
 
     setUser(user);
 
@@ -56,29 +60,29 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("token");
-
+    localStorage.removeItem("user");
     setUser(null);
   };
 
   const fetchCurrentUser = async () => {
     try {
-      const token =
-        localStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
       if (!token) {
+        localStorage.removeItem("user");
+        setUser(null);
         setLoading(false);
         return;
       }
 
-      const response = await api.get(
-        "/auth/me"
-      );
+      const response = await api.get("/auth/me");
+      const currentUser = response.data.data.user || response.data.data;
 
-      setUser(
-        response.data.data.user
-      );
-    } catch (error) {
+      setUser(currentUser);
+      localStorage.setItem("user", JSON.stringify(currentUser));
+    } catch {
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
       setUser(null);
     } finally {
       setLoading(false);
