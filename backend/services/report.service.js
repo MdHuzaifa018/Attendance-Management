@@ -14,13 +14,14 @@ export const getSystemOverview = async () => {
   const cacheKey = "system_overview";
   const cachedData = getCache(cacheKey);
   if (cachedData) return cachedData;
+
   const [studentCount, teacherCount, classCount] = await Promise.all([
     Student.countDocuments({ isActive: true }),
     Teacher.countDocuments({ isActive: true }),
     Class.countDocuments({ isActive: true }),
   ]);
 
-  // System-wide attendance stats
+  // 1. System-wide attendance stats
   const attStats = await Attendance.aggregate([
     {
       $group: {
@@ -33,19 +34,17 @@ export const getSystemOverview = async () => {
     },
   ]);
 
-  let overallPercent = 0;
-  if (attStats.length > 0 && attStats[0].totalRecords > 0) {
-    overallPercent = Math.round(
-      (attStats[0].presentRecords / attStats[0].totalRecords) * 100
-    );
-  }
+  const totalRecords = attStats[0]?.totalRecords || 0;
+  const presentRecords = attStats[0]?.presentRecords || 0;
+  const absentRecords = totalRecords - presentRecords;
+  let overallPercent = totalRecords > 0 ? Math.round((presentRecords / totalRecords) * 100) : 0;
 
-  // Active classes today
+  // 2. Today's attendance stats
   const today = new Date();
   const startOfToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
   const endOfToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999));
 
-  const activeClassesAgg = await Attendance.aggregate([
+  const todayStatsAgg = await Attendance.aggregate([
     {
       $match: {
         date: { $gte: startOfToday, $lte: endOfToday },
@@ -53,11 +52,88 @@ export const getSystemOverview = async () => {
     },
     {
       $group: {
-        _id: "$class",
+        _id: null,
+        totalToday: { $sum: 1 },
+        presentToday: {
+          $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] },
+        },
+        classesSet: { $addToSet: "$class" },
       },
     },
   ]);
-  const activeClassesToday = activeClassesAgg.length;
+
+  const totalToday = todayStatsAgg[0]?.totalToday || 0;
+  const presentToday = todayStatsAgg[0]?.presentToday || 0;
+  const absentToday = totalToday - presentToday;
+  const todayPercent = totalToday > 0 ? Math.round((presentToday / totalToday) * 100) : 0;
+  const activeClassesToday = todayStatsAgg[0]?.classesSet?.length || 0;
+
+  // 3. Class-wise performance breakdown (for analyst comparative bar chart)
+  const classBreakdown = await Attendance.aggregate([
+    {
+      $group: {
+        _id: "$class",
+        total: { $sum: 1 },
+        present: {
+          $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] },
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "classes",
+        localField: "_id",
+        foreignField: "_id",
+        as: "classDoc",
+      },
+    },
+    { $unwind: "$classDoc" },
+    {
+      $project: {
+        _id: 1,
+        name: "$classDoc.name",
+        code: "$classDoc.code",
+        total: 1,
+        present: 1,
+        rate: {
+          $cond: [
+            { $eq: ["$total", 0] },
+            0,
+            { $round: [{ $multiply: [{ $divide: ["$present", "$total"] }, 100] }, 1] },
+          ],
+        },
+      },
+    },
+    { $sort: { rate: -1 } },
+    { $limit: 6 },
+  ]);
+
+  // 4. Students at-risk (< 75% attendance)
+  const atRiskAgg = await Attendance.aggregate([
+    {
+      $group: {
+        _id: "$student",
+        total: { $sum: 1 },
+        present: {
+          $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] },
+        },
+      },
+    },
+    {
+      $project: {
+        percent: {
+          $cond: [
+            { $eq: ["$total", 0] },
+            0,
+            { $round: [{ $multiply: [{ $divide: ["$present", "$total"] }, 100] }, 0] },
+          ],
+        },
+      },
+    },
+    { $match: { percent: { $lt: 75 } } },
+    { $count: "count" },
+  ]);
+  const atRiskCount = atRiskAgg[0]?.count || 0;
 
   const result = {
     studentCount,
@@ -65,6 +141,17 @@ export const getSystemOverview = async () => {
     classCount,
     overallPercent,
     activeClassesToday,
+    totalRecords,
+    presentRecords,
+    absentRecords,
+    atRiskCount,
+    todayStats: {
+      total: totalToday,
+      present: presentToday,
+      absent: absentToday,
+      percent: todayPercent,
+    },
+    classBreakdown,
   };
 
   setCache(cacheKey, result, 60); // cache for 60 seconds

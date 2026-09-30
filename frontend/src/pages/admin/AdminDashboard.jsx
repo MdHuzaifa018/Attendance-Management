@@ -1,13 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import {
   Users,
   GraduationCap,
-  BookOpen,
   TrendingUp,
   Activity,
   CalendarDays,
   FileCheck,
+  Download,
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle2,
+  BarChart3,
+  PieChart as PieChartIcon,
+  Layers,
+  ArrowUpRight,
+  TrendingDown,
+  Sparkles,
+  School,
 } from "lucide-react";
 import NoticeBoardWidget from "../../components/NoticeBoardWidget.jsx";
 import LeaveManagementModal from "../../components/LeaveManagementModal.jsx";
@@ -15,72 +25,278 @@ import TimetableWidget from "../../components/TimetableWidget.jsx";
 import {
   AreaChart,
   Area,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
 import toast from "react-hot-toast";
-import { getSystemOverview, getAttendanceTrends } from "../../services/reportService.js";
+import {
+  getSystemOverview,
+  getAttendanceTrends,
+  downloadCSVReport,
+} from "../../services/reportService.js";
 
-// Helper component for small metric cards
-const StatCard = ({ title, value, icon: Icon, colorClass, bgClass, subtitle }) => (
-  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex items-start gap-4">
-    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${bgClass} ${colorClass}`}>
-      <Icon className="w-6 h-6" />
+// Donut Chart Colors
+const PIE_COLORS = ["#10b981", "#ef4444", "#f59e0b"]; // Present, Absent, Other
+
+// Helper component for Executive KPI Cards
+const AnalystKpiCard = ({
+  title,
+  value,
+  subtitle,
+  icon: Icon,
+  badgeText,
+  badgeColor,
+  trend,
+  colorScheme = "indigo",
+  progress,
+}) => {
+  const schemes = {
+    indigo: {
+      bg: "bg-indigo-50 dark:bg-indigo-950/30",
+      border: "border-indigo-100 dark:border-indigo-900/40",
+      icon: "text-indigo-600 dark:text-indigo-400 bg-indigo-100/60 dark:bg-indigo-900/40",
+      progress: "bg-indigo-600 dark:bg-indigo-500",
+    },
+    emerald: {
+      bg: "bg-emerald-50/70 dark:bg-emerald-950/30",
+      border: "border-emerald-100 dark:border-emerald-900/40",
+      icon: "text-emerald-600 dark:text-emerald-400 bg-emerald-100/60 dark:bg-emerald-900/40",
+      progress: "bg-emerald-600 dark:bg-emerald-500",
+    },
+    violet: {
+      bg: "bg-violet-50 dark:bg-violet-950/30",
+      border: "border-violet-100 dark:border-violet-900/40",
+      icon: "text-violet-600 dark:text-violet-400 bg-violet-100/60 dark:bg-violet-900/40",
+      progress: "bg-violet-600 dark:bg-violet-500",
+    },
+    amber: {
+      bg: "bg-amber-50 dark:bg-amber-950/30",
+      border: "border-amber-100 dark:border-amber-900/40",
+      icon: "text-amber-600 dark:text-amber-400 bg-amber-100/60 dark:bg-amber-900/40",
+      progress: "bg-amber-500 dark:bg-amber-400",
+    },
+    rose: {
+      bg: "bg-rose-50 dark:bg-rose-950/30",
+      border: "border-rose-100 dark:border-rose-900/40",
+      icon: "text-rose-600 dark:text-rose-400 bg-rose-100/60 dark:bg-rose-900/40",
+      progress: "bg-rose-600 dark:bg-rose-500",
+    },
+  };
+
+  const scheme = schemes[colorScheme] || schemes.indigo;
+
+  return (
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs transition-all hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 flex flex-col justify-between">
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="space-y-1">
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            {title}
+          </p>
+          <div className="flex items-baseline gap-2">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              {value}
+            </h3>
+            {trend && (
+              <span
+                className={`inline-flex items-center text-xs font-bold ${
+                  trend > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
+                }`}
+              >
+                {trend > 0 ? (
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                ) : (
+                  <TrendingDown className="w-3.5 h-3.5" />
+                )}
+                {trend}%
+              </span>
+            )}
+          </div>
+        </div>
+        <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${scheme.icon}`}>
+          <Icon className="w-5 h-5" />
+        </div>
+      </div>
+
+      <div className="space-y-2 mt-auto pt-2 border-t border-slate-100 dark:border-slate-800/80">
+        {progress !== undefined && (
+          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${scheme.progress}`}
+              style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+            />
+          </div>
+        )}
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+          <span className="truncate">{subtitle}</span>
+          {badgeText && (
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor} shrink-0`}>
+              {badgeText}
+            </span>
+          )}
+        </div>
+      </div>
     </div>
-    <div>
-      <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">
-        {title}
-      </p>
-      <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-none">
-        {value}
-      </h3>
-      {subtitle && <p className="text-xs text-slate-400 mt-2">{subtitle}</p>}
-    </div>
-  </div>
-);
+  );
+};
 
 const AdminDashboard = () => {
   const { user } = useAuth();
-  
+
   const [overview, setOverview] = useState(null);
   const [trends, setTrends] = useState([]);
+  const [timeframe, setTimeframe] = useState(7); // 7, 14, 30 days
+  const [metricMode, setMetricMode] = useState("percent"); // "percent" | "volume"
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [overviewRes, trendsRes] = await Promise.all([
-          getSystemOverview(),
-          getAttendanceTrends(7)
-        ]);
-        setOverview(overviewRes);
-        setTrends(trendsRes);
-      } catch {
-        toast.error("Failed to load dashboard data");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  // Fetch dashboard analytical data
+  const fetchData = async (days = timeframe, isManualRefresh = false) => {
+    if (isManualRefresh) setRefreshing(true);
+    else setLoading(true);
 
-  // Custom Tooltip for Recharts
-  const CustomTooltip = ({ active, payload, label }) => {
+    try {
+      const [overviewRes, trendsRes] = await Promise.all([
+        getSystemOverview(),
+        getAttendanceTrends(days),
+      ]);
+      setOverview(overviewRes);
+      setTrends(trendsRes || []);
+      if (isManualRefresh) {
+        toast.success("Dashboard analytics synchronized!");
+      }
+    } catch {
+      toast.error("Failed to load dashboard data");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(timeframe);
+  }, [timeframe]);
+
+  // Handle CSV export
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      await downloadCSVReport();
+      toast.success("Analytics CSV exported successfully!");
+    } catch {
+      toast.error("Failed to download CSV report");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // Trend Statistics calculation (Peak, Low, Average)
+  const trendStats = useMemo(() => {
+    if (!trends || trends.length === 0) return { peak: null, low: null, avg: 0, totalVolume: 0 };
+
+    let maxVal = -1;
+    let minVal = 101;
+    let peakDay = null;
+    let lowDay = null;
+    let sumPercent = 0;
+    let totalVol = 0;
+
+    trends.forEach((t) => {
+      const p = t.percent || 0;
+      sumPercent += p;
+      totalVol += t.total || 0;
+      if (p > maxVal) {
+        maxVal = p;
+        peakDay = t;
+      }
+      if (p < minVal) {
+        minVal = p;
+        lowDay = t;
+      }
+    });
+
+    const avg = trends.length > 0 ? Math.round(sumPercent / trends.length) : 0;
+    return { peak: peakDay, low: lowDay, avg, totalVolume: totalVol };
+  }, [trends]);
+
+  // Donut chart data: Present vs Absent
+  const donutData = useMemo(() => {
+    const present = overview?.presentRecords || 0;
+    const absent = overview?.absentRecords || 0;
+    const total = present + absent;
+
+    if (total === 0) {
+      return [
+        { name: "Present", value: 1, color: "#10b981" },
+        { name: "Absent", value: 0, color: "#ef4444" },
+      ];
+    }
+
+    return [
+      { name: "Present", value: present, color: "#10b981" },
+      { name: "Absent", value: absent, color: "#ef4444" },
+    ];
+  }, [overview]);
+
+  // Class comparison breakdown
+  const classBreakdown = useMemo(() => {
+    return (overview?.classBreakdown || []).map((c) => ({
+      name: c.code || c.name,
+      fullName: c.name,
+      rate: c.rate || 0,
+      total: c.total || 0,
+    }));
+  }, [overview]);
+
+  // Custom Tooltip for Area Chart
+  const CustomTrendTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      const dateObj = new Date(label);
+      const formattedDate = dateObj.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      });
+
       return (
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-lg">
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{label}</p>
-          <p className="text-sm font-bold text-violet-600 dark:text-violet-400">
-            Attendance: {payload[0].value}%
-          </p>
-          <p className="text-xs text-slate-400 mt-1">
-            Total records: {payload[0].payload.total}
-          </p>
+        <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-md text-white border border-slate-700/80 p-3 rounded-xl shadow-xl text-xs space-y-1.5">
+          <p className="font-semibold text-slate-300">{formattedDate}</p>
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-violet-400 inline-block" />
+            <span className="font-bold text-sm text-white">
+              {metricMode === "percent" ? `${data.percent}% Attendance` : `${data.total} Records`}
+            </span>
+          </div>
+          <div className="pt-1 border-t border-slate-700/60 flex items-center justify-between gap-4 text-slate-400 text-[11px]">
+            <span>Attendance Rate: <strong className="text-emerald-400">{data.percent}%</strong></span>
+            <span>Total Logged: <strong className="text-indigo-300">{data.total}</strong></span>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Custom Tooltip for Class Bar Chart
+  const CustomBarTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-md text-white border border-slate-700/80 p-3 rounded-xl shadow-xl text-xs space-y-1">
+          <p className="font-bold text-sm text-white">{data.fullName || data.name}</p>
+          <p className="text-emerald-400 font-semibold">Attendance Rate: {data.rate}%</p>
+          <p className="text-slate-400 text-[11px]">Total Records: {data.total}</p>
         </div>
       );
     }
@@ -89,121 +305,471 @@ const AdminDashboard = () => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-            Admin Dashboard
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-            Welcome back, {user?.name}. Here's the system overview for today.
-          </p>
-        </div>
+      {/* ── Executive Top Header & Analyst Controls ────────────────────────── */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-[11px] font-bold border border-indigo-200 dark:border-indigo-800">
+                Institutional Intelligence
+              </span>
+              <span className="flex items-center gap-1.5 text-xs text-slate-400">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                Live Academic Feed
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
+              Admin & Analytics Command Center
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Real-time attendance trends, cohort health, faculty coverage, and operational routines.
+            </p>
+          </div>
 
-        <button
-          onClick={() => setShowLeaveModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition-all cursor-pointer self-start sm:self-auto"
-        >
-          <FileCheck className="w-4 h-4" /> Review Student Leaves
-        </button>
+          {/* Action Toolbar */}
+          <div className="flex items-center gap-2 flex-wrap self-start lg:self-auto">
+            <button
+              onClick={() => fetchData(timeframe, true)}
+              disabled={refreshing}
+              className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+              title="Refresh Analytics"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-indigo-500" : ""}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
+
+            <button
+              onClick={handleExportCSV}
+              disabled={exporting}
+              className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+              title="Export Full CSV Report"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{exporting ? "Exporting..." : "Export CSV"}</span>
+            </button>
+
+            <button
+              onClick={() => setShowLeaveModal(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
+            >
+              <FileCheck className="w-3.5 h-3.5" />
+              <span>Review Student Leaves</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+        <div className="flex flex-col items-center justify-center py-24 space-y-3">
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs font-semibold text-slate-400">Loading analytic models and records...</p>
         </div>
       ) : (
         <>
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              title="Overall Attendance"
+          {/* ── Executive KPI Cards (5 High-Density Cards) ──────────────────── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <AnalystKpiCard
+              title="System Attendance"
               value={`${overview?.overallPercent || 0}%`}
+              subtitle={`Total logs: ${(overview?.totalRecords || 0).toLocaleString()}`}
               icon={Activity}
-              colorClass="text-violet-600 dark:text-violet-400"
-              bgClass="bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/50"
-              subtitle="System-wide average"
+              colorScheme="violet"
+              progress={overview?.overallPercent || 0}
+              badgeText={
+                (overview?.overallPercent || 0) >= 75
+                  ? "Optimal (≥75%)"
+                  : "Critical (<75%)"
+              }
+              badgeColor={
+                (overview?.overallPercent || 0) >= 75
+                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                  : "bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
+              }
             />
-            <StatCard
-              title="Total Students"
-              value={overview?.studentCount || 0}
+
+            <AnalystKpiCard
+              title="Active Students"
+              value={(overview?.studentCount || 0).toLocaleString()}
+              subtitle={`Across ${overview?.classCount || 0} academic classes`}
               icon={Users}
-              colorClass="text-emerald-600 dark:text-emerald-400"
-              bgClass="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50"
-              subtitle="Active enrollments"
+              colorScheme="emerald"
+              progress={100}
+              badgeText="Enrolled"
+              badgeColor="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
             />
-            <StatCard
-              title="Faculty Members"
-              value={overview?.teacherCount || 0}
+
+            <AnalystKpiCard
+              title="Faculty Strength"
+              value={(overview?.teacherCount || 0).toLocaleString()}
+              subtitle={`Ratio: 1 : ${
+                overview?.teacherCount
+                  ? Math.round((overview?.studentCount || 0) / overview.teacherCount)
+                  : 0
+              } students`}
               icon={GraduationCap}
-              colorClass="text-indigo-600 dark:text-indigo-400"
-              bgClass="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800/50"
-              subtitle="Registered teachers"
+              colorScheme="indigo"
+              progress={100}
+              badgeText="100% Active"
+              badgeColor="bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800"
             />
-            <StatCard
-              title="Classes Today"
-              value={overview?.activeClassesToday || 0}
+
+            <AnalystKpiCard
+              title="Today's Sessions"
+              value={`${overview?.activeClassesToday || 0} / ${overview?.classCount || 0}`}
+              subtitle={`${overview?.todayStats?.present || 0} Present • ${overview?.todayStats?.absent || 0} Absent`}
               icon={CalendarDays}
-              colorClass="text-amber-600 dark:text-amber-400"
-              bgClass="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50"
-              subtitle="Sessions conducted"
+              colorScheme="amber"
+              progress={
+                overview?.classCount
+                  ? Math.round(((overview?.activeClassesToday || 0) / overview.classCount) * 100)
+                  : 0
+              }
+              badgeText={
+                overview?.todayStats?.total > 0
+                  ? `${overview?.todayStats?.percent}% Rate`
+                  : "Pending"
+              }
+              badgeColor="bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
+            />
+
+            <AnalystKpiCard
+              title="At-Risk Cohort"
+              value={(overview?.atRiskCount || 0).toLocaleString()}
+              subtitle="Students below 75% cutoff"
+              icon={AlertTriangle}
+              colorScheme="rose"
+              progress={
+                overview?.studentCount
+                  ? Math.round(((overview?.atRiskCount || 0) / overview.studentCount) * 100)
+                  : 0
+              }
+              badgeText={
+                (overview?.atRiskCount || 0) > 0 ? "Action Req." : "Clear"
+              }
+              badgeColor={
+                (overview?.atRiskCount || 0) > 0
+                  ? "bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
+                  : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+              }
             />
           </div>
 
-          {/* Chart Section */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
+          {/* ── Analytics Visual 1: Longitudinal Attendance Trajectory ──────── */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-violet-500" />
-                  Attendance Trends
-                </h3>
-                <p className="text-xs text-slate-500 mt-1">Daily percentage for the last 7 days</p>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-violet-50 dark:bg-violet-950/60 flex items-center justify-center text-violet-600 dark:text-violet-400">
+                    <TrendingUp className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                      Longitudinal Attendance Trajectory
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Tracking institutional attendance patterns and day-to-day engagement
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Controls: Timeframe & Metric Mode */}
+              <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+                {/* Metric toggle */}
+                <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
+                  <button
+                    onClick={() => setMetricMode("percent")}
+                    className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                      metricMode === "percent"
+                        ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
+                        : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                    }`}
+                  >
+                    Percentage (%)
+                  </button>
+                  <button
+                    onClick={() => setMetricMode("volume")}
+                    className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                      metricMode === "volume"
+                        ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
+                        : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                    }`}
+                  >
+                    Volume (Counts)
+                  </button>
+                </div>
+
+                {/* Days range buttons */}
+                <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
+                  {[7, 14, 30].map((days) => (
+                    <button
+                      key={days}
+                      onClick={() => setTimeframe(days)}
+                      className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                        timeframe === days
+                          ? "bg-violet-600 text-white shadow-xs"
+                          : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                      }`}
+                    >
+                      {days}D
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="h-[300px] w-full">
+            {/* Area Chart Container */}
+            <div className="h-[280px] sm:h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={trends} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart
+                  data={trends}
+                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                >
                   <defs>
-                    <linearGradient id="colorPercent" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                    <linearGradient id="analystGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
-                  <XAxis 
-                    dataKey="date" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 12, fill: '#64748b' }}
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#334155"
+                    opacity={0.15}
+                  />
+                  <XAxis
+                    dataKey="date"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: "#64748b" }}
                     dy={10}
                     tickFormatter={(val) => {
                       const d = new Date(val);
-                      return `${d.getDate()} ${d.toLocaleString('default', { month: 'short' })}`;
+                      return `${d.getDate()} ${d.toLocaleString("default", { month: "short" })}`;
                     }}
                   />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 12, fill: '#64748b' }} 
-                    domain={[0, 100]}
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: "#64748b" }}
+                    domain={metricMode === "percent" ? [0, 100] : ["auto", "auto"]}
+                    unit={metricMode === "percent" ? "%" : ""}
                   />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Area 
-                    type="monotone" 
-                    dataKey="percent" 
-                    stroke="#8b5cf6" 
+                  <Tooltip content={<CustomTrendTooltip />} />
+                  {metricMode === "percent" && (
+                    <ReferenceLine
+                      y={75}
+                      stroke="#ef4444"
+                      strokeDasharray="4 4"
+                      label={{
+                        value: "Statutory Cutoff (75%)",
+                        fill: "#ef4444",
+                        fontSize: 10,
+                        position: "insideTopRight",
+                      }}
+                    />
+                  )}
+                  <Area
+                    type="monotone"
+                    dataKey={metricMode === "percent" ? "percent" : "total"}
+                    stroke="#8b5cf6"
                     strokeWidth={3}
-                    fillOpacity={1} 
-                    fill="url(#colorPercent)" 
+                    fillOpacity={1}
+                    fill="url(#analystGradient)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
+
+            {/* Analyst Summary Strip */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                  Period Mean
+                </span>
+                <span className="text-base font-extrabold text-slate-800 dark:text-slate-100">
+                  {trendStats.avg}%
+                </span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                  Peak Day Turnout
+                </span>
+                <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">
+                  {trendStats.peak ? `${trendStats.peak.percent}%` : "—"}
+                </span>
+                {trendStats.peak && (
+                  <span className="text-[10px] text-slate-400 block">
+                    {new Date(trendStats.peak.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  </span>
+                )}
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                  Lowest Turnout
+                </span>
+                <span className="text-base font-extrabold text-rose-500">
+                  {trendStats.low ? `${trendStats.low.percent}%` : "—"}
+                </span>
+                {trendStats.low && (
+                  <span className="text-[10px] text-slate-400 block">
+                    {new Date(trendStats.low.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  </span>
+                )}
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                  Total Sessions Logged
+                </span>
+                <span className="text-base font-extrabold text-indigo-600 dark:text-indigo-400">
+                  {trendStats.totalVolume.toLocaleString()}
+                </span>
+              </div>
+            </div>
           </div>
 
-          {/* ── Notice Board & Timetable Grid (Phase 7 & 8) ── */}
+          {/* ── Analytics Visual 2: Class Performance & Status Composition ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left 2 Cols: Cohort Comparison Bar Chart */}
+            <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                    <BarChart3 className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                      Class Performance Comparison
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Attendance rate across academic classes vs 75% target
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {classBreakdown.length === 0 ? (
+                <div className="h-[220px] flex items-center justify-center text-xs text-slate-400">
+                  No class performance data recorded yet.
+                </div>
+              ) : (
+                <div className="h-[240px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={classBreakdown}
+                      margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.15} />
+                      <XAxis
+                        dataKey="name"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 11, fill: "#64748b" }}
+                      />
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 11, fill: "#64748b" }}
+                        domain={[0, 100]}
+                        unit="%"
+                      />
+                      <Tooltip content={<CustomBarTooltip />} />
+                      <ReferenceLine
+                        y={75}
+                        stroke="#ef4444"
+                        strokeDasharray="3 3"
+                      />
+                      <Bar dataKey="rate" radius={[8, 8, 0, 0]} maxBarSize={45}>
+                        {classBreakdown.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={entry.rate >= 75 ? "#10b981" : "#f59e0b"}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </div>
+
+            {/* Right 1 Col: Donut Composition */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                    <PieChartIcon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                      Status Composition
+                    </h3>
+                    <p className="text-xs text-slate-500">Cumulative institutional ratio</p>
+                  </div>
+                </div>
+
+                <div className="h-[180px] w-full relative flex items-center justify-center">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={donutData}
+                        innerRadius={55}
+                        outerRadius={80}
+                        paddingAngle={4}
+                        dataKey="value"
+                      >
+                        {donutData.map((entry, idx) => (
+                          <Cell key={`donut-${idx}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  {/* Center Stat */}
+                  <div className="absolute text-center pointer-events-none">
+                    <span className="text-2xl font-black text-slate-900 dark:text-white">
+                      {overview?.overallPercent || 0}%
+                    </span>
+                    <span className="text-[10px] text-slate-400 block font-semibold">
+                      Present
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Custom Legend */}
+              <div className="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-slate-300">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                    Present Attendances
+                  </span>
+                  <strong className="text-slate-900 dark:text-white">
+                    {(overview?.presentRecords || 0).toLocaleString()} (
+                    {overview?.totalRecords
+                      ? Math.round(((overview.presentRecords || 0) / overview.totalRecords) * 100)
+                      : 0}
+                    %)
+                  </strong>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-slate-300">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                    Absenteeism
+                  </span>
+                  <strong className="text-slate-900 dark:text-white">
+                    {(overview?.absentRecords || 0).toLocaleString()} (
+                    {overview?.totalRecords
+                      ? Math.round(((overview.absentRecords || 0) / overview.totalRecords) * 100)
+                      : 0}
+                    %)
+                  </strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Operational Widgets: Notice Board & Class Routine ───────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <NoticeBoardWidget />
             <TimetableWidget />

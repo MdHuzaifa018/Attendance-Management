@@ -353,7 +353,7 @@ const TeacherAttendancePage = () => {
           </div>
 
           {/* Search Button — sab fields fill karne ke baad click karo */}
-          <div className="flex items-end">
+          <div className="flex items-end sm:col-span-2 lg:col-span-1">
             <button
               onClick={fetchSheet}
               disabled={loadingLookups || !selectedClassId || !selectedSubjectId || loadingSheet}

@@ -92,28 +92,28 @@ const TimetableWidget = ({ classId, teacherUserId }) => {
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="flex flex-col gap-3 mb-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm">
+      <div className="flex flex-col gap-3.5 mb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm shrink-0">
               <CalendarDays className="w-4 h-4" />
             </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
                 Class Schedule & Timetable
               </h3>
-              <p className="text-xs text-slate-500">Weekly routine and lecture hours</p>
+              <p className="text-xs text-slate-500 truncate">Weekly routine and lecture hours</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
             {!classId && classes.length > 0 && (
               <select
                 value={selectedClassId}
                 onChange={(e) => setSelectedClassId(e.target.value)}
-                className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors cursor-pointer"
+                className="max-w-[150px] sm:max-w-[200px] px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors cursor-pointer truncate"
               >
                 {classes.map((cls) => (
                   <option key={cls._id} value={cls._id}>
@@ -125,7 +125,7 @@ const TimetableWidget = ({ classId, teacherUserId }) => {
             {isAdmin && (
               <button
                 onClick={() => setShowEditModal(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-sm transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
                 title="Edit or create class timetable"
               >
                 <Pencil className="w-3.5 h-3.5" /> Edit Routine
@@ -135,7 +135,7 @@ const TimetableWidget = ({ classId, teacherUserId }) => {
         </div>
 
         {/* Day Selector Pills */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-1">
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
           {DAYS.map((day) => {
             const isToday = day === initialDay;
             const isSelected = day === selectedDay;
@@ -171,14 +171,14 @@ const TimetableWidget = ({ classId, teacherUserId }) => {
           No periods scheduled for {selectedDay}. Enjoy your academic study break!
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3.5">
           {periods.map((p, idx) => (
             <div
               key={idx}
-              className="p-4 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/40 hover:border-indigo-500/30 transition-all flex items-start justify-between gap-3 group"
+              className="p-3.5 sm:p-4 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/40 hover:border-indigo-500/30 transition-all flex items-start justify-between gap-3 group min-w-0"
             >
-              <div className="space-y-1.5 flex-1">
-                <div className="flex items-center gap-2">
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold">
                     Period #{p.periodNumber}
                   </span>
@@ -188,29 +188,29 @@ const TimetableWidget = ({ classId, teacherUserId }) => {
                   </span>
                 </div>
 
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                  <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
-                  {p.subject?.name || "Subject Lecture"}
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 truncate">
+                  <BookOpen className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                  <span className="truncate">{p.subject?.name || "Subject Lecture"}</span>
                   {p.subject?.code && (
-                    <span className="text-[10px] text-slate-400 font-normal">
+                    <span className="text-[10px] text-slate-400 font-normal shrink-0">
                       ({p.subject.code})
                     </span>
                   )}
                 </h4>
 
-                <div className="flex items-center justify-between pt-0.5">
-                  <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400">
-                    <span className="flex items-center gap-1">
-                      <User className="w-3 h-3 text-slate-400" />
-                      {p.teacher?.user?.name || "Faculty Assigned"}
+                <div className="flex items-center justify-between gap-2 pt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="flex items-center gap-1 min-w-0 truncate">
+                      <User className="w-3 h-3 text-slate-400 shrink-0" />
+                      <span className="truncate">{p.teacher?.user?.name || "Faculty Assigned"}</span>
                     </span>
-                    <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                    <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium shrink-0">
                       <MapPin className="w-3 h-3" />
                       {p.roomNo || "Room 201"}
                     </span>
                   </div>
                   {p.class && (
-                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md shrink-0">
                       {p.class.code || p.class.name}
                     </span>
                   )}
