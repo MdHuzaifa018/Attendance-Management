@@ -1,81 +1,86 @@
 import Notice from "../models/Notice.js";
 
-// GET /api/notices — Fetches notices filtered by the requester's role
+// Notices fetch karna — role ke hisaab se filter hota hai
 export const getNotices = async (req, res) => {
-  const role = req.user?.role || "student";
-  const filter = { isActive: true };
+  try {
+    const role = req.user?.role || "student";
+    const filter = { isActive: true };
 
-  // Build role-based visibility filter:
-  // - Students see notices for "all" or specifically for "student"
-  // - Teachers see general + faculty + student notices
-  // - Admins see everything (no extra filter)
-  if (role === "student") {
-    filter.$or = [{ targetRole: "all" }, { targetRole: "student" }];
-  } else if (role === "teacher") {
-    filter.$or = [{ targetRole: "all" }, { targetRole: "teacher" }, { targetRole: "student" }];
+    if (role === "student") {
+      // Student ko sirf "all" ya "student" wale notices dikhenge
+      filter.$or = [{ targetRole: "all" }, { targetRole: "student" }];
+    } else if (role === "teacher") {
+      // Teacher ko general + faculty + student notices dikhenge
+      filter.$or = [{ targetRole: "all" }, { targetRole: "teacher" }, { targetRole: "student" }];
+    }
+    // Admin ko sabhi notices bina filter ke dikhenge
+
+    const notices = await Notice.find(filter)
+      .populate("postedBy", "name email role")
+      .sort({ priority: -1, createdAt: -1 })
+      .limit(50);
+
+    res.status(200).json({ success: true, data: notices });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
-
-  const notices = await Notice.find(filter)
-    .populate("postedBy", "name email role")
-    .sort({ priority: -1, createdAt: -1 })
-    .limit(50)
-    .lean();
-
-  res.status(200).json({ success: true, data: notices });
 };
 
-// POST /api/notices — Admin creates a new notice (admin only)
+// Naya notice create karna (Admin only)
 export const createNotice = async (req, res) => {
-  const { title, content, category, priority, targetRole } = req.body;
+  try {
+    const { title, content, category, priority, targetRole } = req.body;
 
-  if (!title || !content) {
-    const err = new Error("Title and content are required");
-    err.statusCode = 400;
-    throw err;
+    if (!title || !content) {
+      return res.status(400).json({ success: false, message: "Title aur content required hai" });
+    }
+
+    const notice = await Notice.create({
+      title,
+      content,
+      category: category || "General",
+      priority: priority || "normal",
+      targetRole: targetRole || "all",
+      postedBy: req.user._id,
+      isActive: true,
+    });
+
+    const result = await Notice.findById(notice._id).populate("postedBy", "name email");
+
+    res.status(201).json({ success: true, message: "Notice posted successfully", data: result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
-
-  const notice = await Notice.create({
-    title,
-    content,
-    category: category || "General",
-    priority: priority || "normal",
-    targetRole: targetRole || "all",
-    postedBy: req.user._id,
-    isActive: true,
-  });
-
-  const populated = await Notice.findById(notice._id).populate("postedBy", "name email").lean();
-
-  res.status(201).json({ success: true, message: "Notice posted successfully", data: populated });
 };
 
-// PATCH /api/notices/:id — Admin toggles notice active/inactive status
+// Notice active/inactive toggle karna (Admin only)
 export const toggleNotice = async (req, res) => {
-  const notice = await Notice.findById(req.params.id);
-  if (!notice) {
-    const err = new Error("Notice not found");
-    err.statusCode = 404;
-    throw err;
+  try {
+    const notice = await Notice.findById(req.params.id);
+    if (!notice) {
+      return res.status(404).json({ success: false, message: "Notice not found" });
+    }
+
+    notice.isActive = !notice.isActive;
+    await notice.save();
+
+    const status = notice.isActive ? "activated" : "deactivated";
+    res.status(200).json({ success: true, message: `Notice ${status} successfully`, data: notice });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
-
-  notice.isActive = !notice.isActive;
-  await notice.save();
-
-  res.status(200).json({
-    success: true,
-    message: `Notice ${notice.isActive ? "activated" : "deactivated"} successfully`,
-    data: { _id: notice._id, isActive: notice.isActive },
-  });
 };
 
-// DELETE /api/notices/:id — Admin permanently deletes a notice
+// Notice delete karna (Admin only)
 export const deleteNotice = async (req, res) => {
-  const notice = await Notice.findByIdAndDelete(req.params.id);
-  if (!notice) {
-    const err = new Error("Notice not found");
-    err.statusCode = 404;
-    throw err;
-  }
+  try {
+    const notice = await Notice.findByIdAndDelete(req.params.id);
+    if (!notice) {
+      return res.status(404).json({ success: false, message: "Notice not found" });
+    }
 
-  res.status(200).json({ success: true, message: "Notice deleted successfully" });
+    res.status(200).json({ success: true, message: "Notice deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };

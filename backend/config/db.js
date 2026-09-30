@@ -4,35 +4,26 @@ const connectDB = async () => {
   const uri = process.env.MONGO_URI;
 
   if (!uri) {
-    throw new Error("MONGO_URI is not set in environment variables");
+    throw new Error("MONGO_URI .env me set nahi hai");
   }
 
-  // Mongoose connection options tuned for MongoDB Atlas (cloud):
-  // - maxPoolSize: keep up to 10 concurrent DB connections ready
-  // - serverSelectionTimeoutMS: fail fast if Atlas is unreachable (5s)
-  // - socketTimeoutMS: drop queries that hang longer than 45s
-  // - family: 4 forces IPv4 which avoids DNS resolution delays on some hosts
-  const options = {
-    maxPoolSize: 10,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-    family: 4,
-  };
-
   let attempt = 0;
-  const maxAttempts = 3;
 
-  while (attempt < maxAttempts) {
+  while (attempt < 3) {
     attempt++;
     try {
-      const conn = await mongoose.connect(uri, options);
-      console.log(`✅ MongoDB connected: ${conn.connection.host}`);
+      await mongoose.connect(uri, {
+        maxPoolSize: 10,          // Ek saath max 10 DB connections
+        serverSelectionTimeoutMS: 5000,  // 5 sec me connect na ho to fail
+        socketTimeoutMS: 45000,   // 45 sec se zyada hang kare to drop
+        family: 4,                // IPv4 use karo (Atlas pe fast hota hai)
+      });
+      console.log("MongoDB connected successfully");
       return;
-    } catch (err) {
-      console.error(`❌ MongoDB connection attempt ${attempt}/${maxAttempts} failed: ${err.message}`);
-      if (attempt === maxAttempts) throw err;
-      // Wait 2 seconds before retrying
-      await new Promise((res) => setTimeout(res, 2000));
+    } catch (error) {
+      console.error(`MongoDB connection attempt ${attempt}/3 failed:`, error.message);
+      if (attempt === 3) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // 2 sec baad retry
     }
   }
 };

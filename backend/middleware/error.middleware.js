@@ -1,38 +1,37 @@
-// Generates a 404 error for any route that doesn't match a defined handler.
+// 404 handler — koi bhi route match na ho to yahan aata hai
 export const notFound = (req, res, next) => {
-  const err = new Error(`Not found: ${req.method} ${req.originalUrl}`);
-  err.statusCode = 404;
-  next(err);
+  const error = new Error(`Route not found: ${req.method} ${req.originalUrl}`);
+  error.statusCode = 404;
+  next(error);
 };
 
-// Central error handler — all thrown errors in services/controllers land here.
-// Express 5 automatically forwards async errors without needing try/catch.
-export const errorHandler = (err, req, res, next) => {
-  let statusCode = err.statusCode || 500;
-  let message = err.message || "Something went wrong";
+// Global error handler — saare errors yahan handle hote hain
+export const errorHandler = (error, req, res, next) => {
+  let statusCode = error.statusCode || 500;
+  let message = error.message || "Something went wrong";
 
-  // Zod validation failure (from validate.middleware.js)
-  if (err.name === "ZodError") {
+  // Zod validation error (invalid request body)
+  if (error.name === "ZodError") {
     statusCode = 400;
-    message = err.issues.map((i) => i.message).join(", ");
+    message = error.issues.map((i) => i.message).join(", ");
   }
 
-  // MongoDB duplicate key (e.g., unique email or roll number)
-  if (err.code === 11000) {
+  // MongoDB duplicate key error (e.g. same email ya roll number)
+  if (error.code === 11000) {
     statusCode = 409;
-    const field = Object.keys(err.keyValue || {})[0] || "field";
+    const field = Object.keys(error.keyValue || {})[0] || "field";
     message = `${field} already exists`;
   }
 
-  // Mongoose cast error (e.g., invalid ObjectId in URL param)
-  if (err.name === "CastError") {
+  // MongoDB invalid ID error (e.g. galat ObjectId URL me)
+  if (error.name === "CastError") {
     statusCode = 400;
-    message = `Invalid value for ${err.path}`;
+    message = `Invalid ID format`;
   }
 
-  // Only log 5xx errors — 4xx errors are expected client mistakes
+  // Sirf server errors (5xx) log karo — client errors (4xx) expected hain
   if (statusCode >= 500) {
-    console.error(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`, err);
+    console.error(`[ERROR] ${req.method} ${req.originalUrl}:`, error.message);
   }
 
   res.status(statusCode).json({ success: false, message });

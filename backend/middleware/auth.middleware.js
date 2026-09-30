@@ -1,15 +1,14 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-// Verifies the Bearer token and attaches the user to req.user.
-// Called before any protected route handler.
+// JWT token verify karna aur user ko req.user me set karna
 export const protect = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith("Bearer ")) {
-      const err = new Error("Authentication token is required");
-      err.statusCode = 401;
-      return next(err);
+
+    // Token header me hona chahiye: "Bearer <token>"
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ success: false, message: "Login required" });
     }
 
     const token = authHeader.split(" ")[1];
@@ -17,27 +16,22 @@ export const protect = async (req, res, next) => {
 
     const user = await User.findById(decoded.userId).lean();
     if (!user) {
-      const err = new Error("User not found");
-      err.statusCode = 401;
-      return next(err);
+      return res.status(401).json({ success: false, message: "User not found" });
     }
 
     if (!user.isActive) {
-      const err = new Error("Your account has been deactivated");
-      err.statusCode = 403;
-      return next(err);
+      return res.status(403).json({ success: false, message: "Your account is deactivated" });
     }
 
-    req.user = user; // { _id, name, email, role, isActive }
+    req.user = user; // Aage ke routes me available hoga
     next();
-  } catch (err) {
-    if (err.name === "JsonWebTokenError") {
-      err.statusCode = 401;
-      err.message = "Invalid token";
-    } else if (err.name === "TokenExpiredError") {
-      err.statusCode = 401;
-      err.message = "Token has expired — please log in again";
+  } catch (error) {
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ success: false, message: "Invalid token" });
     }
-    next(err);
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ success: false, message: "Token expired, please login again" });
+    }
+    next(error);
   }
 };
