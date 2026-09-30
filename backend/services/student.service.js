@@ -128,7 +128,12 @@ export const createStudent = async (data) => {
       department: data.departmentId,
       class: data.classId,
       admissionYear: data.admissionYear,
+      duration: data.duration || "2024-27",
       phone: data.phone || "",
+      photo: data.photo || "",
+      bloodGroup: data.bloodGroup || "",
+      dob: data.dob || "",
+      address: data.address || "",
     });
   } catch (err) {
     // Rollback: remove the orphaned User if Student creation failed
@@ -141,8 +146,7 @@ export const createStudent = async (data) => {
 
 /**
  * updateStudent
- * Updates Student profile fields. Does NOT update the linked User account.
- * To change a student's name or email, use a separate user-management endpoint.
+ * Updates Student profile fields and optionally the linked User's name.
  *
  * @param {string} studentId
  * @param {object} updates - Validated body from updateStudentSchema
@@ -155,7 +159,20 @@ export const updateStudent = async (studentId, updates) => {
   if (updates.departmentId !== undefined) updateData.department = updates.departmentId;
   if (updates.classId !== undefined) updateData.class = updates.classId;
   if (updates.admissionYear !== undefined) updateData.admissionYear = updates.admissionYear;
+  if (updates.duration !== undefined) updateData.duration = updates.duration;
   if (updates.phone !== undefined) updateData.phone = updates.phone;
+  if (updates.photo !== undefined) updateData.photo = updates.photo;
+  if (updates.bloodGroup !== undefined) updateData.bloodGroup = updates.bloodGroup;
+  if (updates.dob !== undefined) updateData.dob = updates.dob;
+  if (updates.address !== undefined) updateData.address = updates.address;
+
+  // Name update synced to the linked User
+  if (updates.name && updates.name.trim()) {
+    const student = await Student.findById(studentId);
+    if (student && student.user) {
+      await User.findByIdAndUpdate(student.user, { name: updates.name.trim() });
+    }
+  }
 
   // isActive synced to the linked User as well
   if (updates.isActive !== undefined) {

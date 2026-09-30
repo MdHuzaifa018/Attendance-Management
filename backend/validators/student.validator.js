@@ -63,15 +63,26 @@ export const createStudentSchema = z.object({
     .max(15, "Phone number is too long")
     .optional()
     .or(z.literal("")),
+
+  photo: z.string().optional().or(z.literal("")),
+  bloodGroup: z.string().max(10).trim().optional().or(z.literal("")),
+  dob: z.string().max(30).trim().optional().or(z.literal("")),
+  address: z.string().max(250).trim().optional().or(z.literal("")),
 });
 
 /**
  * updateStudentSchema
  * Used when admin edits an existing student.
  * All fields optional — only send what changed.
- * Does not allow changing the linked user account (email/password changes are separate).
  */
 export const updateStudentSchema = z.object({
+  name: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .max(100)
+    .trim()
+    .optional(),
+
   rollNo: z
     .string()
     .min(1, "Roll number is required")
@@ -96,6 +107,14 @@ export const updateStudentSchema = z.object({
   duration: z.string().trim().optional(),
 
   phone: z.string().max(15).optional().or(z.literal("")),
+
+  photo: z.string().optional().or(z.literal("")),
+
+  bloodGroup: z.string().max(10).trim().optional().or(z.literal("")),
+
+  dob: z.string().max(30).trim().optional().or(z.literal("")),
+
+  address: z.string().max(250).trim().optional().or(z.literal("")),
 
   isActive: z.boolean().optional(),
 });

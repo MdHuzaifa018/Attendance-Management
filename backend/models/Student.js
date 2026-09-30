@@ -51,6 +51,29 @@ const studentSchema = new mongoose.Schema(
       trim: true,
     },
 
+    photo: {
+      type: String,
+      default: "",
+    },
+
+    bloodGroup: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    dob: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    address: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
     isActive: {
       type: Boolean,
       default: true,
