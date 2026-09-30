@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   ClipboardCheck,
   Calendar,
@@ -13,6 +13,7 @@ import {
   RotateCcw,
   Sparkles,
   BookOpen,
+  Search,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -52,6 +53,9 @@ const TeacherAttendancePage = () => {
   const [loadingLookups, setLoadingLookups] = useState(true);
   const [loadingSheet, setLoadingSheet] = useState(false);
   const [saving, setSaving] = useState(false);
+  // hasSearched: true hone par hi attendance table dikhega
+  // User jab bhi class/subject change kare, table clear ho jaye
+  const [hasSearched, setHasSearched] = useState(false);
 
   // 1. Initial Load: classes & subjects
   useEffect(() => {
@@ -118,7 +122,9 @@ const TeacherAttendancePage = () => {
     return subjectsList.filter((s) => String(s.class?._id || s.class) === String(selectedClassId));
   }, [isAdmin, subjectsList, selectedClassId]);
 
-  // Auto-select first available subject if current selection doesn't match
+  // Jab class change ho to:
+  // 1. Pehla available subject auto-select karo
+  // 2. Table clear karo (user ko phir se Search dabana padega)
   useEffect(() => {
     if (availableSubjects.length > 0) {
       const match = availableSubjects.some((s) => s._id === selectedSubjectId);
@@ -128,21 +134,21 @@ const TeacherAttendancePage = () => {
     } else {
       setSelectedSubjectId("");
     }
-  }, [availableSubjects, selectedSubjectId]);
+    // Class change hone par purana data clear karo
+    setHasSearched(false);
+    setSheetData(null);
+    setStudents([]);
+  }, [availableSubjects]);
 
-  // 4. Fetch Attendance Sheet for selected Class + Subject + Date + Session
-  const fetchSheet = useCallback(async () => {
+  // Search button click hone par attendance sheet fetch karna
+  const fetchSheet = async () => {
     if (!selectedClassId || !selectedSubjectId || !selectedDate) {
-      setSheetData(null);
-      setStudents([]);
+      toast.error("Class, Subject aur Date select karo");
       return;
     }
 
-    // Prevent race condition when switching classes
-    const validSubject = availableSubjects.some((s) => s._id === selectedSubjectId);
-    if (!validSubject) return;
-
     setLoadingSheet(true);
+    setHasSearched(true);
     try {
       const data = await getAttendanceSheet({
         classId: selectedClassId,
@@ -161,11 +167,7 @@ const TeacherAttendancePage = () => {
     } finally {
       setLoadingSheet(false);
     }
-  }, [selectedClassId, selectedSubjectId, selectedDate, selectedSession]);
-
-  useEffect(() => {
-    fetchSheet();
-  }, [fetchSheet]);
+  };
 
   // 5. Attendance Status Controls
   const handleToggleStatus = (studentId) => {
@@ -272,7 +274,7 @@ const TeacherAttendancePage = () => {
           Session Parameters
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Class Selector */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
@@ -349,6 +351,21 @@ const TeacherAttendancePage = () => {
               ))}
             </select>
           </div>
+
+          {/* Search Button — sab fields fill karne ke baad click karo */}
+          <div className="flex items-end">
+            <button
+              onClick={fetchSheet}
+              disabled={loadingLookups || !selectedClassId || !selectedSubjectId || loadingSheet}
+              className="w-full flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold shadow-md shadow-indigo-600/25 transition-all cursor-pointer"
+            >
+              {loadingSheet ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Loading...</>
+              ) : (
+                <><Search className="w-4 h-4" /> Load Students</>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -412,10 +429,19 @@ const TeacherAttendancePage = () => {
 
       {/* ── Student Attendance Sheet Table ──────────────────────────────── */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden transition-colors">
-        {(loadingSheet || (availableSubjects.length > 0 && !availableSubjects.some(s => s._id === selectedSubjectId))) ? (
+        {loadingSheet ? (
           <div className="py-24 flex flex-col items-center justify-center text-slate-400 gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-emerald-600 dark:text-emerald-400" />
+            <Loader2 className="w-8 h-8 animate-spin text-indigo-600 dark:text-indigo-400" />
             <p className="text-sm font-medium">Loading attendance sheet...</p>
+          </div>
+        ) : !hasSearched ? (
+          // Jab tak Search nahi dabaya, ye message dikhao
+          <div className="py-20 text-center text-slate-400">
+            <Search className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-3" />
+            <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+              Class, Subject, Date select karo aur <span className="text-indigo-600 dark:text-indigo-400">"Load Students"</span> dabao
+            </p>
+            <p className="text-xs text-slate-400 mt-1">Attendance sheet yahan dikhegi</p>
           </div>
         ) : !selectedClassId || !selectedSubjectId ? (
           <div className="py-20 text-center text-slate-400">
