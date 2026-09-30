@@ -3,10 +3,14 @@ import Department from "../models/Department.js";
 import Student from "../models/Student.js";
 import Subject from "../models/Subject.js";
 
+// ── Service Functions ─────────────────────────────────────────────────────────
+
 /**
  * getAllClasses
- * Returns paginated classes with department and student counts.
- * If all=true, returns active classes list for dropdown selectors.
+ * Returns paginated classes with student and subject counts per class.
+ * If `all=true`, returns a lightweight active-class list for dropdowns.
+ *
+ * Performance: Counts are fetched in 2 aggregations instead of 2 queries per class.
  */
 export const getAllClasses = async ({
   search = "",
@@ -16,12 +20,9 @@ export const getAllClasses = async ({
   all = false,
 } = {}) => {
   const filter = {};
+  if (departmentId) filter.department = departmentId;
 
-  if (departmentId) {
-    filter.department = departmentId;
-  }
-
-  // If lightweight list requested for dropdowns
+  // Lightweight list for form dropdowns (no pagination, no counts)
   if (all) {
     filter.isActive = true;
     const classes = await Class.find(filter)
@@ -49,22 +50,40 @@ export const getAllClasses = async ({
     Class.countDocuments(filter),
   ]);
 
-  // Aggregate student and subject counts for each class
-  const classes = await Promise.all(
-    classDocs.map(async (cls) => {
-      const [studentCount, subjectCount] = await Promise.all([
-        Student.countDocuments({ class: cls._id }),
-        Subject.countDocuments({ class: cls._id }),
-      ]);
-      return {
-        ...cls,
-        stats: {
-          students: studentCount,
-          subjects: subjectCount,
-        },
-      };
-    })
-  );
+  if (classDocs.length === 0) {
+    return {
+      classes: [],
+      pagination: { total: 0, page: Number(page), limit: Number(limit), totalPages: 0 },
+    };
+  }
+
+  // Single round-trip per collection instead of 2 queries per class (N+1 fix)
+  const classIds = classDocs.map((c) => c._id);
+
+  const [studentCounts, subjectCounts] = await Promise.all([
+    Student.aggregate([
+      { $match: { class: { $in: classIds } } },
+      { $group: { _id: "$class", count: { $sum: 1 } } },
+    ]),
+    Subject.aggregate([
+      { $match: { class: { $in: classIds } } },
+      { $group: { _id: "$class", count: { $sum: 1 } } },
+    ]),
+  ]);
+
+  const studentMap = new Map(studentCounts.map((x) => [String(x._id), x.count]));
+  const subjectMap = new Map(subjectCounts.map((x) => [String(x._id), x.count]));
+
+  const classes = classDocs.map((cls) => {
+    const id = String(cls._id);
+    return {
+      ...cls,
+      stats: {
+        students: studentMap.get(id) || 0,
+        subjects: subjectMap.get(id) || 0,
+      },
+    };
+  });
 
   return {
     classes,
@@ -79,39 +98,38 @@ export const getAllClasses = async ({
 
 /**
  * getClassById
- * Throws 404 if not found.
+ * Returns one class with its department info and subject list.
  */
 export const getClassById = async (classId) => {
-  const cls = await Class.findById(classId).populate("department", "name code");
+  const [cls, subjects] = await Promise.all([
+    Class.findById(classId).populate("department", "name code").lean(),
+    Subject.find({ class: classId }).select("_id name code totalClasses").lean(),
+  ]);
+
   if (!cls) {
     const err = new Error("Class not found");
     err.statusCode = 404;
     throw err;
   }
 
-  const subjects = await Subject.find({ class: classId }).select(
-    "_id name code totalClasses"
-  );
-
-  return {
-    ...cls.toObject(),
-    subjects,
-  };
+  return { ...cls, subjects };
 };
 
 /**
  * createClass
- * Validates department existence and code uniqueness.
+ * Validates department exists and class code is unique.
  */
 export const createClass = async (data) => {
-  const department = await Department.findById(data.departmentId);
+  const [department, existingCode] = await Promise.all([
+    Department.findById(data.departmentId).lean(),
+    Class.findOne({ code: data.code }).lean(),
+  ]);
+
   if (!department) {
-    const err = new Error("Department does not exist");
+    const err = new Error("Department not found");
     err.statusCode = 404;
     throw err;
   }
-
-  const existingCode = await Class.findOne({ code: data.code });
   if (existingCode) {
     const err = new Error(`Class code "${data.code}" already exists`);
     err.statusCode = 409;
@@ -133,45 +151,46 @@ export const createClass = async (data) => {
 
 /**
  * updateClass
- * Updates class fields and ensures code uniqueness.
+ * Updates allowed fields, validates any changed foreign keys.
  */
 export const updateClass = async (classId, updates) => {
   const updateData = {};
-  if (updates.name !== undefined) updateData.name = updates.name;
-  if (updates.code !== undefined) updateData.code = updates.code;
+
+  if (updates.name !== undefined)         updateData.name = updates.name;
+  if (updates.semester !== undefined)     updateData.semester = updates.semester;
+  if (updates.section !== undefined)      updateData.section = updates.section;
+  if (updates.academicYear !== undefined) updateData.academicYear = updates.academicYear;
+  if (updates.isActive !== undefined)     updateData.isActive = updates.isActive;
+
+  // Validate new department if provided
   if (updates.departmentId !== undefined) {
-    const dept = await Department.findById(updates.departmentId);
+    const dept = await Department.findById(updates.departmentId).lean();
     if (!dept) {
-      const err = new Error("Selected department does not exist");
+      const err = new Error("Department not found");
       err.statusCode = 404;
       throw err;
     }
     updateData.department = updates.departmentId;
   }
-  if (updates.semester !== undefined) updateData.semester = updates.semester;
-  if (updates.section !== undefined) updateData.section = updates.section;
-  if (updates.academicYear !== undefined) updateData.academicYear = updates.academicYear;
-  if (updates.isActive !== undefined) updateData.isActive = updates.isActive;
 
-  if (updates.code) {
-    const existing = await Class.findOne({
-      code: updates.code,
-      _id: { $ne: classId },
-    });
+  // Validate code uniqueness if changing
+  if (updates.code !== undefined) {
+    const existing = await Class.findOne({ code: updates.code, _id: { $ne: classId } }).lean();
     if (existing) {
       const err = new Error(`Class code "${updates.code}" already exists`);
       err.statusCode = 409;
       throw err;
     }
+    updateData.code = updates.code;
   }
 
-  const updatedClass = await Class.findByIdAndUpdate(
+  const updated = await Class.findByIdAndUpdate(
     classId,
     { $set: updateData },
     { new: true, runValidators: true }
   );
 
-  if (!updatedClass) {
+  if (!updated) {
     const err = new Error("Class not found");
     err.statusCode = 404;
     throw err;
@@ -182,10 +201,10 @@ export const updateClass = async (classId, updates) => {
 
 /**
  * deleteClass
- * Safeguarded against orphaned student and subject records.
+ * Refuses deletion if students or subjects are still linked.
  */
 export const deleteClass = async (classId) => {
-  const cls = await Class.findById(classId);
+  const cls = await Class.findById(classId).lean();
   if (!cls) {
     const err = new Error("Class not found");
     err.statusCode = 404;
@@ -198,17 +217,12 @@ export const deleteClass = async (classId) => {
   ]);
 
   if (studentCount > 0) {
-    const err = new Error(
-      `Cannot delete class: ${studentCount} student(s) are enrolled in it. Reassign or remove them first.`
-    );
+    const err = new Error(`Cannot delete: ${studentCount} student(s) are enrolled in this class`);
     err.statusCode = 400;
     throw err;
   }
-
   if (subjectCount > 0) {
-    const err = new Error(
-      `Cannot delete class: ${subjectCount} subject(s) are attached to it. Remove subjects first.`
-    );
+    const err = new Error(`Cannot delete: ${subjectCount} subject(s) are attached to this class`);
     err.statusCode = 400;
     throw err;
   }

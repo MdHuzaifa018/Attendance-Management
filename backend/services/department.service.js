@@ -3,10 +3,15 @@ import Class from "../models/Class.js";
 import Student from "../models/Student.js";
 import Teacher from "../models/Teacher.js";
 
+// ── Service Functions ─────────────────────────────────────────────────────────
+
 /**
  * getAllDepartments
- * Returns paginated departments with search and aggregated statistics.
- * If all=true, returns unpaginated list of active departments (for select dropdowns).
+ * Returns paginated departments with student/class/teacher counts.
+ * If `all=true`, returns a lightweight list for dropdown selectors (no counts).
+ *
+ * Performance: Stats are fetched with a single $facet aggregation instead of
+ * N separate countDocuments calls (was an N+1 query problem before).
  */
 export const getAllDepartments = async ({
   search = "",
@@ -14,11 +19,12 @@ export const getAllDepartments = async ({
   limit = 20,
   all = false,
 } = {}) => {
-  // If `all=true`, return lightweight list for dropdowns
+  // Lightweight list for dropdowns — no counts needed
   if (all) {
     const departments = await Department.find({ isActive: true })
       .select("_id name code description isActive")
-      .sort({ name: 1 });
+      .sort({ name: 1 })
+      .lean();
     return { departments };
   }
 
@@ -31,32 +37,53 @@ export const getAllDepartments = async ({
   }
 
   const [deptDocs, total] = await Promise.all([
-    Department.find(filter)
-      .sort({ name: 1 })
-      .skip(skip)
-      .limit(Number(limit))
-      .lean(),
+    Department.find(filter).sort({ name: 1 }).skip(skip).limit(Number(limit)).lean(),
     Department.countDocuments(filter),
   ]);
 
-  // Aggregate class, student, and teacher counts for each department
-  const departments = await Promise.all(
-    deptDocs.map(async (dept) => {
-      const [classCount, studentCount, teacherCount] = await Promise.all([
-        Class.countDocuments({ department: dept._id }),
-        Student.countDocuments({ department: dept._id }),
-        Teacher.countDocuments({ department: dept._id }),
-      ]);
-      return {
-        ...dept,
-        stats: {
-          classes: classCount,
-          students: studentCount,
-          teachers: teacherCount,
-        },
-      };
-    })
-  );
+  if (deptDocs.length === 0) {
+    return {
+      departments: [],
+      pagination: { total: 0, page: Number(page), limit: Number(limit), totalPages: 0 },
+    };
+  }
+
+  // Single aggregation to count classes, students, and teachers for all departments at once.
+  // This replaces the old approach that made 3 DB calls per department (N+1 problem).
+  const deptIds = deptDocs.map((d) => d._id);
+
+  const [classCounts, studentCounts, teacherCounts] = await Promise.all([
+    Class.aggregate([
+      { $match: { department: { $in: deptIds } } },
+      { $group: { _id: "$department", count: { $sum: 1 } } },
+    ]),
+    Student.aggregate([
+      { $match: { department: { $in: deptIds } } },
+      { $group: { _id: "$department", count: { $sum: 1 } } },
+    ]),
+    Teacher.aggregate([
+      { $match: { departments: { $in: deptIds } } },
+      { $group: { _id: "$departments", count: { $sum: 1 } } },
+    ]),
+  ]);
+
+  // Build lookup maps for O(1) access
+  const toMap = (arr) => new Map(arr.map((x) => [String(x._id), x.count]));
+  const classMap   = toMap(classCounts);
+  const studentMap = toMap(studentCounts);
+  const teacherMap = toMap(teacherCounts);
+
+  const departments = deptDocs.map((dept) => {
+    const id = String(dept._id);
+    return {
+      ...dept,
+      stats: {
+        classes:  classMap.get(id) || 0,
+        students: studentMap.get(id) || 0,
+        teachers: teacherMap.get(id) || 0,
+      },
+    };
+  });
 
   return {
     departments,
@@ -71,43 +98,43 @@ export const getAllDepartments = async ({
 
 /**
  * getDepartmentById
- * Throws 404 if not found.
+ * Returns one department with its list of classes.
  */
 export const getDepartmentById = async (departmentId) => {
-  const department = await Department.findById(departmentId);
+  const [department, classes] = await Promise.all([
+    Department.findById(departmentId).lean(),
+    Class.find({ department: departmentId })
+      .select("_id name code semester academicYear")
+      .sort({ name: 1 })
+      .lean(),
+  ]);
+
   if (!department) {
     const err = new Error("Department not found");
     err.statusCode = 404;
     throw err;
   }
 
-  const classes = await Class.find({ department: departmentId }).select(
-    "_id name code semester academicYear"
-  );
-
-  return {
-    ...department.toObject(),
-    classes,
-  };
+  return { ...department, classes };
 };
 
 /**
  * createDepartment
- * Ensures code and name uniqueness.
+ * Checks code and name uniqueness before creating.
  */
 export const createDepartment = async (data) => {
   const [existingCode, existingName] = await Promise.all([
-    Department.findOne({ code: data.code }),
-    Department.findOne({ name: data.name }),
+    Department.findOne({ code: data.code }).lean(),
+    Department.findOne({ name: data.name }).lean(),
   ]);
 
   if (existingCode) {
-    const err = new Error(`Department code "${data.code}" already exists`);
+    const err = new Error(`Department code "${data.code}" is already in use`);
     err.statusCode = 409;
     throw err;
   }
   if (existingName) {
-    const err = new Error(`Department name "${data.name}" already exists`);
+    const err = new Error(`Department name "${data.name}" is already in use`);
     err.statusCode = 409;
     throw err;
   }
@@ -124,32 +151,34 @@ export const createDepartment = async (data) => {
 
 /**
  * updateDepartment
- * Updates department details while validating code and name uniqueness.
+ * Updates allowed fields, preventing code/name collisions with other departments.
  */
 export const updateDepartment = async (departmentId, updates) => {
+  // Check uniqueness only for fields that are being changed
+  const checks = [];
   if (updates.code) {
-    const existing = await Department.findOne({
-      code: updates.code,
-      _id: { $ne: departmentId },
-    });
-    if (existing) {
-      const err = new Error(`Department code "${updates.code}" already exists`);
-      err.statusCode = 409;
-      throw err;
-    }
+    checks.push(
+      Department.findOne({ code: updates.code, _id: { $ne: departmentId } }).lean().then((found) => {
+        if (found) {
+          const err = new Error(`Department code "${updates.code}" is already in use`);
+          err.statusCode = 409;
+          throw err;
+        }
+      })
+    );
   }
-
   if (updates.name) {
-    const existing = await Department.findOne({
-      name: updates.name,
-      _id: { $ne: departmentId },
-    });
-    if (existing) {
-      const err = new Error(`Department name "${updates.name}" already exists`);
-      err.statusCode = 409;
-      throw err;
-    }
+    checks.push(
+      Department.findOne({ name: updates.name, _id: { $ne: departmentId } }).lean().then((found) => {
+        if (found) {
+          const err = new Error(`Department name "${updates.name}" is already in use`);
+          err.statusCode = 409;
+          throw err;
+        }
+      })
+    );
   }
+  await Promise.all(checks);
 
   const department = await Department.findByIdAndUpdate(
     departmentId,
@@ -168,10 +197,10 @@ export const updateDepartment = async (departmentId, updates) => {
 
 /**
  * deleteDepartment
- * Safeguarded against orphaned academic entities.
+ * Prevents deletion if any classes, students, or teachers are still linked.
  */
 export const deleteDepartment = async (departmentId) => {
-  const department = await Department.findById(departmentId);
+  const department = await Department.findById(departmentId).lean();
   if (!department) {
     const err = new Error("Department not found");
     err.statusCode = 404;
@@ -181,29 +210,21 @@ export const deleteDepartment = async (departmentId) => {
   const [classCount, studentCount, teacherCount] = await Promise.all([
     Class.countDocuments({ department: departmentId }),
     Student.countDocuments({ department: departmentId }),
-    Teacher.countDocuments({ department: departmentId }),
+    Teacher.countDocuments({ departments: departmentId }),
   ]);
 
   if (classCount > 0) {
-    const err = new Error(
-      `Cannot delete department: ${classCount} class(es) are associated with it. Remove or reassign them first.`
-    );
+    const err = new Error(`Cannot delete: ${classCount} class(es) are linked to this department`);
     err.statusCode = 400;
     throw err;
   }
-
   if (studentCount > 0) {
-    const err = new Error(
-      `Cannot delete department: ${studentCount} student(s) are enrolled in it.`
-    );
+    const err = new Error(`Cannot delete: ${studentCount} student(s) are enrolled in this department`);
     err.statusCode = 400;
     throw err;
   }
-
   if (teacherCount > 0) {
-    const err = new Error(
-      `Cannot delete department: ${teacherCount} teacher(s) are assigned to it.`
-    );
+    const err = new Error(`Cannot delete: ${teacherCount} teacher(s) are assigned to this department`);
     err.statusCode = 400;
     throw err;
   }

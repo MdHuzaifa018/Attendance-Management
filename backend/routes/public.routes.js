@@ -9,174 +9,123 @@ import Timetable from "../models/Timetable.js";
 
 const router = express.Router();
 
-/**
- * @route   GET /api/public/stats
- * @desc    Get real-time college portal public statistics
- * @access  Public (No Auth Required)
- */
+// ── GET /api/public/stats ────────────────────────────────────────────────────
+// Public dashboard stats shown on the college home page (no auth required).
+// Cached for 5 minutes to reduce Atlas load from repeated page visits.
 router.get("/stats", async (req, res) => {
+  const CACHE_KEY = "public_stats";
+  const cached = getCache(CACHE_KEY);
+  if (cached) return res.status(200).json({ success: true, data: cached });
+
+  // Run all count queries in parallel — much faster than sequential awaits
+  const [studentsCount, teachersCount, lecturesCount, departmentsCount, activeNoticesCount] =
+    await Promise.all([
+      Student.countDocuments({ isActive: true }).catch(() => 0),
+      Teacher.countDocuments({ isActive: true }).catch(() => 0),
+      Attendance.countDocuments().catch(() => 0),
+      Department.countDocuments({ isActive: true }).catch(() => 0),
+      Notice.countDocuments({ isActive: true }).catch(() => 0),
+    ]);
+
+  // Calculate overall attendance rate from recent records.
+  // Falls back to a college benchmark if no records exist yet.
+  let attendanceRate = 94.8;
   try {
-    const cacheKey = "public_stats";
-    const cachedData = getCache(cacheKey);
-    if (cachedData) {
-      return res.status(200).json({ success: true, data: cachedData });
+    const stats = await Attendance.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          present: { $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] } },
+        },
+      },
+    ]);
+    if (stats.length > 0 && stats[0].total > 0) {
+      attendanceRate = Math.round((stats[0].present / stats[0].total) * 1000) / 10;
     }
-
-    const [studentsCount, teachersCount, lecturesCount, departmentsCount, activeNoticesCount] =
-      await Promise.all([
-        Student.countDocuments({ status: "active" }).catch(() => 0),
-        Teacher.countDocuments({ status: "active" }).catch(() => 0),
-        Attendance.countDocuments().catch(() => 0),
-        Department.countDocuments().catch(() => 0),
-        Notice.countDocuments({ isActive: true }).catch(() => 0),
-      ]);
-
-    // Calculate approximate overall attendance rate from recent records if available
-    let attendanceRate = 94.8; // fallback college average benchmark
-    try {
-      const recentAttendance = await Attendance.find()
-        .sort({ date: -1 })
-        .limit(50)
-        .select("records")
-        .lean();
-
-      if (recentAttendance.length > 0) {
-        let totalPresent = 0;
-        let totalStudents = 0;
-
-        for (const att of recentAttendance) {
-          if (Array.isArray(att.records)) {
-            for (const r of att.records) {
-              totalStudents++;
-              if (r.status === "present" || r.status === "late") totalPresent++;
-            }
-          }
-        }
-
-        if (totalStudents > 0) {
-          attendanceRate = Math.round((totalPresent / totalStudents) * 1000) / 10;
-        }
-      }
-    } catch {
-      // Keep benchmark average
-    }
-
-    const result = {
-      studentsCount: studentsCount || 120,
-      teachersCount: teachersCount || 18,
-      lecturesCount: lecturesCount || 179,
-      departmentsCount: departmentsCount || 6,
-      activeNoticesCount: activeNoticesCount || 3,
-      attendanceRate: attendanceRate || 94.8,
-      heritageYear: 1870,
-    };
-
-    setCache(cacheKey, result, 300); // Cache for 5 mins
-
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch public stats",
-      error: error.message,
-    });
+  } catch {
+    // Keep benchmark if aggregation fails (e.g., no records yet)
   }
+
+  const result = {
+    studentsCount:      studentsCount || 120,
+    teachersCount:      teachersCount || 18,
+    lecturesCount:      lecturesCount || 179,
+    departmentsCount:   departmentsCount || 6,
+    activeNoticesCount: activeNoticesCount || 3,
+    attendanceRate:     attendanceRate || 94.8,
+    heritageYear:       1870,
+  };
+
+  setCache(CACHE_KEY, result, 300); // cache 5 minutes
+  res.status(200).json({ success: true, data: result });
 });
 
-/**
- * @route   GET /api/public/notices
- * @desc    Get latest official college notices for public board
- * @access  Public (No Auth Required)
- */
+// ── GET /api/public/notices ─────────────────────────────────────────────────
+// Returns all active college notices for the public notice board.
+// No auth required — these are official announcements visible to everyone.
 router.get("/notices", async (req, res) => {
-  try {
-    const notices = await Notice.find({ isActive: true })
-      .sort({ createdAt: -1 })
-      .select("title content category priority createdAt author")
-      .lean();
+  const notices = await Notice.find({ isActive: true })
+    .sort({ priority: -1, createdAt: -1 })
+    .select("title content category priority createdAt")
+    .lean();
 
-    res.status(200).json({
-      success: true,
-      count: notices.length,
-      data: notices,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch public notices",
-      error: error.message,
-    });
-  }
+  res.status(200).json({ success: true, count: notices.length, data: notices });
 });
 
-/**
- * @route   GET /api/public/timetable
- * @desc    Get active college weekly timetable routine
- * @access  Public (No Auth Required)
- */
+// ── GET /api/public/timetable ───────────────────────────────────────────────
+// Returns the weekly timetable grouped by class, used on the home page.
+// Cached for 10 minutes since timetables rarely change.
 router.get("/timetable", async (req, res) => {
-  try {
-    const timetable = await Timetable.find()
-      .populate("class", "name section")
-      .populate("periods.subject", "name code")
-      .populate("periods.teacher", "name")
-      .lean();
+  const CACHE_KEY = "public_timetable";
+  const cached = getCache(CACHE_KEY);
+  if (cached) return res.status(200).json({ success: true, data: cached });
 
-    const classesMap = new Map();
-    const timetablesByClass = {};
-    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const timetableEntries = await Timetable.find()
+    .populate("class", "name section")
+    .populate("periods.subject", "name code")
+    .populate("periods.teacher", "name")
+    .lean();
 
-    if (timetable && timetable.length > 0) {
-      for (const entry of timetable) {
-        if (!entry.class) continue;
+  const classesMap = new Map();
+  const timetablesByClass = {};
+  const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-        const classId = entry.class._id.toString();
-        if (!classesMap.has(classId)) {
-          classesMap.set(classId, {
-            _id: classId,
-            name: entry.class.name,
-            section: entry.class.section
-          });
-          timetablesByClass[classId] = {};
-          for (const day of days) {
-            timetablesByClass[classId][day] = [];
-          }
-        }
+  for (const entry of timetableEntries) {
+    if (!entry.class) continue;
 
-        if (entry.dayOfWeek && Array.isArray(entry.periods)) {
-          const formattedPeriods = entry.periods.map((p) => ({
-            period: p.periodNumber,
-            time: `${p.startTime} - ${p.endTime}`,
-            subject: p.subject?.name ? `${p.subject.name} (${p.subject.code || ""})` : "General Subject",
-            room: p.roomNo || "Room 201",
-            teacher: p.teacher?.name ? `Prof. ${p.teacher.name}` : "Faculty Assigned",
-          }));
+    const classId = String(entry.class._id);
 
-          timetablesByClass[classId][entry.dayOfWeek] = [
-            ...(timetablesByClass[classId][entry.dayOfWeek] || []),
-            ...formattedPeriods,
-          ].sort((a, b) => a.period - b.period);
-        }
-      }
+    // Initialize class structure on first encounter
+    if (!classesMap.has(classId)) {
+      classesMap.set(classId, { _id: classId, name: entry.class.name, section: entry.class.section });
+      timetablesByClass[classId] = Object.fromEntries(WEEKDAYS.map((d) => [d, []]));
     }
 
-    res.status(200).json({
-      success: true,
-      data: {
-        classes: Array.from(classesMap.values()),
-        timetablesByClass,
-      }
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch public timetable",
-      error: error.message,
-    });
+    if (!entry.dayOfWeek || !Array.isArray(entry.periods)) continue;
+
+    const periods = entry.periods.map((p) => ({
+      period:  p.periodNumber,
+      time:    `${p.startTime} - ${p.endTime}`,
+      subject: p.subject?.name ? `${p.subject.name} (${p.subject.code || ""})` : "General Subject",
+      room:    p.roomNo || "Room 201",
+      teacher: p.teacher?.name ? `Prof. ${p.teacher.name}` : "Faculty Assigned",
+    }));
+
+    // Merge and sort periods for this day
+    timetablesByClass[classId][entry.dayOfWeek] = [
+      ...(timetablesByClass[classId][entry.dayOfWeek] || []),
+      ...periods,
+    ].sort((a, b) => a.period - b.period);
   }
+
+  const data = {
+    classes: Array.from(classesMap.values()),
+    timetablesByClass,
+  };
+
+  setCache(CACHE_KEY, data, 600); // cache 10 minutes
+  res.status(200).json({ success: true, data });
 });
 
 export default router;
