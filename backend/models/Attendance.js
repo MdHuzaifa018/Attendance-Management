@@ -24,6 +24,18 @@ const attendanceSchema = new mongoose.Schema(
       required: [true, "Student is required"],
     },
 
+    enrollment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Enrollment",
+      // required: [true, "Enrollment is required"], // commented for migration
+    },
+
+    academicSession: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "AcademicSession",
+      // required: [true, "Academic Session is required"], // commented for migration
+    },
+
     class: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Class",
@@ -78,7 +90,6 @@ const attendanceSchema = new mongoose.Schema(
 attendanceSchema.index(
   {
     student: 1,
-    class: 1,
     subject: 1,
     date: 1,
     session: 1,

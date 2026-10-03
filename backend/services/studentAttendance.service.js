@@ -11,12 +11,27 @@ import Subject from "../models/Subject.js";
 export const getStudentAttendanceSummary = async ({ userId }) => {
   // Resolve student record from user ID
   const studentDoc = await Student.findOne({ user: userId })
-    .populate("class", "name code semester academicYear")
     .populate("department", "name code")
     .lean();
 
   if (!studentDoc) {
     const err = new Error("Student record not found for this account");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const enrollment = await mongoose.model("Enrollment").findOne({
+    student: studentDoc._id,
+    status: { $in: ["active", "year_repeat"] }
+  }).populate("class", "name code semester academicYear").lean();
+
+  if (enrollment) {
+    studentDoc.class = enrollment.class;
+    studentDoc.enrollmentId = enrollment._id;
+  }
+
+  if (!studentDoc.class) {
+    const err = new Error("Active enrollment/class not found for this student");
     err.statusCode = 404;
     throw err;
   }

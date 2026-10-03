@@ -68,10 +68,15 @@ export const getAttendanceSheet = async ({
   const normalizedDate = normalizeDate(date);
 
   // Fetch enrolled students in this class, sorted by roll number
-  const students = await Student.find({ class: classId })
-    .populate("user", "name email")
+  const enrollments = await mongoose.model("Enrollment").find({ class: classId, status: { $in: ["active", "year_repeat"] } })
+    .populate({ path: "student", populate: { path: "user", select: "name email" } })
     .sort({ rollNo: 1 })
     .lean();
+
+  const students = enrollments.map(enr => {
+    if (!enr.student) return null;
+    return { ...enr.student, rollNo: enr.rollNo, enrollmentId: enr._id };
+  }).filter(Boolean);
 
   // Check if attendance records already exist for this class + subject + date + session
   const existingRecords = await Attendance.find({
@@ -347,7 +352,13 @@ export const bulkOverrideStudentAttendance = async ({
   }
 
   const student = await Student.findById(studentId);
-  if (!student || String(student.class) !== String(classId)) {
+  const activeEnrollment = await mongoose.model("Enrollment").findOne({
+    student: studentId,
+    class: classId,
+    status: { $in: ["active", "year_repeat"] }
+  });
+
+  if (!student || !activeEnrollment) {
     const err = new Error("Invalid student or class mismatch");
     err.statusCode = 400;
     throw err;

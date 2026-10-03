@@ -25,6 +25,8 @@ import timetableRoutes       from "./routes/timetable.routes.js";
 import marksRoutes           from "./routes/marks.routes.js";
 import publicRoutes          from "./routes/public.routes.js";
 import settingRoutes         from "./routes/setting.routes.js";
+import academicSessionRoutes from "./routes/academicSession.routes.js";
+import promotionRoutes       from "./routes/promotion.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -59,6 +61,8 @@ app.use("/api/notices",            noticeRoutes);
 app.use("/api/leaves",             leaveRoutes);
 app.use("/api/timetable",          timetableRoutes);
 app.use("/api/marks",              marksRoutes);
+app.use("/api/academic-sessions",  academicSessionRoutes);
+app.use("/api/promotions",         promotionRoutes);
 
 // Error handling middleware — sab errors yahan aate hain
 app.use(notFound);

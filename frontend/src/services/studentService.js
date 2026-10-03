@@ -48,6 +48,16 @@ export const deleteStudent = async (id) => {
   return data;
 };
 
+export const getGraduatedStudents = async (filters = {}) => {
+  const { data } = await api.get("/students/graduated", { params: filters });
+  return data;
+};
+
+export const getAcademicHistory = async (studentId) => {
+  const { data } = await api.get(`/students/${studentId}/academic-history`);
+  return data;
+};
+
 // ─── Dropdown data loaders ───────────────────────────────────────────────────
 
 /**

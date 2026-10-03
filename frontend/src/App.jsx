@@ -24,6 +24,9 @@ import StudentsPage from "./pages/admin/StudentsPage.jsx";
 import TeachersPage from "./pages/admin/TeachersPage.jsx";
 import DepartmentsPage from "./pages/admin/DepartmentsPage.jsx";
 import ClassesPage from "./pages/admin/ClassesPage.jsx";
+import AcademicSessionsPage from "./pages/admin/AcademicSessionsPage.jsx";
+import PromotionsPage from "./pages/admin/PromotionsPage.jsx";
+import AlumniPage from "./pages/admin/AlumniPage.jsx";
 import SubjectsPage from "./pages/admin/SubjectsPage.jsx";
 import TeacherAttendancePage from "./pages/teacher/TeacherAttendancePage.jsx";
 import TeacherHistoryPage from "./pages/teacher/TeacherHistoryPage.jsx";
@@ -81,8 +84,11 @@ function App() {
                   <Route element={<AdminLayout />}>
                     <Route path="/admin/dashboard" element={<AdminDashboard />} />
                     <Route path="/admin/students" element={<StudentsPage />} />
+                    <Route path="/admin/alumni" element={<AlumniPage />} />
+                    <Route path="/admin/promotions" element={<PromotionsPage />} />
                     <Route path="/admin/teachers" element={<TeachersPage />} />
                     <Route path="/admin/departments" element={<DepartmentsPage />} />
+                    <Route path="/admin/sessions" element={<AcademicSessionsPage />} />
                     <Route path="/admin/classes" element={<ClassesPage />} />
                     <Route path="/admin/subjects" element={<SubjectsPage />} />
                     <Route path="/admin/attendance" element={<TeacherAttendancePage />} />

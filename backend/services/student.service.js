@@ -1,6 +1,7 @@
 import Student from "../models/Student.js";
 import User from "../models/User.js";
 import { hashPassword } from "../utils/password.js";
+import mongoose from "mongoose";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -11,8 +12,7 @@ import { hashPassword } from "../utils/password.js";
 const populateStudent = (query) =>
   query
     .populate("user", "name email isActive")
-    .populate("department", "name code")
-    .populate("class", "name code");
+    .populate("department", "name code");
 
 // ─── Service functions ────────────────────────────────────────────────────────
 
@@ -34,29 +34,53 @@ export const getAllStudents = async ({
   limit = 20,
 } = {}) => {
   const skip = (page - 1) * limit;
-  const filter = {};
+  const filter = { status: { $in: ["active", "year_repeat"] } };
+
+  if (classId) filter.class = classId;
+  if (departmentId) filter.department = departmentId;
 
   // Search: by roll number OR by user name
   if (search.trim()) {
     const regex = new RegExp(search.trim(), "i");
 
-    // First find User IDs whose name matches
+    // Find User IDs whose name matches
     const matchingUsers = await User.find({ name: regex }).select("_id").lean();
     const userIds = matchingUsers.map((u) => u._id);
+    
+    // Find Student IDs for those Users
+    const matchingStudents = await Student.find({ user: { $in: userIds } }).select("_id").lean();
+    const studentIds = matchingStudents.map(s => s._id);
 
-    filter.$or = [{ rollNo: regex }, { user: { $in: userIds } }];
+    filter.$or = [{ rollNo: regex }, { student: { $in: studentIds } }];
   }
 
-  if (classId) filter.class = classId;
-  if (departmentId) filter.department = departmentId;
-
-  const [students, total] = await Promise.all([
-    populateStudent(Student.find(filter))
+  const [enrollments, total] = await Promise.all([
+    mongoose.model("Enrollment").find(filter)
+      .populate({
+        path: "student",
+        populate: [
+          { path: "user", select: "name email isActive" },
+          { path: "department", select: "name code" }
+        ]
+      })
+      .populate("class", "name code")
       .sort({ rollNo: 1 })
       .skip(skip)
-      .limit(Number(limit)),
-    Student.countDocuments(filter),
+      .limit(Number(limit))
+      .lean(),
+    mongoose.model("Enrollment").countDocuments(filter),
   ]);
+
+  // Map to the shape frontend expects
+  const students = enrollments.map(enr => {
+    const student = enr.student;
+    if (student) {
+      student.class = enr.class;
+      student.rollNo = enr.rollNo;
+      student.enrollmentId = enr._id;
+    }
+    return student;
+  }).filter(Boolean);
 
   return {
     students,
@@ -74,12 +98,23 @@ export const getAllStudents = async ({
  * Throws 404 if not found.
  */
 export const getStudentById = async (studentId) => {
-  const student = await populateStudent(Student.findById(studentId));
+  const student = await populateStudent(Student.findById(studentId)).lean();
   if (!student) {
     const err = new Error("Student not found");
     err.statusCode = 404;
     throw err;
   }
+  
+  const enrollment = await mongoose.model("Enrollment").findOne({ 
+    student: studentId,
+    status: { $in: ["active", "year_repeat"] }
+  }).populate("class", "name code").lean();
+
+  if (enrollment) {
+    student.class = enrollment.class;
+    student.enrollmentId = enrollment._id;
+  }
+
   return student;
 };
 
@@ -127,7 +162,6 @@ export const createStudent = async (data) => {
       fatherName: data.fatherName,
       motherName: data.motherName || "",
       department: data.departmentId,
-      class: data.classId,
       admissionYear: data.admissionYear,
       duration: data.duration || "2024-27",
       phone: data.phone || "",
@@ -139,7 +173,27 @@ export const createStudent = async (data) => {
       address: data.address || "",
       signature: data.signature || "",
       directorSignature: data.directorSignature || "",
+      status: "active",
+      batch: data.duration || "2024-27"
     });
+
+    // Create Enrollment for the student
+    const activeSession = await mongoose.model("AcademicSession").findOne({ isCurrent: true });
+    if (activeSession) {
+      const classDoc = await mongoose.model("Class").findById(data.classId);
+      await mongoose.model("Enrollment").create({
+        student: newStudent._id,
+        academicSession: activeSession._id,
+        class: data.classId,
+        department: data.departmentId,
+        program: classDoc?.program,
+        rollNo: data.rollNo,
+        year: classDoc?.semester ? Math.ceil(classDoc.semester / 2) : 1,
+        semester: classDoc?.semester || 1,
+        section: classDoc?.section || "A",
+        status: "active"
+      });
+    }
   } catch (err) {
     // Rollback: remove the orphaned User if Student creation failed
     await User.findByIdAndDelete(newUser._id).catch(() => {});
@@ -163,7 +217,6 @@ export const updateStudent = async (studentId, updates) => {
   if (updates.fatherName !== undefined) updateData.fatherName = updates.fatherName;
   if (updates.motherName !== undefined) updateData.motherName = updates.motherName;
   if (updates.departmentId !== undefined) updateData.department = updates.departmentId;
-  if (updates.classId !== undefined) updateData.class = updates.classId;
   if (updates.admissionYear !== undefined) updateData.admissionYear = updates.admissionYear;
   if (updates.duration !== undefined) updateData.duration = updates.duration;
   if (updates.phone !== undefined) updateData.phone = updates.phone;
@@ -175,6 +228,17 @@ export const updateStudent = async (studentId, updates) => {
   if (updates.address !== undefined) updateData.address = updates.address;
   if (updates.signature !== undefined) updateData.signature = updates.signature;
   if (updates.directorSignature !== undefined) updateData.directorSignature = updates.directorSignature;
+
+  // Update class in Enrollment if provided
+  if (updates.classId !== undefined) {
+    const activeSession = await mongoose.model("AcademicSession").findOne({ isCurrent: true });
+    if (activeSession) {
+      await mongoose.model("Enrollment").findOneAndUpdate(
+        { student: studentId, academicSession: activeSession._id, status: { $in: ["active", "year_repeat"] } },
+        { class: updates.classId }
+      );
+    }
+  }
 
   // Name update synced to the linked User
   if (updates.name && updates.name.trim()) {
@@ -239,4 +303,81 @@ export const deleteStudent = async (studentId) => {
   await User.findByIdAndDelete(userId);
 
   return { message: "Student deleted successfully" };
+};
+
+/**
+ * getGraduatedStudents (Alumni)
+ */
+export const getGraduatedStudents = async ({
+  batch = "",
+  programId = "",
+  departmentId = "",
+  search = "",
+  page = 1,
+  limit = 20,
+} = {}) => {
+  const skip = (page - 1) * limit;
+  const filter = { status: "graduated" };
+
+  if (batch) filter.batch = batch;
+  if (departmentId) filter.department = departmentId;
+
+  if (search.trim()) {
+    const regex = new RegExp(search.trim(), "i");
+    const matchingUsers = await User.find({ name: regex }).select("_id").lean();
+    const userIds = matchingUsers.map((u) => u._id);
+    filter.$or = [{ rollNo: regex }, { user: { $in: userIds } }];
+  }
+
+  // If programId is provided, we need to filter students whose last enrollment was in this program
+  // For simplicity, if we don't store program directly on Student, we can fetch all and filter,
+  // or use an aggregation pipeline. Let's do a basic find for now.
+
+  const [students, total] = await Promise.all([
+    Student.find(filter)
+      .populate("user", "name email isActive")
+      .populate("department", "name code")
+      .sort({ rollNo: 1 })
+      .skip(skip)
+      .limit(Number(limit)),
+    Student.countDocuments(filter),
+  ]);
+
+  return {
+    students,
+    pagination: {
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(total / limit) || 1,
+    },
+  };
+};
+
+/**
+ * getAcademicHistory
+ */
+export const getAcademicHistory = async (studentId) => {
+  const student = await getStudentById(studentId);
+  
+  // Get all enrollments
+  const enrollments = await mongoose.model("Enrollment").find({ student: studentId })
+    .populate("academicSession")
+    .populate("program")
+    .populate("class")
+    .populate("department")
+    .sort({ year: 1, semester: 1 })
+    .lean();
+
+  // Get promotion history
+  const promotionHistory = await mongoose.model("PromotionHistory").find({ student: studentId })
+    .populate("fromEnrollment toEnrollment fromAcademicSession toAcademicSession performedBy")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return {
+    student,
+    enrollments,
+    promotionHistory,
+  };
 };

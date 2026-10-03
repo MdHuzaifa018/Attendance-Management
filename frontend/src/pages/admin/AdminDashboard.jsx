@@ -42,7 +42,12 @@ import {
   getSystemOverview,
   getAttendanceTrends,
   downloadCSVReport,
+  getAtRiskStudentsDetails,
 } from "../../services/reportService.js";
+import { getTeachers } from "../../services/teacherService.js";
+import { getStudents } from "../../services/studentService.js";
+import { getAttendanceSessions } from "../../services/attendanceHistoryService.js";
+import { getAcademicSessions } from "../../services/academicSessionService.js";
 
 // Donut Chart Colors
 const PIE_COLORS = ["#10b981", "#ef4444", "#f59e0b"]; // Present, Absent, Other
@@ -58,6 +63,7 @@ const AnalystKpiCard = ({
   trend,
   colorScheme = "indigo",
   progress,
+  onClick,
 }) => {
   const schemes = {
     indigo: {
@@ -95,7 +101,12 @@ const AnalystKpiCard = ({
   const scheme = schemes[colorScheme] || schemes.indigo;
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs transition-all hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 flex flex-col justify-between">
+    <div
+      onClick={onClick}
+      className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs transition-all hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 flex flex-col justify-between ${
+        onClick ? "cursor-pointer" : ""
+      }`}
+    >
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="space-y-1">
           <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -159,21 +170,40 @@ const AdminDashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [drillDown, setDrillDown] = useState({ isOpen: false, type: null, loading: false, data: [] });
+
+  // Session State
+  const [sessions, setSessions] = useState([]);
+  const [selectedSession, setSelectedSession] = useState("");
+
+  useEffect(() => {
+    const initSessions = async () => {
+      try {
+        const data = await getAcademicSessions();
+        setSessions(data);
+        const active = data.find((s) => s.isCurrent);
+        if (active) setSelectedSession(active._id);
+      } catch (err) {
+        toast.error("Failed to load academic sessions");
+      }
+    };
+    initSessions();
+  }, []);
 
   // Fetch dashboard analytical data
-  const fetchData = async (days = timeframe, isManualRefresh = false) => {
+  const fetchData = async (days = timeframe, sessionId = selectedSession, isManualRefresh = false) => {
     if (isManualRefresh) setRefreshing(true);
     else setLoading(true);
 
     try {
       const [overviewRes, trendsRes] = await Promise.all([
-        getSystemOverview(),
+        getSystemOverview(sessionId),
         getAttendanceTrends(days),
       ]);
       setOverview(overviewRes);
       setTrends(trendsRes || []);
       if (isManualRefresh) {
-        toast.success("Dashboard analytics synchronized!");
+        toast.success("Dashboard refreshed!");
       }
     } catch {
       toast.error("Failed to load dashboard data");
@@ -184,19 +214,69 @@ const AdminDashboard = () => {
   };
 
   useEffect(() => {
-    fetchData(timeframe);
-  }, [timeframe]);
+    fetchData(timeframe, selectedSession);
+  }, [timeframe, selectedSession]);
 
   // Handle CSV export
   const handleExportCSV = async () => {
     setExporting(true);
     try {
       await downloadCSVReport();
-      toast.success("Analytics CSV exported successfully!");
+      toast.success("CSV report downloaded!");
     } catch {
       toast.error("Failed to download CSV report");
     } finally {
       setExporting(false);
+    }
+  };
+
+  // Handle drill-down clicks
+  const handleCardClick = async (type) => {
+    if (type === "teachers") {
+      setDrillDown({ isOpen: true, type, loading: true, data: [] });
+      try {
+        const res = await getTeachers({ limit: 200 }); // Fetch more for modal
+        setDrillDown({ isOpen: true, type, loading: false, data: res.teachers || [] });
+      } catch (err) {
+        toast.error("Failed to fetch teachers");
+        setDrillDown((prev) => ({ ...prev, loading: false }));
+      }
+    } else if (type === "students") {
+      setDrillDown({ isOpen: true, type, loading: true, data: [] });
+      try {
+        const res = await getStudents({ limit: 1000 }); // Fetch up to 1000 for modal
+        setDrillDown({ isOpen: true, type, loading: false, data: res.students || [] });
+      } catch (err) {
+        toast.error("Failed to fetch students");
+        setDrillDown((prev) => ({ ...prev, loading: false }));
+      }
+    } else if (type === "today-classes") {
+      setDrillDown({ isOpen: true, type, loading: true, data: [] });
+      try {
+        const d = new Date();
+        const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const res = await getAttendanceSessions({ startDate: todayStr, endDate: todayStr, limit: 200 });
+        setDrillDown({ isOpen: true, type, loading: false, data: res.sessions || [] });
+      } catch (err) {
+        toast.error("Failed to fetch today's classes");
+        setDrillDown((prev) => ({ ...prev, loading: false }));
+      }
+    } else if (type === "overall") {
+      setDrillDown({ 
+        isOpen: true, 
+        type, 
+        loading: false, 
+        data: overview?.classBreakdown || [] 
+      });
+    } else if (type === "at-risk") {
+      setDrillDown({ isOpen: true, type, loading: true, data: [] });
+      try {
+        const data = await getAtRiskStudentsDetails(selectedSession);
+        setDrillDown({ isOpen: true, type, loading: false, data });
+      } catch (err) {
+        toast.error("Failed to fetch at-risk students");
+        setDrillDown((prev) => ({ ...prev, loading: false }));
+      }
     }
   };
 
@@ -275,11 +355,11 @@ const AdminDashboard = () => {
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-violet-400 inline-block" />
             <span className="font-bold text-sm text-white">
-              {metricMode === "percent" ? `${data.percent}% Attendance` : `${data.total} Records`}
+              {metricMode === "percent" ? `${data.percent}% Attendance` : `${data.total} Students`}
             </span>
           </div>
           <div className="pt-1 border-t border-slate-700/60 flex items-center justify-between gap-4 text-slate-400 text-[11px]">
-            <span>Attendance Rate: <strong className="text-emerald-400">{data.percent}%</strong></span>
+            <span>Attendance: <strong className="text-emerald-400">{data.percent}%</strong></span>
             <span>Total Logged: <strong className="text-indigo-300">{data.total}</strong></span>
           </div>
         </div>
@@ -295,7 +375,7 @@ const AdminDashboard = () => {
       return (
         <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-md text-white border border-slate-700/80 p-3 rounded-xl shadow-xl text-xs space-y-1">
           <p className="font-bold text-sm text-white">{data.fullName || data.name}</p>
-          <p className="text-emerald-400 font-semibold">Attendance Rate: {data.rate}%</p>
+          <p className="text-emerald-400 font-semibold">Attendance: {data.rate}%</p>
           <p className="text-slate-400 text-[11px]">Total Records: {data.total}</p>
         </div>
       );
@@ -305,34 +385,50 @@ const AdminDashboard = () => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      {/* ── Executive Top Header & Analyst Controls ────────────────────────── */}
+      {/* ── Top Header & Quick Actions ────────────────────────── */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-[11px] font-bold border border-indigo-200 dark:border-indigo-800">
-                Institutional Intelligence
+                College Overview
               </span>
               <span className="flex items-center gap-1.5 text-xs text-slate-400">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                Live Academic Feed
+                Live Updates
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
-              Admin & Analytics Command Center
+              Admin Dashboard
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Real-time attendance trends, cohort health, faculty coverage, and operational routines.
+              Quick summary of attendance, students, teachers, and daily classes.
             </p>
           </div>
 
           {/* Action Toolbar */}
           <div className="flex items-center gap-2 flex-wrap self-start lg:self-auto">
+            {/* Session Filter */}
+            <div className="mr-2">
+              <select
+                value={selectedSession}
+                onChange={(e) => setSelectedSession(e.target.value)}
+                className="pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700 dark:text-slate-200"
+              >
+                <option value="">All Time (Global)</option>
+                {sessions.map((s) => (
+                  <option key={s._id} value={s._id}>
+                    {s.name} {s.isCurrent ? "(Active)" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <button
-              onClick={() => fetchData(timeframe, true)}
+              onClick={() => fetchData(timeframe, selectedSession, true)}
               disabled={refreshing}
               className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold transition-all cursor-pointer"
-              title="Refresh Analytics"
+              title="Refresh Data"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-indigo-500" : ""}`} />
               <span className="hidden sm:inline">Refresh</span>
@@ -342,7 +438,7 @@ const AdminDashboard = () => {
               onClick={handleExportCSV}
               disabled={exporting}
               className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold transition-all cursor-pointer"
-              title="Export Full CSV Report"
+              title="Download CSV Report"
             >
               <Download className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{exporting ? "Exporting..." : "Export CSV"}</span>
@@ -353,7 +449,7 @@ const AdminDashboard = () => {
               className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
             >
               <FileCheck className="w-3.5 h-3.5" />
-              <span>Review Student Leaves</span>
+              <span>Leave Requests</span>
             </button>
           </div>
         </div>
@@ -362,61 +458,64 @@ const AdminDashboard = () => {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24 space-y-3">
           <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs font-semibold text-slate-400">Loading analytic models and records...</p>
+          <p className="text-xs font-semibold text-slate-400">Loading dashboard data...</p>
         </div>
       ) : (
         <>
-          {/* ── Executive KPI Cards (5 High-Density Cards) ──────────────────── */}
+          {/* ── 5 Key Summary Cards ──────────────────── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <AnalystKpiCard
-              title="System Attendance"
+              title="Overall Attendance"
               value={`${overview?.overallPercent || 0}%`}
-              subtitle={`Total logs: ${(overview?.totalRecords || 0).toLocaleString()}`}
+              subtitle={`Total Records: ${(overview?.totalRecords || 0).toLocaleString()}`}
               icon={Activity}
               colorScheme="violet"
               progress={overview?.overallPercent || 0}
               badgeText={
                 (overview?.overallPercent || 0) >= 75
-                  ? "Optimal (≥75%)"
-                  : "Critical (<75%)"
+                  ? "Good (≥75%)"
+                  : "Low (<75%)"
               }
               badgeColor={
                 (overview?.overallPercent || 0) >= 75
                   ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
                   : "bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
               }
+              onClick={() => handleCardClick("overall")}
             />
 
             <AnalystKpiCard
-              title="Active Students"
+              title="Total Students"
               value={(overview?.studentCount || 0).toLocaleString()}
-              subtitle={`Across ${overview?.classCount || 0} academic classes`}
+              subtitle={`In ${overview?.classCount || 0} Classes`}
               icon={Users}
               colorScheme="emerald"
               progress={100}
               badgeText="Enrolled"
               badgeColor="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+              onClick={() => handleCardClick("students")}
             />
 
             <AnalystKpiCard
-              title="Faculty Strength"
+              title="Total Teachers"
               value={(overview?.teacherCount || 0).toLocaleString()}
-              subtitle={`Ratio: 1 : ${
+              subtitle={`1 Teacher per ${
                 overview?.teacherCount
                   ? Math.round((overview?.studentCount || 0) / overview.teacherCount)
                   : 0
-              } students`}
+              } Students`}
               icon={GraduationCap}
               colorScheme="indigo"
               progress={100}
-              badgeText="100% Active"
+              badgeText="Active"
               badgeColor="bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800"
+              onClick={() => handleCardClick("teachers")}
             />
 
             <AnalystKpiCard
-              title="Today's Sessions"
-              value={`${overview?.activeClassesToday || 0} / ${overview?.classCount || 0}`}
-              subtitle={`${overview?.todayStats?.present || 0} Present • ${overview?.todayStats?.absent || 0} Absent`}
+              title="Today's Classes"
+              value={overview?.todaySessionsCount !== undefined ? overview.todaySessionsCount : overview?.activeClassesToday || 0}
+              subtitle={`${overview?.todayStats?.present || 0} Present • in ${overview?.activeClassesToday || 0}/${overview?.classCount || 0} Classes`}
               icon={CalendarDays}
               colorScheme="amber"
               progress={
@@ -426,16 +525,17 @@ const AdminDashboard = () => {
               }
               badgeText={
                 overview?.todayStats?.total > 0
-                  ? `${overview?.todayStats?.percent}% Rate`
+                  ? `${overview?.todayStats?.percent}% Present`
                   : "Pending"
               }
               badgeColor="bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
+              onClick={() => handleCardClick("today-classes")}
             />
 
             <AnalystKpiCard
-              title="At-Risk Cohort"
+              title="Low Attendance (<75%)"
               value={(overview?.atRiskCount || 0).toLocaleString()}
-              subtitle="Students below 75% cutoff"
+              subtitle="Students below 75% target"
               icon={AlertTriangle}
               colorScheme="rose"
               progress={
@@ -444,17 +544,18 @@ const AdminDashboard = () => {
                   : 0
               }
               badgeText={
-                (overview?.atRiskCount || 0) > 0 ? "Action Req." : "Clear"
+                (overview?.atRiskCount || 0) > 0 ? "Needs Attention" : "All Good"
               }
               badgeColor={
                 (overview?.atRiskCount || 0) > 0
                   ? "bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
                   : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
               }
+              onClick={() => handleCardClick("at-risk")}
             />
           </div>
 
-          {/* ── Analytics Visual 1: Longitudinal Attendance Trajectory ──────── */}
+          {/* ── Attendance Trends Graph ──────── */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
@@ -464,10 +565,10 @@ const AdminDashboard = () => {
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                      Longitudinal Attendance Trajectory
+                      Attendance Overview
                     </h3>
                     <p className="text-xs text-slate-500">
-                      Tracking institutional attendance patterns and day-to-day engagement
+                      Daily attendance percentage and student turnout over time
                     </p>
                   </div>
                 </div>
@@ -495,7 +596,7 @@ const AdminDashboard = () => {
                         : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                     }`}
                   >
-                    Volume (Counts)
+                    Total Count
                   </button>
                 </div>
 
@@ -562,7 +663,7 @@ const AdminDashboard = () => {
                       stroke="#ef4444"
                       strokeDasharray="4 4"
                       label={{
-                        value: "Statutory Cutoff (75%)",
+                        value: "75% Target",
                         fill: "#ef4444",
                         fontSize: 10,
                         position: "insideTopRight",
@@ -581,11 +682,11 @@ const AdminDashboard = () => {
               </ResponsiveContainer>
             </div>
 
-            {/* Analyst Summary Strip */}
+            {/* Quick Summary Cards Below Chart */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
               <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40">
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                  Period Mean
+                  Average Attendance
                 </span>
                 <span className="text-base font-extrabold text-slate-800 dark:text-slate-100">
                   {trendStats.avg}%
@@ -593,7 +694,7 @@ const AdminDashboard = () => {
               </div>
               <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40">
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                  Peak Day Turnout
+                  Best Day
                 </span>
                 <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">
                   {trendStats.peak ? `${trendStats.peak.percent}%` : "—"}
@@ -606,7 +707,7 @@ const AdminDashboard = () => {
               </div>
               <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40">
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                  Lowest Turnout
+                  Lowest Day
                 </span>
                 <span className="text-base font-extrabold text-rose-500">
                   {trendStats.low ? `${trendStats.low.percent}%` : "—"}
@@ -619,7 +720,7 @@ const AdminDashboard = () => {
               </div>
               <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40">
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                  Total Sessions Logged
+                  Total Records Logged
                 </span>
                 <span className="text-base font-extrabold text-indigo-600 dark:text-indigo-400">
                   {trendStats.totalVolume.toLocaleString()}
@@ -628,9 +729,9 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* ── Analytics Visual 2: Class Performance & Status Composition ── */}
+          {/* ── Class Attendance & Breakdown Section ── */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left 2 Cols: Cohort Comparison Bar Chart */}
+            {/* Left 2 Cols: Class Comparison Bar Chart */}
             <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -639,10 +740,10 @@ const AdminDashboard = () => {
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                      Class Performance Comparison
+                      Class Attendance Comparison
                     </h3>
                     <p className="text-xs text-slate-500">
-                      Attendance rate across academic classes vs 75% target
+                      Attendance percentage for each class compared to 75% target
                     </p>
                   </div>
                 </div>
@@ -650,7 +751,7 @@ const AdminDashboard = () => {
 
               {classBreakdown.length === 0 ? (
                 <div className="h-[220px] flex items-center justify-center text-xs text-slate-400">
-                  No class performance data recorded yet.
+                  No class attendance recorded yet.
                 </div>
               ) : (
                 <div className="h-[240px] w-full">
@@ -702,9 +803,9 @@ const AdminDashboard = () => {
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                      Status Composition
+                      Attendance Breakdown
                     </h3>
-                    <p className="text-xs text-slate-500">Cumulative institutional ratio</p>
+                    <p className="text-xs text-slate-500">Total present vs absent records</p>
                   </div>
                 </div>
 
@@ -741,7 +842,7 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-slate-300">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                    Present Attendances
+                    Total Present
                   </span>
                   <strong className="text-slate-900 dark:text-white">
                     {(overview?.presentRecords || 0).toLocaleString()} (
@@ -755,7 +856,7 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-slate-300">
                     <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                    Absenteeism
+                    Total Absent
                   </span>
                   <strong className="text-slate-900 dark:text-white">
                     {(overview?.absentRecords || 0).toLocaleString()} (
@@ -782,6 +883,159 @@ const AdminDashboard = () => {
         isOpen={showLeaveModal}
         onClose={() => setShowLeaveModal(false)}
       />
+
+      {/* Drill Down Modal */}
+      {drillDown.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                  {drillDown.type === "teachers" && "Teachers List"}
+                  {drillDown.type === "students" && "Students List"}
+                  {drillDown.type === "today-classes" && "Today's Classes"}
+                  {drillDown.type === "overall" && "Overall Attendance Breakdown"}
+                  {drillDown.type === "at-risk" && "At-Risk Students (<75%)"}
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  {drillDown.type === "teachers" && "Active teachers in the institution"}
+                  {drillDown.type === "students" && "Registered students across all classes"}
+                  {drillDown.type === "today-classes" && "Classes with attendance logged today"}
+                  {drillDown.type === "overall" && "Top classes by attendance percentage"}
+                  {drillDown.type === "at-risk" && "Students requiring immediate attention"}
+                </p>
+              </div>
+              <button
+                onClick={() => setDrillDown({ isOpen: false, type: null, loading: false, data: [] })}
+                className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="p-5 overflow-y-auto flex-1 custom-scrollbar">
+              {drillDown.loading ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                  <p className="text-xs text-slate-500 mt-3 font-medium">Loading details...</p>
+                </div>
+              ) : drillDown.data.length === 0 ? (
+                <div className="text-center py-12 text-slate-500 dark:text-slate-400 text-sm">
+                  No records found.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {drillDown.type === "teachers" &&
+                    drillDown.data.map((teacher) => (
+                      <div key={teacher._id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm">
+                            {(teacher.user?.name || teacher.name || "T").charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-900 dark:text-white text-sm">{teacher.user?.name || teacher.name}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{teacher.department?.name || "General Department"}</p>
+                          </div>
+                        </div>
+                        <span className="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                          Active
+                        </span>
+                      </div>
+                    ))}
+
+                  {drillDown.type === "students" &&
+                    drillDown.data.map((student) => (
+                      <div key={student._id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+                            {(student.user?.name || student.name || "S").charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-900 dark:text-white text-sm">{student.user?.name || student.name}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              {student.class?.name || "N/A"} • {student.rollNo}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                          Active
+                        </span>
+                      </div>
+                    ))}
+
+                  {drillDown.type === "today-classes" &&
+                    drillDown.data.map((session, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                        <div className="flex flex-col">
+                          <p className="font-bold text-slate-900 dark:text-white text-sm">
+                            {session.subject?.name} <span className="text-xs text-slate-400 font-normal">({session.class?.name})</span>
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            By {session.teacher?.name} • Session: {session.session}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs font-bold text-slate-900 dark:text-white">
+                            {session.attendancePercent}%
+                          </p>
+                          <p className="text-[10px] text-slate-500">
+                            {session.presentCount}/{session.totalStudents} Present
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+
+                  {drillDown.type === "overall" &&
+                    drillDown.data.map((c, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                        <div className="flex flex-col">
+                          <p className="font-bold text-slate-900 dark:text-white text-sm">
+                            {c.name}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            Total Records: {c.total}
+                          </p>
+                        </div>
+                        <div className="w-24 text-right">
+                          <div className="flex justify-between text-[10px] mb-1">
+                            <span className="text-slate-500">Attendance</span>
+                            <span className="font-bold text-slate-900 dark:text-white">{c.rate}%</span>
+                          </div>
+                          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                            <div
+                              className={`h-full rounded-full ${c.rate >= 75 ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                              style={{ width: `${Math.min(100, Math.max(0, c.rate))}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                  {drillDown.type === "at-risk" &&
+                    drillDown.data.map((student, idx) => (
+                      <div key={student._id || idx} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center text-rose-600 dark:text-rose-400 font-bold text-sm">
+                            {student.percent}%
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-900 dark:text-white text-sm">{student.name}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              Class: {student.className || "N/A"} • Roll: {student.rollNo}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
+                          {student.present}/{student.total} Classes
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

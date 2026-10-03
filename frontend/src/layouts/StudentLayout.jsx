@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useCollegeSettings } from "../context/CollegeSettingsContext.jsx";
 import ThemeToggle from "../components/common/ThemeToggle.jsx";
+import LogoutConfirmModal from "../components/common/LogoutConfirmModal.jsx";
 
 const navItems = [
   { path: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -21,6 +22,7 @@ const navItems = [
 
 const StudentLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { user, logout } = useAuth();
   const { logo, settings } = useCollegeSettings();
   const navigate = useNavigate();
@@ -115,7 +117,7 @@ const StudentLayout = () => {
           </div>
           <button
             id="student-layout-logout-btn"
-            onClick={handleLogout}
+            onClick={() => setShowLogoutModal(true)}
             className="w-full flex items-center gap-2 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl text-sm transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
@@ -167,6 +169,12 @@ const StudentLayout = () => {
           <Outlet />
         </main>
       </div>
+
+      <LogoutConfirmModal 
+        isOpen={showLogoutModal} 
+        onClose={() => setShowLogoutModal(false)} 
+        onConfirm={handleLogout} 
+      />
     </div>
   );
 };

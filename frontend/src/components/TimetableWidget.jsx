@@ -102,9 +102,9 @@ const TimetableWidget = ({ classId, teacherUserId }) => {
             </div>
             <div className="min-w-0">
               <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
-                Class Schedule & Timetable
+                Class Timetable
               </h3>
-              <p className="text-xs text-slate-500 truncate">Weekly routine and lecture hours</p>
+              <p className="text-xs text-slate-500 truncate">Daily periods and routine</p>
             </div>
           </div>
 

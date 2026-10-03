@@ -36,10 +36,20 @@ const classSchema = new mongoose.Schema(
       trim: true,
     },
 
+    academicSession: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "AcademicSession",
+      // required: [true, "Academic Session is required"], // commented for migration
+    },
+
+    program: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Program",
+    },
+
     academicYear: {
       type: String,
-      required: [true, "Academic year is required"],
-      trim: true,
+      trim: true, // Made optional for migration
     },
 
     isActive: {

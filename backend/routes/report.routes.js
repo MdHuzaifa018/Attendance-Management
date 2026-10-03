@@ -5,6 +5,7 @@ import {
   getDetailedReport,
   getStudentDetailedReport,
   exportCSV,
+  getAtRiskStudentsDetails,
 } from "../controllers/report.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 import { authorize } from "../middleware/role.middleware.js";
@@ -27,6 +28,9 @@ router.get("/detailed", validate(reportQuerySchema, "query"), getDetailedReport)
 
 // GET /api/reports/student/:studentId — specific student stats (used for bulk attendance override)
 router.get("/student/:studentId", getStudentDetailedReport);
+
+// GET /api/reports/at-risk-students — students with < 75% attendance
+router.get("/at-risk-students", getAtRiskStudentsDetails);
 
 // GET /api/reports/export — downloads the detailed data as a CSV file
 router.get("/export", validate(reportQuerySchema, "query"), exportCSV);

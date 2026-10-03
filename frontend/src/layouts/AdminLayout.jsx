@@ -11,6 +11,8 @@ import {
   History,
   BarChart3,
   GraduationCap,
+  ArrowUpRight,
+  CalendarRange,
   LogOut,
   Menu,
   Settings,
@@ -20,22 +22,26 @@ import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useCollegeSettings } from "../context/CollegeSettingsContext.jsx";
 import ThemeToggle from "../components/common/ThemeToggle.jsx";
-
+import LogoutConfirmModal from "../components/common/LogoutConfirmModal.jsx";
 const navItems = [
   { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/admin/students", label: "Students", icon: Users },
+  { path: "/admin/students", label: "Active Students", icon: Users },
+  { path: "/admin/alumni", label: "Alumni / Passed Out", icon: GraduationCap },
+  { path: "/admin/promotions", label: "Promotions", icon: ArrowUpRight },
   { path: "/admin/teachers", label: "Teachers", icon: UserCheck },
   { path: "/admin/departments", label: "Departments", icon: Building2 },
+  { path: "/admin/sessions", label: "Academic Sessions", icon: CalendarRange },
   { path: "/admin/classes", label: "Classes", icon: BookOpen },
   { path: "/admin/subjects", label: "Subjects", icon: BookMarked },
   { path: "/admin/attendance", label: "Attendance", icon: ClipboardList },
-  { path: "/admin/history", label: "History & Audit", icon: History },
+  { path: "/admin/history", label: "Attendance History", icon: History },
   { path: "/admin/reports", label: "Reports", icon: BarChart3 },
   { path: "/admin/settings", label: "Settings & Logo", icon: Settings },
 ];
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { user, logout } = useAuth();
   const { logo, settings } = useCollegeSettings();
   const navigate = useNavigate();
@@ -134,7 +140,7 @@ const AdminLayout = () => {
           </div>
           <button
             id="admin-layout-logout-btn"
-            onClick={handleLogout}
+            onClick={() => setShowLogoutModal(true)}
             className="w-full flex items-center gap-2 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl text-sm transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
@@ -190,6 +196,12 @@ const AdminLayout = () => {
           <Outlet />
         </main>
       </div>
+
+      <LogoutConfirmModal 
+        isOpen={showLogoutModal} 
+        onClose={() => setShowLogoutModal(false)} 
+        onConfirm={handleLogout} 
+      />
     </div>
   );
 };

@@ -31,11 +31,11 @@ export const getAttendanceSessions = async ({
     if (!teacherDoc) return { sessions: [], total: 0, page, limit };
     matchStage.teacher = teacherDoc._id;
   } else if (teacherId) {
-    matchStage.teacher = teacherId;
+    matchStage.teacher = new mongoose.Types.ObjectId(teacherId);
   }
 
-  if (classId) matchStage.class = classId;
-  if (subjectId) matchStage.subject = subjectId;
+  if (classId) matchStage.class = new mongoose.Types.ObjectId(classId);
+  if (subjectId) matchStage.subject = new mongoose.Types.ObjectId(subjectId);
   if (session) matchStage.session = session;
 
   if (startDate || endDate) {

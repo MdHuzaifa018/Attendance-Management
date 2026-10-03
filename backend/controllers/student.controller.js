@@ -27,6 +27,28 @@ export const getStudent = async (req, res) => {
   res.status(200).json({ success: true, student });
 };
 
+// GET /api/students/graduated
+export const getGraduatedStudents = async (req, res) => {
+  const { batch, programId, departmentId, search, page = 1, limit = 20 } = req.query;
+
+  const result = await studentService.getGraduatedStudents({
+    batch,
+    programId,
+    departmentId,
+    search,
+    page: Number(page),
+    limit: Number(limit),
+  });
+
+  res.status(200).json({ success: true, ...result });
+};
+
+// GET /api/students/:id/academic-history
+export const getAcademicHistory = async (req, res) => {
+  const result = await studentService.getAcademicHistory(req.params.id);
+  res.status(200).json({ success: true, ...result });
+};
+
 // POST /api/students
 export const createStudent = async (req, res) => {
   const student = await studentService.createStudent(req.body);

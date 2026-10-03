@@ -7,7 +7,8 @@ import * as reportService from "../services/report.service.js";
 
 // GET /api/reports/overview
 export const getOverview = async (req, res) => {
-  const result = await reportService.getSystemOverview();
+  const { sessionId } = req.query;
+  const result = await reportService.getSystemOverview(sessionId);
   res.status(200).json({ success: true, data: result });
 };
 
@@ -30,6 +31,13 @@ export const getDetailedReport = async (req, res) => {
 export const getStudentDetailedReport = async (req, res) => {
   const { studentId } = req.params;
   const result = await reportService.getStudentDetailedReport(studentId);
+  res.status(200).json({ success: true, data: result });
+};
+
+// GET /api/reports/at-risk-students
+export const getAtRiskStudentsDetails = async (req, res) => {
+  const { sessionId } = req.query;
+  const result = await reportService.getAtRiskStudentsDetails(sessionId);
   res.status(200).json({ success: true, data: result });
 };
 

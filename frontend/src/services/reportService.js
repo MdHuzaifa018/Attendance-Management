@@ -5,8 +5,8 @@ import api from "./api.js";
  * API client for admin analytics, charting data, and CSV exports.
  */
 
-export const getSystemOverview = async () => {
-  const { data } = await api.get("/reports/overview");
+export const getSystemOverview = async (sessionId = "") => {
+  const { data } = await api.get("/reports/overview", { params: { sessionId } });
   return data.data;
 };
 
@@ -22,6 +22,11 @@ export const getDetailedReport = async (filters = {}) => {
 
 export const getStudentDetailedReport = async (studentId) => {
   const { data } = await api.get(`/reports/student/${studentId}`);
+  return data.data;
+};
+
+export const getAtRiskStudentsDetails = async (sessionId = "") => {
+  const { data } = await api.get("/reports/at-risk-students", { params: { sessionId } });
   return data.data;
 };
 

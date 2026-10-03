@@ -5,6 +5,8 @@ import {
   createStudent,
   updateStudent,
   deleteStudent,
+  getGraduatedStudents,
+  getAcademicHistory,
 } from "../controllers/student.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 import { authorize } from "../middleware/role.middleware.js";
@@ -21,6 +23,12 @@ router.use(protect, authorize("admin"));
 
 // GET  /api/students  — list with search/filter/pagination
 router.get("/", getStudents);
+
+// GET  /api/students/graduated  — alumni list
+router.get("/graduated", getGraduatedStudents);
+
+// GET  /api/students/:id/academic-history
+router.get("/:id/academic-history", getAcademicHistory);
 
 // GET  /api/students/:id  — get single student
 router.get("/:id", getStudent);

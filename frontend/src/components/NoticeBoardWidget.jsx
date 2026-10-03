@@ -101,7 +101,7 @@ const NoticeBoardWidget = () => {
           </div>
           <div className="min-w-0">
             <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 truncate">
-              Notice Board & Circulars
+              Notice Board
               {notices.some((n) => n.priority === "urgent") && (
                 <span className="flex h-2 w-2 relative shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -109,7 +109,7 @@ const NoticeBoardWidget = () => {
                 </span>
               )}
             </h3>
-            <p className="text-xs text-slate-500 truncate">Official college notifications & academic alerts</p>
+            <p className="text-xs text-slate-500 truncate">College notices and important updates</p>
           </div>
         </div>
 

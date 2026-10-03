@@ -29,11 +29,7 @@ const studentSchema = new mongoose.Schema(
       required: [true, "Department is required"],
     },
 
-    class: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Class",
-      required: [true, "Class is required"],
-    },
+    // Class is removed - use Enrollment for active class
 
     admissionYear: {
       type: Number,
@@ -41,6 +37,12 @@ const studentSchema = new mongoose.Schema(
     },
 
     duration: {
+      type: String,
+      trim: true,
+      default: "2024-27"
+    },
+
+    batch: {
       type: String,
       trim: true,
       default: "2024-27"
@@ -105,6 +107,12 @@ const studentSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+
+    status: {
+      type: String,
+      enum: ["active", "graduated", "transferred", "dropped", "inactive"],
+      default: "active",
     },
   },
   {

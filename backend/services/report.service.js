@@ -10,19 +10,24 @@ import { getCache, setCache } from "../utils/cache.js";
  * getSystemOverview
  * Returns high-level metrics for the admin dashboard.
  */
-export const getSystemOverview = async () => {
-  const cacheKey = "system_overview";
+export const getSystemOverview = async (sessionId) => {
+  const cacheKey = `system_overview_${sessionId || "all"}`;
   const cachedData = getCache(cacheKey);
   if (cachedData) return cachedData;
 
+  // We need to count Enrollments for the given session instead of global students
+  const sessionMatch = sessionId ? { academicSession: new mongoose.Types.ObjectId(sessionId) } : {};
+  const attendanceMatch = sessionId ? { academicSession: new mongoose.Types.ObjectId(sessionId) } : {};
+
   const [studentCount, teacherCount, classCount] = await Promise.all([
-    Student.countDocuments({ isActive: true }),
+    mongoose.model("Enrollment").countDocuments({ ...sessionMatch, status: { $in: ["active", "year_repeat"] } }),
     Teacher.countDocuments({ isActive: true }),
-    Class.countDocuments({ isActive: true }),
+    Class.countDocuments({ ...sessionMatch, isActive: true }),
   ]);
 
   // 1. System-wide attendance stats
   const attStats = await Attendance.aggregate([
+    { $match: attendanceMatch },
     {
       $group: {
         _id: null,
@@ -47,6 +52,7 @@ export const getSystemOverview = async () => {
   const todayStatsAgg = await Attendance.aggregate([
     {
       $match: {
+        ...attendanceMatch,
         date: { $gte: startOfToday, $lte: endOfToday },
       },
     },
@@ -58,6 +64,13 @@ export const getSystemOverview = async () => {
           $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] },
         },
         classesSet: { $addToSet: "$class" },
+        sessionsSet: {
+          $addToSet: {
+            class: "$class",
+            subject: "$subject",
+            session: "$session",
+          },
+        },
       },
     },
   ]);
@@ -67,9 +80,11 @@ export const getSystemOverview = async () => {
   const absentToday = totalToday - presentToday;
   const todayPercent = totalToday > 0 ? Math.round((presentToday / totalToday) * 100) : 0;
   const activeClassesToday = todayStatsAgg[0]?.classesSet?.length || 0;
+  const todaySessionsCount = todayStatsAgg[0]?.sessionsSet?.length || 0;
 
   // 3. Class-wise performance breakdown (for analyst comparative bar chart)
   const classBreakdown = await Attendance.aggregate([
+    { $match: attendanceMatch },
     {
       $group: {
         _id: "$class",
@@ -110,6 +125,7 @@ export const getSystemOverview = async () => {
 
   // 4. Students at-risk (< 75% attendance)
   const atRiskAgg = await Attendance.aggregate([
+    { $match: attendanceMatch },
     {
       $group: {
         _id: "$student",
@@ -141,6 +157,7 @@ export const getSystemOverview = async () => {
     classCount,
     overallPercent,
     activeClassesToday,
+    todaySessionsCount,
     totalRecords,
     presentRecords,
     absentRecords,
@@ -375,8 +392,17 @@ export const getStudentDetailedReport = async (studentId) => {
     throw new Error("Student not found");
   }
 
+  const activeEnrollment = await mongoose.model("Enrollment").findOne({
+    student: studentId,
+    status: { $in: ["active", "year_repeat"] }
+  });
+
+  if (!activeEnrollment) {
+    throw new Error("Active enrollment not found for student");
+  }
+
   // Find all active subjects for this student's class
-  const subjects = await Subject.find({ class: student.class, isActive: true })
+  const subjects = await Subject.find({ class: activeEnrollment.class, isActive: true })
     .select("name code _id")
     .lean();
 
@@ -428,4 +454,96 @@ export const getStudentDetailedReport = async (studentId) => {
   });
 
   return result;
+};
+
+/**
+ * getAtRiskStudentsDetails
+ * Returns a list of students with overall attendance < 75%
+ */
+export const getAtRiskStudentsDetails = async (sessionId) => {
+  const attendanceMatch = sessionId ? { academicSession: new mongoose.Types.ObjectId(sessionId) } : {};
+
+  const atRiskAgg = await Attendance.aggregate([
+    { $match: attendanceMatch },
+    {
+      $group: {
+        _id: "$student",
+        total: { $sum: 1 },
+        present: {
+          $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        total: 1,
+        present: 1,
+        percent: {
+          $cond: [
+            { $eq: ["$total", 0] },
+            0,
+            { $round: [{ $multiply: [{ $divide: ["$present", "$total"] }, 100] }, 0] },
+          ],
+        },
+      },
+    },
+    { $match: { percent: { $lt: 75 } } },
+    {
+      $lookup: {
+        from: "students",
+        localField: "_id",
+        foreignField: "_id",
+        as: "studentDoc",
+      },
+    },
+    { $unwind: "$studentDoc" },
+    {
+      $lookup: {
+        from: "enrollments",
+        let: { studentId: "$_id", session: sessionId ? new mongoose.Types.ObjectId(sessionId) : null },
+        pipeline: [
+          { $match: { $expr: { $and: [
+            { $eq: ["$student", "$$studentId"] },
+            { $or: [ { $eq: ["$$session", null] }, { $eq: ["$academicSession", "$$session"] } ] }
+          ] } } },
+          { $limit: 1 }
+        ],
+        as: "enrollmentDoc",
+      }
+    },
+    { $unwind: { path: "$enrollmentDoc", preserveNullAndEmptyArrays: true } },
+    {
+      $lookup: {
+        from: "users",
+        localField: "studentDoc.user",
+        foreignField: "_id",
+        as: "userDoc",
+      },
+    },
+    { $unwind: "$userDoc" },
+    {
+      $lookup: {
+        from: "classes",
+        localField: "studentDoc.class",
+        foreignField: "_id",
+        as: "classDoc",
+      },
+    },
+    { $unwind: { path: "$classDoc", preserveNullAndEmptyArrays: true } },
+    {
+      $project: {
+        _id: 1,
+        name: "$userDoc.name",
+        rollNo: { $ifNull: ["$enrollmentDoc.rollNo", "$studentDoc.rollNo"] },
+        className: "$classDoc.name",
+        total: 1,
+        present: 1,
+        percent: 1,
+      },
+    },
+    { $sort: { percent: 1 } },
+  ]);
+
+  return atRiskAgg;
 };

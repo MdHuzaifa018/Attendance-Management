@@ -82,7 +82,7 @@ const TeacherDashboard = () => {
           onClick={() => setShowLeaveModal(true)}
           className="flex items-center gap-2 px-4 py-2.5 bg-white/15 hover:bg-white/25 border border-white/20 rounded-xl text-white text-xs font-bold shadow-md transition-all cursor-pointer self-start md:self-auto"
         >
-          <FileCheck className="w-4 h-4 text-emerald-200" /> Review Student Leaves
+          <FileCheck className="w-4 h-4 text-emerald-200" /> Leave Requests
         </button>
       </div>
 
