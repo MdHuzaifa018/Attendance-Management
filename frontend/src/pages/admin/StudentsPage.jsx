@@ -138,7 +138,7 @@ const StudentsPage = () => {
   }, [loadStudents]);
 
   useEffect(() => {
-    getClasses({ all: true })
+    getClasses({ all: true, activeSessionOnly: true })
       .then((res) => setClasses(res.classes || []))
       .catch(() => {});
   }, []);

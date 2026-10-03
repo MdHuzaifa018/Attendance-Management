@@ -2,6 +2,7 @@ import Class from "../models/Class.js";
 import Department from "../models/Department.js";
 import Student from "../models/Student.js";
 import Subject from "../models/Subject.js";
+import AcademicSession from "../models/AcademicSession.js";
 
 // ── Service Functions ─────────────────────────────────────────────────────────
 
@@ -18,15 +19,23 @@ export const getAllClasses = async ({
   page = 1,
   limit = 20,
   all = false,
+  activeSessionOnly = false,
 } = {}) => {
   const filter = {};
   if (departmentId) filter.department = departmentId;
+
+  if (activeSessionOnly) {
+    const activeSess = await AcademicSession.findOne({ isCurrent: true }).lean();
+    if (activeSess) {
+      filter.academicSession = activeSess._id;
+    }
+  }
 
   // Lightweight list for form dropdowns (no pagination, no counts)
   if (all) {
     filter.isActive = true;
     const classes = await Class.find(filter)
-      .select("_id name code department semester section academicYear isActive")
+      .select("_id name code department semester section academicYear academicSession isActive")
       .populate("department", "name code")
       .sort({ name: 1 })
       .lean();

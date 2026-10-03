@@ -173,26 +173,28 @@ export const createStudent = async (data) => {
       address: data.address || "",
       signature: data.signature || "",
       directorSignature: data.directorSignature || "",
-      status: "active",
+      status: data.status || "active",
       batch: data.duration || "2024-27"
     });
 
-    // Create Enrollment for the student
-    const activeSession = await mongoose.model("AcademicSession").findOne({ isCurrent: true });
-    if (activeSession) {
-      const classDoc = await mongoose.model("Class").findById(data.classId);
-      await mongoose.model("Enrollment").create({
-        student: newStudent._id,
-        academicSession: activeSession._id,
-        class: data.classId,
-        department: data.departmentId,
-        program: classDoc?.program,
-        rollNo: data.rollNo,
-        year: classDoc?.semester ? Math.ceil(classDoc.semester / 2) : 1,
-        semester: classDoc?.semester || 1,
-        section: classDoc?.section || "A",
-        status: "active"
-      });
+    // Create Enrollment only if status is active
+    if (newStudent.status === "active") {
+      const activeSession = await mongoose.model("AcademicSession").findOne({ isCurrent: true });
+      if (activeSession) {
+        const classDoc = await mongoose.model("Class").findById(data.classId);
+        await mongoose.model("Enrollment").create({
+          student: newStudent._id,
+          academicSession: activeSession._id,
+          class: data.classId,
+          department: data.departmentId,
+          program: classDoc?.program,
+          rollNo: data.rollNo,
+          year: classDoc?.semester ? Math.ceil(classDoc.semester / 2) : 1,
+          semester: classDoc?.semester || 1,
+          section: classDoc?.section || "A",
+          status: "active"
+        });
+      }
     }
   } catch (err) {
     // Rollback: remove the orphaned User if Student creation failed
@@ -218,7 +220,10 @@ export const updateStudent = async (studentId, updates) => {
   if (updates.motherName !== undefined) updateData.motherName = updates.motherName;
   if (updates.departmentId !== undefined) updateData.department = updates.departmentId;
   if (updates.admissionYear !== undefined) updateData.admissionYear = updates.admissionYear;
-  if (updates.duration !== undefined) updateData.duration = updates.duration;
+  if (updates.duration !== undefined) {
+    updateData.duration = updates.duration;
+    updateData.batch = updates.duration;
+  }
   if (updates.phone !== undefined) updateData.phone = updates.phone;
   if (updates.aadharNo !== undefined) updateData.aadharNo = updates.aadharNo;
   if (updates.idCardNo !== undefined) updateData.idCardNo = updates.idCardNo;

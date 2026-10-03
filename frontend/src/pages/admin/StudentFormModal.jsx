@@ -22,17 +22,20 @@ const createSchema = z.object({
   rollNo:        z.string().min(1, "Roll number required").max(20).trim(),
   fatherName:    z.string().min(2, "Father name required").max(100).trim(),
   departmentId:  objectId,
-  classId:       objectId,
+  classId:       objectId.optional().or(z.literal("")),
   admissionYear: z.coerce.number().int().min(2000).max(2030),
+  duration:      z.string().optional().or(z.literal("")),
   phone:         z.string().max(15).optional().or(z.literal("")),
+  status:        z.string().optional(),
 });
 
 const editSchema = z.object({
   rollNo:        z.string().min(1, "Roll number required").max(20).trim(),
   fatherName:    z.string().min(2, "Father name required").max(100).trim(),
   departmentId:  objectId,
-  classId:       objectId,
+  classId:       objectId.optional().or(z.literal("")),
   admissionYear: z.coerce.number().int().min(2000).max(2030),
+  duration:      z.string().optional().or(z.literal("")),
   phone:         z.string().max(15).optional().or(z.literal("")),
   isActive:      z.boolean().optional(),
 });
@@ -62,7 +65,7 @@ const FieldError = ({ msg }) =>
  *   student      null | student object (null = create mode, object = edit mode)
  *   onSuccess    (newOrUpdatedStudent) => void
  */
-const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
+const StudentFormModal = ({ isOpen, onClose, student, onSuccess, defaultStatus = "active" }) => {
   const isEdit = Boolean(student);
   const schema = isEdit ? editSchema : createSchema;
 
@@ -97,6 +100,7 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
           admissionYear: new Date().getFullYear(),
           duration: "2024-27",
           phone: "",
+          status: defaultStatus,
         },
   });
 
@@ -149,6 +153,7 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
               admissionYear: new Date().getFullYear(),
               duration: "2024-27",
               phone: "",
+              status: defaultStatus,
             }
       );
     }
@@ -268,7 +273,7 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Class</label>
                 <select id="sf-class" {...register("classId")} className={inputCls(errors.classId)}
-                  disabled={!selectedDeptId || classes.length === 0}>
+                  disabled={!selectedDeptId || classes.length === 0 || watch("status") === "graduated"}>
                   <option value="">
                     {!selectedDeptId ? "Select department first" : classes.length === 0 ? "No classes found" : "Select class"}
                   </option>
@@ -276,12 +281,13 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
                     <option key={c._id} value={c._id}>{c.code} — {c.name}</option>
                   ))}
                 </select>
+                {watch("status") === "graduated" && <p className="text-xs text-slate-500 mt-1">Class not required for Alumni</p>}
                 <FieldError msg={errors.classId?.message} />
               </div>
             </div>
 
-            {/* Admission Year + Phone */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* Admission Year + Phone + Status */}
+            <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Admission Year</label>
                 <input id="sf-year" type="number" placeholder="2024"
@@ -295,12 +301,24 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess }) => {
                 <FieldError msg={errors.duration?.message} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Phone <span className="text-slate-400 dark:text-slate-500">(optional)</span></label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Phone <span className="text-slate-400 dark:text-slate-500">(opt)</span></label>
                 <input id="sf-phone" type="tel" placeholder="10-digit number"
                   {...register("phone")} className={inputCls(errors.phone)} />
                 <FieldError msg={errors.phone?.message} />
               </div>
             </div>
+
+            {/* Status Field */}
+            {!isEdit && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Status</label>
+                <select id="sf-status" {...register("status")} className={inputCls(errors.status)}>
+                  <option value="active">Active Student</option>
+                  <option value="graduated">Alumni / Graduated</option>
+                  <option value="dropped">Dropped Out</option>
+                </select>
+              </div>
+            )}
 
             {/* isActive toggle — edit only */}
             {isEdit && (

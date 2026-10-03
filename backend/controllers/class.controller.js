@@ -7,7 +7,7 @@ import * as classService from "../services/class.service.js";
 
 // GET /api/classes?search=&departmentId=&page=1&limit=20&all=true
 export const getClasses = async (req, res) => {
-  const { search, departmentId, page = 1, limit = 20, all } = req.query;
+  const { search, departmentId, page = 1, limit = 20, all, activeSessionOnly } = req.query;
 
   const result = await classService.getAllClasses({
     search,
@@ -15,6 +15,7 @@ export const getClasses = async (req, res) => {
     page: Number(page),
     limit: Number(limit),
     all: all === "true",
+    activeSessionOnly: activeSessionOnly === "true",
   });
 
   res.status(200).json({ success: true, ...result });

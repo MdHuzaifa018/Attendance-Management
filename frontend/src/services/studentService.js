@@ -74,7 +74,8 @@ export const getDepartments = async () => {
  * @param {string} [departmentId]
  */
 export const getClassesByDepartment = async (departmentId = "") => {
-  const params = departmentId ? { departmentId } : {};
+  const params = { activeSessionOnly: true };
+  if (departmentId) params.departmentId = departmentId;
   const { data } = await api.get("/classes", { params });
   return data.classes; // [{ _id, name, code, department }]
 };

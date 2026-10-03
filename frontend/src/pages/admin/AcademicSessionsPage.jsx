@@ -23,16 +23,26 @@ const AcademicSessionsPage = () => {
 
   const handleCreate = async () => {
     try {
+      let latestYear = 2024;
+      if (sessions && sessions.length > 0) {
+         latestYear = Math.max(...sessions.map(s => s.startYear));
+      }
+      const nextStart = latestYear + 1;
+      const nextEnd = nextStart + 1;
+      const name = `${nextStart}-${nextEnd.toString().slice(-2)}`;
+
       await createSession({
-        name: "2026-27",
-        startYear: 2026,
-        endYear: 2027,
-        isCurrent: true,
+        name: name,
+        startYear: nextStart,
+        endYear: nextEnd,
+        startDate: `${nextStart}-07-01`,
+        endDate: `${nextEnd}-06-30`,
+        isCurrent: false, // Created as upcoming session
       });
-      toast.success("New Session Created!");
+      toast.success(`New Session ${name} Created!`);
       fetchSessions();
     } catch (err) {
-      toast.error("Failed to create session");
+      toast.error(err.response?.data?.message || "Failed to create session");
     }
   };
 
@@ -40,8 +50,8 @@ const AcademicSessionsPage = () => {
     <div className="max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold dark:text-white">Academic Sessions</h1>
-        <button onClick={handleCreate} className="px-4 py-2 bg-indigo-600 text-white rounded-lg">
-          Create New Session (Demo)
+        <button onClick={handleCreate} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 transition-colors text-white rounded-lg font-medium">
+          Create Next Year Session
         </button>
       </div>
 

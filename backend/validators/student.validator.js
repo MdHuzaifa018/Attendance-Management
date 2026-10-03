@@ -45,7 +45,7 @@ export const createStudentSchema = z.object({
 
   departmentId: objectId,
 
-  classId: objectId,
+  classId: objectId.optional(),
 
   admissionYear: z.coerce
     .number()
@@ -56,6 +56,10 @@ export const createStudentSchema = z.object({
   duration: z
     .string()
     .trim()
+    .optional(),
+
+  status: z
+    .enum(["active", "graduated", "dropped", "transferred", "year_repeat"])
     .optional(),
 
   phone: z

@@ -4,6 +4,7 @@ import PromotionHistory from "../models/PromotionHistory.js";
 import Student from "../models/Student.js";
 import Class from "../models/Class.js";
 import AcademicSession from "../models/AcademicSession.js";
+import Program from "../models/Program.js";
 
 /**
  * Generate a preview of what happens if we promote students from a specific class.
@@ -22,7 +23,12 @@ export const getPromotionPreview = async ({ currentSessionId, targetSessionId, f
     academicSession: currentSessionId,
     class: fromClassId,
     status: { $in: ["active", "year_repeat"] },
-  }).populate("student").lean();
+  })
+    .populate({
+      path: "student",
+      populate: { path: "user", select: "name email" }
+    })
+    .lean();
 
   // Sort by roll number
   enrollments.sort((a, b) => (a.rollNo || "").localeCompare(b.rollNo || "", undefined, { numeric: true }));
@@ -87,7 +93,7 @@ export const executePromotion = async ({
     const results = [];
 
     for (const promo of promotions) {
-      const { enrollmentId, action, proposedClassId, remarks } = promo;
+      const { enrollmentId, proposedAction: action, proposedClassId, remarks } = promo;
       
       const currentEnrollment = await Enrollment.findById(enrollmentId).session(session);
       if (!currentEnrollment) continue;
