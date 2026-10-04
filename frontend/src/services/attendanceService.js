@@ -4,8 +4,10 @@ import api from "./api.js";
  * attendanceService — API client for daily attendance marking and sheets.
  */
 
-export const getAssignedSubjects = async () => {
-  const { data } = await api.get("/attendance/assigned-subjects");
+export const getAssignedSubjects = async (academicSessionId) => {
+  const params = {};
+  if (academicSessionId) params.academicSessionId = academicSessionId;
+  const { data } = await api.get("/attendance/assigned-subjects", { params });
   return data;
 };
 
@@ -24,8 +26,10 @@ export const markAttendance = async (payload) => {
   return data;
 };
 
-export const getClasses = async () => {
-  const { data } = await api.get("/classes", { params: { all: true } });
+export const getClasses = async (academicSessionId) => {
+  const params = { all: true };
+  if (academicSessionId) params.academicSessionId = academicSessionId;
+  const { data } = await api.get("/classes", { params });
   return data.classes;
 };
 

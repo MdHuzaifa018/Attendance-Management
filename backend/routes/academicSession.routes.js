@@ -1,5 +1,5 @@
 import express from "express";
-import { getSessions, getActiveSession, createSession, updateSession } from "../controllers/academicSession.controller.js";
+import { getSessions, getActiveSession, createSession, updateSession, deleteSession } from "../controllers/academicSession.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 import { authorize } from "../middleware/role.middleware.js";
 
@@ -13,5 +13,6 @@ router.get("/", getSessions);
 router.use(authorize("admin"));
 router.post("/", createSession);
 router.put("/:id", updateSession);
+router.delete("/:id", deleteSession);
 
 export default router;

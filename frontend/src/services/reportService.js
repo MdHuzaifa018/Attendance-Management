@@ -10,8 +10,8 @@ export const getSystemOverview = async (sessionId = "") => {
   return data.data;
 };
 
-export const getAttendanceTrends = async (days = 7) => {
-  const { data } = await api.get("/reports/trends", { params: { days } });
+export const getAttendanceTrends = async (days = 7, sessionId = "") => {
+  const { data } = await api.get("/reports/trends", { params: { days, sessionId } });
   return data.data;
 };
 

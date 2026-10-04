@@ -24,6 +24,7 @@ import {
   getClasses,
   getSubjectsByClass,
 } from "../../services/attendanceService.js";
+import { useSession } from "../../context/SessionContext.jsx";
 
 const SESSION_OPTIONS = [
   { value: "regular", label: "Regular Session" },
@@ -35,6 +36,7 @@ const SESSION_OPTIONS = [
 const TeacherAttendancePage = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
+  const { globalSession } = useSession();
 
   // Filter & Config selections
   const [classesList, setClassesList] = useState([]);
@@ -62,18 +64,22 @@ const TeacherAttendancePage = () => {
     setLoadingLookups(true);
     if (isAdmin) {
       // Admin can select from all classes
-      getClasses()
+      getClasses(globalSession?._id)
         .then((cls) => {
           setClassesList(cls || []);
           if (cls?.length > 0) {
             setSelectedClassId(cls[0]._id);
+          } else {
+            setSelectedClassId("");
+            setSubjectsList([]);
+            setSelectedSubjectId("");
           }
         })
         .catch(() => toast.error("Could not load classes"))
         .finally(() => setLoadingLookups(false));
     } else {
       // Teacher: load their assigned subjects & classes
-      getAssignedSubjects()
+      getAssignedSubjects(globalSession?._id)
         .then((res) => {
           const subs = res.subjects || [];
           setSubjectsList(subs);
@@ -98,7 +104,7 @@ const TeacherAttendancePage = () => {
         .catch(() => toast.error("Could not load assigned subjects"))
         .finally(() => setLoadingLookups(false));
     }
-  }, [isAdmin]);
+  }, [isAdmin, globalSession]);
 
   // 2. When Class changes (for Admin): load subjects in that class
   useEffect(() => {

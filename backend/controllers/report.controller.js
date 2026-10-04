@@ -16,7 +16,8 @@ export const getOverview = async (req, res) => {
 export const getTrends = async (req, res) => {
   // default to last 7 days
   const days = req.query.days ? parseInt(req.query.days) : 7;
-  const result = await reportService.getAttendanceTrends(days);
+  const { sessionId } = req.query;
+  const result = await reportService.getAttendanceTrends(days, sessionId);
   res.status(200).json({ success: true, data: result });
 };
 

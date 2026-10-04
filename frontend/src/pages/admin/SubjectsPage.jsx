@@ -54,9 +54,12 @@ const SubjectsPage = () => {
     deleting: false,
   });
 
-  // Load filter lookups once
+  // Load filter lookups
   useEffect(() => {
-    Promise.all([getClasses(), getTeachers()])
+    Promise.all([
+      getClasses({ all: true }),
+      getTeachers(),
+    ])
       .then(([cls, tch]) => {
         setClassesList(cls || []);
         setTeachersList(tch || []);

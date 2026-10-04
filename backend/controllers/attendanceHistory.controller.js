@@ -7,7 +7,7 @@ import * as historyService from "../services/attendanceHistory.service.js";
 
 // GET /api/attendance/history?classId=&subjectId=&startDate=&endDate=&session=&page=&limit=
 export const listSessions = async (req, res) => {
-  const { classId, subjectId, teacherId, startDate, endDate, session, page, limit } =
+  const { classId, subjectId, teacherId, startDate, endDate, session, academicSessionId, page, limit } =
     req.validatedQuery || req.query;
 
   const result = await historyService.getAttendanceSessions({
@@ -17,6 +17,7 @@ export const listSessions = async (req, res) => {
     startDate,
     endDate,
     session,
+    academicSessionId,
     page: Number(page) || 1,
     limit: Number(limit) || 20,
     userId: req.user._id,

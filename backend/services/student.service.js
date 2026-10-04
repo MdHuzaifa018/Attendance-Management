@@ -1,5 +1,6 @@
 import Student from "../models/Student.js";
 import User from "../models/User.js";
+import Enrollment from "../models/Enrollment.js";
 import { hashPassword } from "../utils/password.js";
 import mongoose from "mongoose";
 
@@ -30,11 +31,21 @@ export const getAllStudents = async ({
   search = "",
   classId = "",
   departmentId = "",
+  academicSessionId = "",
   page = 1,
   limit = 20,
 } = {}) => {
   const skip = (page - 1) * limit;
-  const filter = { status: { $in: ["active", "year_repeat"] } };
+  const filter = {}; // Show all enrollments (active, promoted, graduated) for the selected session
+
+  if (academicSessionId) {
+    filter.academicSession = academicSessionId;
+  } else {
+    const activeSession = await mongoose.model("AcademicSession").findOne({ isCurrent: true }).lean();
+    if (activeSession) {
+      filter.academicSession = activeSession._id;
+    }
+  }
 
   if (classId) filter.class = classId;
   if (departmentId) filter.department = departmentId;
@@ -78,6 +89,7 @@ export const getAllStudents = async ({
       student.class = enr.class;
       student.rollNo = enr.rollNo;
       student.enrollmentId = enr._id;
+      student.enrollmentStatus = enr.status;
     }
     return student;
   }).filter(Boolean);
@@ -179,12 +191,17 @@ export const createStudent = async (data) => {
 
     // Create Enrollment only if status is active
     if (newStudent.status === "active") {
-      const activeSession = await mongoose.model("AcademicSession").findOne({ isCurrent: true });
-      if (activeSession) {
+      let targetSessionId = data.academicSessionId;
+      if (!targetSessionId) {
+        const activeSession = await mongoose.model("AcademicSession").findOne({ isCurrent: true }).lean();
+        targetSessionId = activeSession?._id;
+      }
+      
+      if (targetSessionId) {
         const classDoc = await mongoose.model("Class").findById(data.classId);
         await mongoose.model("Enrollment").create({
           student: newStudent._id,
-          academicSession: activeSession._id,
+          academicSession: targetSessionId,
           class: data.classId,
           department: data.departmentId,
           program: classDoc?.program,
@@ -236,10 +253,15 @@ export const updateStudent = async (studentId, updates) => {
 
   // Update class in Enrollment if provided
   if (updates.classId !== undefined) {
-    const activeSession = await mongoose.model("AcademicSession").findOne({ isCurrent: true });
-    if (activeSession) {
+    let targetSessionId = updates.academicSessionId;
+    if (!targetSessionId) {
+      const activeSession = await mongoose.model("AcademicSession").findOne({ isCurrent: true }).lean();
+      targetSessionId = activeSession?._id;
+    }
+    
+    if (targetSessionId) {
       await mongoose.model("Enrollment").findOneAndUpdate(
-        { student: studentId, academicSession: activeSession._id, status: { $in: ["active", "year_repeat"] } },
+        { student: studentId, academicSession: targetSessionId, status: { $in: ["active", "year_repeat"] } },
         { class: updates.classId }
       );
     }
@@ -304,8 +326,18 @@ export const deleteStudent = async (studentId) => {
   }
 
   const userId = student.user;
+  
+  // Delete all related records to maintain integrity
+  await mongoose.model("Enrollment").deleteMany({ student: studentId });
+  await mongoose.model("Attendance").deleteMany({ student: studentId });
+  await mongoose.model("PromotionHistory").deleteMany({ student: studentId });
+
   await Student.findByIdAndDelete(studentId);
   await User.findByIdAndDelete(userId);
+  
+  // Clear report caches
+  const { clearCache } = await import("../utils/cache.js");
+  clearCache();
 
   return { message: "Student deleted successfully" };
 };

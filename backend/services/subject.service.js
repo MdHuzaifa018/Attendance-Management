@@ -12,11 +12,18 @@ export const getAllSubjects = async ({
   search = "",
   classId = "",
   teacherId = "",
+  academicSessionId = "",
   page = 1,
   limit = 20,
   all = false,
 } = {}) => {
   const filter = {};
+
+  // If a session is provided and no specific class chosen, scope to that session's classes
+  if (academicSessionId && !classId) {
+    const sessionClasses = await Class.find({ academicSession: academicSessionId }).select("_id").lean();
+    filter.class = { $in: sessionClasses.map((c) => c._id) };
+  }
 
   if (classId) {
     filter.class = classId;

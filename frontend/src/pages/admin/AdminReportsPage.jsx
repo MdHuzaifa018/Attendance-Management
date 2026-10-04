@@ -14,6 +14,7 @@ import { getDepartments } from "../../services/departmentService.js";
 import { getClasses } from "../../services/classService.js";
 import { getSubjects } from "../../services/subjectService.js";
 import PrintableReportModal from "../../components/PrintableReportModal.jsx";
+import { useSession } from "../../context/SessionContext.jsx";
 
 const AdminReportsPage = () => {
   const [data, setData] = useState([]);
@@ -36,21 +37,37 @@ const AdminReportsPage = () => {
 
   const [showFilters, setShowFilters] = useState(true);
 
+  const { globalSession } = useSession();
+
   useEffect(() => {
     // Load lookups
     getDepartments().then(res => setDepartments(res.departments || [])).catch(() => {});
-    getClasses({ all: true }).then(res => setClasses(res.classes || [])).catch(() => {});
-    getSubjects({ all: true }).then(res => setSubjects(res.subjects || [])).catch(() => {});
-    
+
     // Initial data load
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (globalSession) {
+      setFilters(prev => ({ ...prev, classId: "", subjectId: "" }));
+      getClasses({ all: true, academicSessionId: globalSession._id })
+        .then(res => setClasses(res.classes || []))
+        .catch(() => {});
+      // Also reload subjects scoped to session
+      getSubjects({ all: true, academicSessionId: globalSession._id })
+        .then(res => setSubjects(res.subjects || []))
+        .catch(() => {});
+      // Reload data when session changes
+      loadData();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [globalSession]);
+
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const activeFilters = {};
+      const activeFilters = { academicSessionId: globalSession?._id };
       Object.entries(filters).forEach(([k, v]) => {
         if (v) activeFilters[k] = v;
       });
@@ -61,7 +78,7 @@ const AdminReportsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, globalSession]);
 
   useEffect(() => {
     // Debounce or trigger manual. For safety, we can rely on a Search/Apply button
@@ -89,7 +106,7 @@ const AdminReportsPage = () => {
   const handleExport = async () => {
     setDownloading(true);
     try {
-      const activeFilters = {};
+      const activeFilters = { academicSessionId: globalSession?._id };
       Object.entries(filters).forEach(([k, v]) => {
         if (v) activeFilters[k] = v;
       });

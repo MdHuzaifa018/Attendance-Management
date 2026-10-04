@@ -34,3 +34,13 @@ export const executePromotion = async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 };
+
+export const revertPromotion = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const result = await promotionService.revertPromotion(studentId);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};

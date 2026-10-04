@@ -19,3 +19,8 @@ export const updateSession = async (id, sessionData) => {
   const { data } = await api.put(`/academic-sessions/${id}`, sessionData);
   return data.session;
 };
+
+export const deleteSession = async (id) => {
+  const { data } = await api.delete(`/academic-sessions/${id}`);
+  return data;
+};

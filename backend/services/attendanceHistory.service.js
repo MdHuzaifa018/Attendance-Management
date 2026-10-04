@@ -18,6 +18,7 @@ export const getAttendanceSessions = async ({
   startDate,
   endDate,
   session,
+  academicSessionId,
   page = 1,
   limit = 20,
   userId,
@@ -32,6 +33,13 @@ export const getAttendanceSessions = async ({
     matchStage.teacher = teacherDoc._id;
   } else if (teacherId) {
     matchStage.teacher = new mongoose.Types.ObjectId(teacherId);
+  }
+
+  // Scope to a specific academic session's classes (if provided and no specific class is selected)
+  if (academicSessionId && !classId) {
+    const sessionClasses = await Class.find({ academicSession: academicSessionId }).select("_id").lean();
+    const sessionClassIds = sessionClasses.map((c) => c._id);
+    matchStage.class = { $in: sessionClassIds };
   }
 
   if (classId) matchStage.class = new mongoose.Types.ObjectId(classId);

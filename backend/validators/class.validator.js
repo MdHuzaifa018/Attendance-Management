@@ -43,6 +43,8 @@ export const createClassSchema = z.object({
     .min(4, "Academic year is required (e.g. 2024-25)")
     .max(15)
     .trim(),
+
+  academicSessionId: objectId.optional(),
 });
 
 /**
@@ -87,6 +89,8 @@ export const updateClassSchema = z.object({
     .max(15)
     .trim()
     .optional(),
+
+  academicSessionId: objectId.optional(),
 
   isActive: z.boolean().optional(),
 });

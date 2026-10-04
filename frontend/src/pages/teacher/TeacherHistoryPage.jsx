@@ -21,6 +21,7 @@ import {
 import toast from "react-hot-toast";
 import { getAttendanceSessions, getSessionDetail, correctAttendance } from "../../services/attendanceHistoryService.js";
 import { getClasses, getSubjectsByClass } from "../../services/attendanceService.js";
+import { useSession } from "../../context/SessionContext.jsx";
 
 /* ─── helpers ────────────────────────────────────────────────────── */
 const fmt = (d) =>
@@ -379,10 +380,14 @@ const TeacherHistoryPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [viewSession, setViewSession] = useState(null);
 
-  // Load filter selects
+  const { globalSession } = useSession();
+
+  // Load filter selects - re-run when session changes
   useEffect(() => {
-    getClasses().then(setClasses).catch(() => {});
-  }, []);
+    getClasses(globalSession?._id).then(setClasses).catch(() => {});
+    setFilters(prev => ({ ...prev, classId: "", subjectId: "", page: 1 }));
+    setSubjects([]);
+  }, [globalSession]);
 
   useEffect(() => {
     if (filters.classId) {
@@ -398,6 +403,7 @@ const TeacherHistoryPage = () => {
     setLoading(true);
     try {
       const params = {};
+      if (globalSession?._id) params.academicSessionId = globalSession._id;
       if (filters.classId) params.classId = filters.classId;
       if (filters.subjectId) params.subjectId = filters.subjectId;
       if (filters.startDate) params.startDate = filters.startDate;
@@ -415,7 +421,7 @@ const TeacherHistoryPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, globalSession]);
 
   useEffect(() => { load(); }, [load]);
 

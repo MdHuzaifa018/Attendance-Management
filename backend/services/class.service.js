@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Class from "../models/Class.js";
 import Department from "../models/Department.js";
 import Student from "../models/Student.js";
@@ -20,24 +21,19 @@ export const getAllClasses = async ({
   limit = 20,
   all = false,
   activeSessionOnly = false,
+  academicSessionId = "",
 } = {}) => {
   const filter = {};
   if (departmentId) filter.department = departmentId;
 
-  if (activeSessionOnly) {
-    const activeSess = await AcademicSession.findOne({ isCurrent: true }).lean();
-    if (activeSess) {
-      filter.academicSession = activeSess._id;
-    }
-  }
-
+  // Universal institutional classes across all academic sessions
   // Lightweight list for form dropdowns (no pagination, no counts)
   if (all) {
     filter.isActive = true;
     const classes = await Class.find(filter)
       .select("_id name code department semester section academicYear academicSession isActive")
       .populate("department", "name code")
-      .sort({ name: 1 })
+      .sort({ code: 1 })
       .lean();
     return { classes };
   }
@@ -52,7 +48,7 @@ export const getAllClasses = async ({
   const [classDocs, total] = await Promise.all([
     Class.find(filter)
       .populate("department", "name code")
-      .sort({ name: 1 })
+      .sort({ code: 1 })
       .skip(skip)
       .limit(Number(limit))
       .lean(),
@@ -69,9 +65,15 @@ export const getAllClasses = async ({
   // Single round-trip per collection instead of 2 queries per class (N+1 fix)
   const classIds = classDocs.map((c) => c._id);
 
+  const enrollmentMatch = { class: { $in: classIds } };
+  if (academicSessionId) {
+    enrollmentMatch.academicSession = new mongoose.Types.ObjectId(academicSessionId);
+  }
+  enrollmentMatch.status = { $in: ["active", "year_repeat", "promoted", "graduated", "completed"] };
+
   const [studentCounts, subjectCounts] = await Promise.all([
-    Student.aggregate([
-      { $match: { class: { $in: classIds } } },
+    mongoose.model("Enrollment").aggregate([
+      { $match: enrollmentMatch },
       { $group: { _id: "$class", count: { $sum: 1 } } },
     ]),
     Subject.aggregate([
@@ -83,10 +85,17 @@ export const getAllClasses = async ({
   const studentMap = new Map(studentCounts.map((x) => [String(x._id), x.count]));
   const subjectMap = new Map(subjectCounts.map((x) => [String(x._id), x.count]));
 
+  let sessionName = "";
+  if (academicSessionId) {
+    const sessionDoc = await AcademicSession.findById(academicSessionId).select("name").lean();
+    if (sessionDoc) sessionName = sessionDoc.name;
+  }
+
   const classes = classDocs.map((cls) => {
     const id = String(cls._id);
     return {
       ...cls,
+      academicYear: sessionName || cls.academicYear || "2026-27",
       stats: {
         students: studentMap.get(id) || 0,
         subjects: subjectMap.get(id) || 0,
@@ -145,6 +154,12 @@ export const createClass = async (data) => {
     throw err;
   }
 
+  let academicSession = data.academicSessionId || data.academicSession;
+  if (!academicSession) {
+    const currentSession = await AcademicSession.findOne({ isCurrent: true }).lean();
+    if (currentSession) academicSession = currentSession._id;
+  }
+
   const newClass = await Class.create({
     name: data.name,
     code: data.code,
@@ -152,6 +167,7 @@ export const createClass = async (data) => {
     semester: data.semester,
     section: data.section || "A",
     academicYear: data.academicYear,
+    academicSession: academicSession || undefined,
     isActive: true,
   });
 
@@ -170,6 +186,8 @@ export const updateClass = async (classId, updates) => {
   if (updates.section !== undefined)      updateData.section = updates.section;
   if (updates.academicYear !== undefined) updateData.academicYear = updates.academicYear;
   if (updates.isActive !== undefined)     updateData.isActive = updates.isActive;
+  if (updates.academicSessionId !== undefined) updateData.academicSession = updates.academicSessionId;
+  else if (updates.academicSession !== undefined) updateData.academicSession = updates.academicSession;
 
   // Validate new department if provided
   if (updates.departmentId !== undefined) {

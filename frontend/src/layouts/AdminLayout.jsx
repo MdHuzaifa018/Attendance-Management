@@ -23,6 +23,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { useCollegeSettings } from "../context/CollegeSettingsContext.jsx";
 import ThemeToggle from "../components/common/ThemeToggle.jsx";
 import LogoutConfirmModal from "../components/common/LogoutConfirmModal.jsx";
+import { useSession } from "../context/SessionContext.jsx";
 const navItems = [
   { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { path: "/admin/students", label: "Active Students", icon: Users },
@@ -44,6 +45,7 @@ const AdminLayout = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { user, logout } = useAuth();
   const { logo, settings } = useCollegeSettings();
+  const { sessions, globalSession, switchSession } = useSession();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -173,6 +175,24 @@ const AdminLayout = () => {
           </button>
 
           <div className="flex-1" />
+
+          {/* Session Switcher */}
+          {globalSession && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-500 hidden sm:block">Session:</span>
+              <select
+                value={globalSession._id}
+                onChange={(e) => switchSession(e.target.value)}
+                className="bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-700 dark:text-indigo-400 text-sm font-semibold rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer transition-colors"
+              >
+                {sessions.map((s) => (
+                  <option key={s._id} value={s._id}>
+                    {s.name} {s.isCurrent ? "(Active)" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Right actions: ThemeToggle + User info */}
           <div className="flex items-center gap-3">

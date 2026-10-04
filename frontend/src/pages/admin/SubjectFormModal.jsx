@@ -10,6 +10,7 @@ import {
   getClasses,
   getTeachers,
 } from "../../services/subjectService.js";
+import { useSession } from "../../context/SessionContext.jsx";
 
 const objectId = z
   .string()
@@ -67,6 +68,7 @@ const FieldError = ({ msg }) =>
   ) : null;
 
 const SubjectFormModal = ({ isOpen, onClose, subjectData, onSuccess }) => {
+  const { globalSession } = useSession();
   const isEdit = Boolean(subjectData);
   const [classes, setClasses] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -95,7 +97,10 @@ const SubjectFormModal = ({ isOpen, onClose, subjectData, onSuccess }) => {
     if (!isOpen) return;
 
     setLoadingLookups(true);
-    Promise.all([getClasses(), getTeachers()])
+    Promise.all([
+      getClasses({ academicSessionId: globalSession?._id }),
+      getTeachers(),
+    ])
       .then(([clsList, tchList]) => {
         setClasses(clsList || []);
         setTeachers(tchList || []);
@@ -104,7 +109,7 @@ const SubjectFormModal = ({ isOpen, onClose, subjectData, onSuccess }) => {
         toast.error("Failed to load classes or teachers for dropdowns");
       })
       .finally(() => setLoadingLookups(false));
-  }, [isOpen]);
+  }, [isOpen, globalSession]);
 
   // Sync form default values on edit/create
   useEffect(() => {

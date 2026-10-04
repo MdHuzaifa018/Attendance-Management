@@ -17,6 +17,7 @@ import {
   getDepartments,
 } from "../../services/classService.js";
 import ClassFormModal from "./ClassFormModal.jsx";
+import { useSession } from "../../context/SessionContext.jsx";
 
 const StatusBadge = ({ isActive }) =>
   isActive ? (
@@ -104,9 +105,18 @@ const ClassesPage = () => {
   const [deleteTarget, setDeleteTarget]       = useState(null);
   const [deleting, setDeleting]               = useState(false);
 
+  const { globalSession } = useSession();
+
   useEffect(() => {
     getDepartments().then(setDepartments).catch(() => {});
   }, []);
+
+  // Reset page when session changes
+  useEffect(() => {
+    setCurrentPage(1);
+    setSearch("");
+    setDebouncedSearch("");
+  }, [globalSession]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -117,14 +127,15 @@ const ClassesPage = () => {
   }, [search]);
 
   const loadClasses = useCallback(async () => {
+    if (!globalSession) return;
     setLoading(true);
     try {
       const result = await getClasses({
         search: debouncedSearch,
         departmentId: selectedDept,
+        academicSessionId: globalSession._id,
         page: currentPage,
         limit: 20,
-        activeSessionOnly: true,
       });
       setClasses(result.classes || []);
       setPagination(result.pagination || { total: 0, page: 1, totalPages: 1, limit: 20 });
@@ -133,7 +144,7 @@ const ClassesPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, selectedDept, currentPage]);
+  }, [debouncedSearch, selectedDept, currentPage, globalSession]);
 
   useEffect(() => {
     loadClasses();
@@ -282,7 +293,7 @@ const ClassesPage = () => {
                       </td>
 
                       <td className="px-6 py-4 text-slate-600 dark:text-slate-300 text-xs">
-                        {cls.academicYear}
+                        {cls.academicYear || globalSession?.name || "2026-27"}
                       </td>
 
                       <td className="px-6 py-4 text-center">

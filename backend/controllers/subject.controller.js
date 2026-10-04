@@ -7,12 +7,13 @@ import * as subjectService from "../services/subject.service.js";
 
 // GET /api/subjects?search=&classId=&teacherId=&page=1&limit=20&all=true
 export const getSubjects = async (req, res) => {
-  const { search, classId, teacherId, page = 1, limit = 20, all } = req.query;
+  const { search, classId, teacherId, academicSessionId, page = 1, limit = 20, all } = req.query;
 
   const result = await subjectService.getAllSubjects({
     search,
     classId,
     teacherId,
+    academicSessionId,
     page: Number(page),
     limit: Number(limit),
     all: all === "true",

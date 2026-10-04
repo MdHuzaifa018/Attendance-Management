@@ -20,9 +20,9 @@ export const getSystemOverview = async (sessionId) => {
   const attendanceMatch = sessionId ? { academicSession: new mongoose.Types.ObjectId(sessionId) } : {};
 
   const [studentCount, teacherCount, classCount] = await Promise.all([
-    mongoose.model("Enrollment").countDocuments({ ...sessionMatch, status: { $in: ["active", "year_repeat"] } }),
+    mongoose.model("Enrollment").countDocuments(sessionMatch), // Count all enrollments in session
     Teacher.countDocuments({ isActive: true }),
-    Class.countDocuments({ ...sessionMatch, isActive: true }),
+    Class.countDocuments({ isActive: true }),
   ]);
 
   // 1. System-wide attendance stats
@@ -179,20 +179,50 @@ export const getSystemOverview = async (sessionId) => {
  * getAttendanceTrends
  * Returns daily attendance percentages for the last N days.
  */
-export const getAttendanceTrends = async (days = 7) => {
-  const cacheKey = `attendance_trends_${days}`;
+export const getAttendanceTrends = async (days = 7, sessionId = "") => {
+  const cacheKey = `attendance_trends_${days}_${sessionId || "all"}`;
   const cachedData = getCache(cacheKey);
   if (cachedData) return cachedData;
 
-  const cutoffDate = new Date();
+  const matchFilter = {};
+  let endDate = new Date();
+
+  if (sessionId) {
+    matchFilter.academicSession = new mongoose.Types.ObjectId(sessionId);
+    // Find the latest attendance record in this session to center the timeframe
+    const latestRecord = await Attendance.findOne({ academicSession: matchFilter.academicSession })
+      .sort({ date: -1 })
+      .select("date")
+      .lean();
+
+    if (latestRecord && latestRecord.date) {
+      endDate = new Date(latestRecord.date);
+    } else {
+      // If there are no attendance records in this session (e.g. future session 2027-28),
+      // return 0 for all days so the graph accurately displays 0%
+      const zeroTrends = [];
+      for (let i = 0; i < days; i++) {
+        const d = new Date();
+        d.setUTCDate(d.getUTCDate() - (days - 1 - i));
+        zeroTrends.push({ date: d.toISOString().split("T")[0], percent: 0, total: 0 });
+      }
+      setCache(cacheKey, zeroTrends, 60);
+      return zeroTrends;
+    }
+  }
+
+  const cutoffDate = new Date(endDate);
   cutoffDate.setUTCDate(cutoffDate.getUTCDate() - (days - 1));
   cutoffDate.setUTCHours(0, 0, 0, 0);
 
+  const endOfDay = new Date(endDate);
+  endOfDay.setUTCHours(23, 59, 59, 999);
+
+  matchFilter.date = { $gte: cutoffDate, $lte: endOfDay };
+
   const trends = await Attendance.aggregate([
     {
-      $match: {
-        date: { $gte: cutoffDate },
-      },
+      $match: matchFilter,
     },
     {
       $group: {
@@ -227,14 +257,14 @@ export const getAttendanceTrends = async (days = 7) => {
     },
   ]);
 
-  // Fill in missing days with 0 data (optional but good for charts)
+  // Fill in missing days with 0 data
   const resultMap = new Map();
   trends.forEach((t) => resultMap.set(t.date, t));
 
   const finalTrends = [];
   for (let i = 0; i < days; i++) {
-    const d = new Date();
-    d.setUTCDate(d.getUTCDate() - (days - 1 - i));
+    const d = new Date(cutoffDate);
+    d.setUTCDate(d.getUTCDate() + i);
     const dateStr = d.toISOString().split("T")[0];
 
     if (resultMap.has(dateStr)) {
@@ -244,7 +274,7 @@ export const getAttendanceTrends = async (days = 7) => {
     }
   }
 
-  setCache(cacheKey, finalTrends, 300); // cache for 5 mins
+  setCache(cacheKey, finalTrends, 60);
   return finalTrends;
 };
 
@@ -253,13 +283,24 @@ export const getAttendanceTrends = async (days = 7) => {
  * Returns aggregated attendance per student per subject based on filters.
  */
 export const getDetailedReport = async (filters) => {
-  const { departmentId, classId, subjectId, startDate, endDate } = filters;
+  const { departmentId, classId, subjectId, startDate, endDate, academicSessionId } = filters;
 
   const matchStage = {};
 
-  if (classId) {
+  // If no specific class is chosen, scope by session and/or department
+  if (!classId) {
+    const classFilter = {};
+    if (academicSessionId) classFilter.academicSession = academicSessionId;
+    if (departmentId) classFilter.department = departmentId;
+    if (academicSessionId || departmentId) {
+      const sessionClasses = await Class.find(classFilter).select("_id").lean();
+      const sessionClassIds = sessionClasses.map((c) => c._id);
+      matchStage.class = { $in: sessionClassIds };
+    }
+  } else {
     matchStage.class = new mongoose.Types.ObjectId(classId);
   }
+
   if (subjectId) {
     matchStage.subject = new mongoose.Types.ObjectId(subjectId);
   }
@@ -279,10 +320,9 @@ export const getDetailedReport = async (filters) => {
   // Pipeline
   const pipeline = [];
 
-  // Match initial attendance records
-  if (Object.keys(matchStage).length > 0) {
-    pipeline.push({ $match: matchStage });
-  }
+  // Always match (even if empty matchStage, at least session filter applies)
+  pipeline.push({ $match: matchStage });
+
 
   // Group by student and subject
   pipeline.push({

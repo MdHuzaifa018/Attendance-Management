@@ -1,5 +1,5 @@
 import express from "express";
-import { getPromotionPreview, executePromotion } from "../controllers/promotion.controller.js";
+import { getPromotionPreview, executePromotion, revertPromotion } from "../controllers/promotion.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 import { authorize } from "../middleware/role.middleware.js";
 
@@ -13,5 +13,8 @@ router.get("/preview", getPromotionPreview);
 
 // POST /api/promotions/execute
 router.post("/execute", executePromotion);
+
+// POST /api/promotions/revert/:studentId
+router.post("/revert/:studentId", revertPromotion);
 
 export default router;

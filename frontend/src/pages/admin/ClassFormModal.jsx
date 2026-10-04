@@ -9,6 +9,7 @@ import {
   updateClass,
   getDepartments,
 } from "../../services/classService.js";
+import { useSession } from "../../context/SessionContext.jsx";
 
 const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, "Please select a department");
 
@@ -58,6 +59,7 @@ const FieldError = ({ msg }) =>
   ) : null;
 
 const ClassFormModal = ({ isOpen, onClose, classData, onSuccess }) => {
+  const { globalSession } = useSession();
   const isEdit = Boolean(classData);
   const [departments, setDepartments]   = useState([]);
   const [loadingDepts, setLoadingDepts] = useState(false);
@@ -76,7 +78,7 @@ const ClassFormModal = ({ isOpen, onClose, classData, onSuccess }) => {
           departmentId: classData.department?._id || "",
           semester:     classData.semester || 1,
           section:      classData.section || "A",
-          academicYear: classData.academicYear || "2024-25",
+          academicYear: classData.academicYear || globalSession?.name || "2024-25",
           isActive:     classData.isActive ?? true,
         }
       : {
@@ -85,7 +87,7 @@ const ClassFormModal = ({ isOpen, onClose, classData, onSuccess }) => {
           departmentId: "",
           semester: 1,
           section: "A",
-          academicYear: "2024-25",
+          academicYear: globalSession?.name || "2024-25",
         },
   });
 
@@ -108,7 +110,7 @@ const ClassFormModal = ({ isOpen, onClose, classData, onSuccess }) => {
               departmentId: classData.department?._id || "",
               semester:     classData.semester || 1,
               section:      classData.section || "A",
-              academicYear: classData.academicYear || "2024-25",
+              academicYear: classData.academicYear || globalSession?.name || "2024-25",
               isActive:     classData.isActive ?? true,
             }
           : {
@@ -117,16 +119,19 @@ const ClassFormModal = ({ isOpen, onClose, classData, onSuccess }) => {
               departmentId: "",
               semester: 1,
               section: "A",
-              academicYear: "2024-25",
+              academicYear: globalSession?.name || "2024-25",
             }
       );
     }
-  }, [isOpen, classData, isEdit, reset]);
+  }, [isOpen, classData, isEdit, reset, globalSession]);
 
   if (!isOpen) return null;
 
   const onSubmit = async (values) => {
     try {
+      if (globalSession?._id) {
+        values.academicSessionId = globalSession._id;
+      }
       if (isEdit) {
         const updated = await updateClass(classData._id, values);
         toast.success("Class updated successfully");

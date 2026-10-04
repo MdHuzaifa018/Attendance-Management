@@ -8,6 +8,7 @@ export const reportQuerySchema = z.object({
   departmentId: objectId.optional(),
   classId: objectId.optional(),
   subjectId: objectId.optional(),
+  academicSessionId: objectId.optional(),
   startDate: z
     .string()
     .refine((d) => !isNaN(Date.parse(d)), { message: "Invalid start date" })

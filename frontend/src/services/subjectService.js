@@ -29,8 +29,9 @@ export const deleteSubject = async (id) => {
   return data;
 };
 
-export const getClasses = async () => {
-  const { data } = await api.get("/classes", { params: { all: true } });
+export const getClasses = async (params = {}) => {
+  const mergedParams = { all: true, ...params };
+  const { data } = await api.get("/classes", { params: mergedParams });
   return data.classes;
 };
 

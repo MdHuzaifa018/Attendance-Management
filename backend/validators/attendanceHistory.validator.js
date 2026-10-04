@@ -13,6 +13,7 @@ export const historyQuerySchema = z.object({
   classId: objectId.optional(),
   subjectId: objectId.optional(),
   teacherId: objectId.optional(),
+  academicSessionId: objectId.optional(),
   startDate: z
     .string()
     .refine((d) => !isNaN(Date.parse(d)), { message: "Invalid start date" })

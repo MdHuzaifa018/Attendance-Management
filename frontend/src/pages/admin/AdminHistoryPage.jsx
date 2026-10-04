@@ -27,6 +27,7 @@ import {
   getAuditLog,
 } from "../../services/attendanceHistoryService.js";
 import { getClasses, getSubjectsByClass } from "../../services/attendanceService.js";
+import { useSession } from "../../context/SessionContext.jsx";
 
 /* ─── helpers ────────────────────────────────────────────────────── */
 const fmt = (d) =>
@@ -457,7 +458,14 @@ const AdminHistoryPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [viewSession, setViewSession] = useState(null);
 
-  useEffect(() => { getClasses().then(setClasses).catch(() => {}); }, []);
+  const { globalSession } = useSession();
+
+  // Reload classes when session changes
+  useEffect(() => {
+    getClasses(globalSession?._id).then(setClasses).catch(() => {});
+    setFilters(prev => ({ ...prev, classId: "", subjectId: "", page: 1 }));
+    setSubjects([]);
+  }, [globalSession]);
   useEffect(() => {
     if (filters.classId) getSubjectsByClass(filters.classId).then(setSubjects).catch(() => setSubjects([]));
     else setSubjects([]);
@@ -468,6 +476,7 @@ const AdminHistoryPage = () => {
     setLoading(true);
     try {
       const params = {};
+      if (globalSession?._id) params.academicSessionId = globalSession._id;
       if (filters.classId) params.classId = filters.classId;
       if (filters.subjectId) params.subjectId = filters.subjectId;
       if (filters.startDate) params.startDate = filters.startDate;

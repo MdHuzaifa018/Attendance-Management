@@ -41,9 +41,11 @@ export const submitAttendance = async (req, res) => {
 
 // GET /api/attendance/assigned-subjects
 export const getAssignedSubjects = async (req, res) => {
+  const { academicSessionId } = req.query;
   const result = await attendanceService.getTeacherAssignedSubjects({
     userId: req.user._id,
     userRole: req.user.role,
+    academicSessionId,
   });
 
   res.status(200).json({ success: true, ...result });

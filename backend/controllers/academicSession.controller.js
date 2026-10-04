@@ -35,3 +35,12 @@ export const updateSession = async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 };
+
+export const deleteSession = async (req, res) => {
+  try {
+    await academicSessionService.deleteSession(req.params.id);
+    res.status(200).json({ success: true, message: "Session deleted successfully" });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};

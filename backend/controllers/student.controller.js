@@ -8,12 +8,13 @@ import * as studentService from "../services/student.service.js";
 
 // GET /api/students?search=&classId=&departmentId=&page=1&limit=20
 export const getStudents = async (req, res) => {
-  const { search, classId, departmentId, page = 1, limit = 20 } = req.query;
+  const { search, classId, departmentId, academicSessionId, page = 1, limit = 20 } = req.query;
 
   const result = await studentService.getAllStudents({
     search,
     classId,
     departmentId,
+    academicSessionId,
     page: Number(page),
     limit: Number(limit),
   });

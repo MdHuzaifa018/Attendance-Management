@@ -73,9 +73,10 @@ export const getDepartments = async () => {
  * Used to cascade the Class dropdown after a Department is selected.
  * @param {string} [departmentId]
  */
-export const getClassesByDepartment = async (departmentId = "") => {
+export const getClassesByDepartment = async (departmentId = "", academicSessionId = "") => {
   const params = { activeSessionOnly: true };
   if (departmentId) params.departmentId = departmentId;
+  if (academicSessionId) params.academicSessionId = academicSessionId;
   const { data } = await api.get("/classes", { params });
   return data.classes; // [{ _id, name, code, department }]
 };

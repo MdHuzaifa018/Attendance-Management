@@ -37,9 +37,9 @@ export const getPromotionPreview = async ({ currentSessionId, targetSessionId, f
   // Simple heuristic: find a class in target session with same program/dept and next semester
   const nextSemester = fromClass.semester + 2; // Usually promoted yearly (e.g. sem 1->3 or 2->4)
   const targetClassOptions = await Class.find({
-    academicSession: targetSessionId,
     department: fromClass.department,
-    program: fromClass.program?._id,
+    ...(fromClass.program?._id ? { program: fromClass.program._id } : {}),
+    isActive: true,
   });
 
   const exactNextClass = targetClassOptions.find(c => c.semester === nextSemester && c.section === fromClass.section);
@@ -183,6 +183,48 @@ export const executePromotion = async ({
     session.endSession();
 
     return { success: true, processed: results.length, details: results };
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
+};
+
+/**
+ * Reverts the most recent promotion for a student.
+ */
+export const revertPromotion = async (studentId) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // Find the latest promotion history
+    const latestHistory = await PromotionHistory.findOne({ student: studentId })
+      .sort({ createdAt: -1 })
+      .session(session);
+
+    if (!latestHistory) {
+      throw new Error("No promotion history found to revert.");
+    }
+
+    if (latestHistory.toEnrollment) {
+      // It was a promotion to a new class
+      // Delete the new enrollment
+      await Enrollment.findByIdAndDelete(latestHistory.toEnrollment).session(session);
+    } else if (latestHistory.action === "graduated" || latestHistory.action === "dropped" || latestHistory.action === "transferred") {
+      // Revert student status
+      await Student.findByIdAndUpdate(studentId, { status: "active" }, { session });
+    }
+
+    // Re-activate the old enrollment
+    await Enrollment.findByIdAndUpdate(latestHistory.fromEnrollment, { status: "active" }, { session });
+
+    // Delete the history record
+    await PromotionHistory.findByIdAndDelete(latestHistory._id).session(session);
+
+    await session.commitTransaction();
+    session.endSession();
+    return { success: true, message: "Promotion reverted successfully" };
   } catch (error) {
     await session.abortTransaction();
     session.endSession();

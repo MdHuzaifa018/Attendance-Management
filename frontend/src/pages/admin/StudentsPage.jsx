@@ -1,25 +1,45 @@
 import { useState, useEffect, useCallback } from "react";
-import { Search, UserPlus, Pencil, Trash2, ChevronLeft, ChevronRight, Loader2, Users, AlertTriangle, CreditCard } from "lucide-react";
+import { Search, UserPlus, Pencil, Trash2, ChevronLeft, ChevronRight, Loader2, Users, AlertTriangle, CreditCard, RotateCcw } from "lucide-react";
 import toast from "react-hot-toast";
 import { getStudents, deleteStudent } from "../../services/studentService.js";
+import { revertPromotion } from "../../services/promotionService.js";
 import { getClasses } from "../../services/classService.js";
 import StudentFormModal from "./StudentFormModal.jsx";
 import StudentIdCardModal from "../../components/StudentIdCardModal.jsx";
 import StudentBulkAttendanceModal from "./StudentBulkAttendanceModal.jsx";
 import { ClipboardEdit } from "lucide-react";
+import { useSession } from "../../context/SessionContext.jsx";
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
-const StatusBadge = ({ isActive }) =>
-  isActive ? (
-    <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-2 py-0.5 rounded-full">
-      Active
-    </span>
-  ) : (
+const StatusBadge = ({ status }) => {
+  if (status === "active" || status === "year_repeat") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-2 py-0.5 rounded-full">
+        {status === "year_repeat" ? "Repeating" : "Active"}
+      </span>
+    );
+  }
+  if (status === "promoted") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-medium text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 px-2 py-0.5 rounded-full">
+        Promoted
+      </span>
+    );
+  }
+  if (status === "graduated") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-medium text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/20 px-2 py-0.5 rounded-full">
+        Graduated
+      </span>
+    );
+  }
+  return (
     <span className="inline-flex items-center gap-1 text-xs font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 px-2 py-0.5 rounded-full">
-      Inactive
+      {status || "Inactive"}
     </span>
   );
+};
 
 // ─── Empty state ──────────────────────────────────────────────────────────────
 
@@ -96,6 +116,8 @@ const StudentsPage = () => {
   const [classes, setClasses]               = useState([]);
   const [currentPage, setCurrentPage]       = useState(1);
 
+  const { globalSession }                   = useSession();
+
   const [modalOpen, setModalOpen]           = useState(false);
   const [editingStudent, setEditingStudent] = useState(null); // null = create
   const [idCardStudent, setIdCardStudent]   = useState(null);
@@ -114,13 +136,15 @@ const StudentsPage = () => {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Load students whenever search or page changes
+  // Load students whenever search, page, or session changes
   const loadStudents = useCallback(async () => {
+    if (!globalSession) return;
     setLoading(true);
     try {
       const result = await getStudents({
         search: debouncedSearch,
         classId: classFilter,
+        academicSessionId: globalSession._id,
         page: currentPage,
         limit: 20,
       });
@@ -131,17 +155,20 @@ const StudentsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, classFilter, currentPage]);
+  }, [debouncedSearch, classFilter, currentPage, globalSession]);
 
   useEffect(() => {
     loadStudents();
   }, [loadStudents]);
 
   useEffect(() => {
-    getClasses({ all: true, activeSessionOnly: true })
+    if (!globalSession) return;
+    setClassFilter("");
+    setCurrentPage(1);
+    getClasses({ all: true, academicSessionId: globalSession._id })
       .then((res) => setClasses(res.classes || []))
       .catch(() => {});
-  }, []);
+  }, [globalSession]);
 
   // Handlers
   const handleOpenAdd = () => {
@@ -172,6 +199,18 @@ const StudentsPage = () => {
       toast.error(err?.response?.data?.message || "Delete failed");
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleRevertPromotion = async (student) => {
+    if (window.confirm(`Are you sure you want to revert the latest promotion for ${student.name}? This will return them to their previous class.`)) {
+      try {
+        await revertPromotion(student._id);
+        toast.success(`Reverted promotion for ${student.name}`);
+        loadStudents();
+      } catch (err) {
+        toast.error(err?.response?.data?.message || "Failed to revert promotion");
+      }
     }
   };
 
@@ -286,7 +325,7 @@ const StudentsPage = () => {
                       <td className="px-4 py-3.5 text-slate-600 dark:text-slate-400">{s.phone || "—"}</td>
                       <td className="px-4 py-3.5 text-slate-600 dark:text-slate-400">{s.duration ? s.duration : s.admissionYear}</td>
                       <td className="px-4 py-3.5">
-                        <StatusBadge isActive={s.isActive} />
+                        <StatusBadge status={s.enrollmentStatus || (s.isActive ? "active" : "inactive")} />
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-end gap-2">
@@ -304,6 +343,14 @@ const StudentsPage = () => {
                             title="Generate Official ID Card"
                           >
                             <CreditCard className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            id={`revert-student-${s._id}`}
+                            onClick={() => handleRevertPromotion(s)}
+                            className="p-1.5 text-slate-400 hover:text-orange-500 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded-lg transition-colors cursor-pointer"
+                            title="Revert Latest Promotion"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
                           </button>
                           <button
                             id={`edit-student-${s._id}`}

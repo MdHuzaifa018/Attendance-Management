@@ -16,7 +16,7 @@ import TimetableModal from "./TimetableModal.jsx";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-const TimetableWidget = ({ classId, teacherUserId }) => {
+const TimetableWidget = ({ classId, teacherUserId, academicSessionId }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
 
@@ -35,12 +35,14 @@ const TimetableWidget = ({ classId, teacherUserId }) => {
 
   useEffect(() => {
     if (!classId && !teacherUserId) {
-      getClasses({ all: true })
+      getClasses({ all: true, academicSessionId })
         .then((res) => {
           setClasses(res.classes || []);
           if (res.classes && res.classes.length > 0) {
             setSelectedClassId(res.classes[0]._id);
           } else {
+            setSelectedClassId("");
+            setSchedules([]);
             setLoading(false);
           }
         })
@@ -48,7 +50,7 @@ const TimetableWidget = ({ classId, teacherUserId }) => {
           setLoading(false);
         });
     }
-  }, [classId, teacherUserId]);
+  }, [classId, teacherUserId, academicSessionId]);
 
   useEffect(() => {
     if (classId) {

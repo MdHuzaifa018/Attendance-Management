@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { ThemeProvider } from "./context/ThemeContext.jsx";
 import { CollegeSettingsProvider } from "./context/CollegeSettingsContext.jsx";
+import { SessionProvider } from "./context/SessionContext.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 import RoleRoute from "./routes/RoleRoute.jsx";
 
@@ -44,7 +45,8 @@ function App() {
       <ThemeProvider>
         <CollegeSettingsProvider>
           <AuthProvider>
-            {/* Global toast notifications */}
+            <SessionProvider>
+              {/* Global toast notifications */}
             <Toaster
               position="top-right"
               toastOptions={{
@@ -121,6 +123,7 @@ function App() {
               {/* Catch-all */}
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
+            </SessionProvider>
           </AuthProvider>
         </CollegeSettingsProvider>
       </ThemeProvider>

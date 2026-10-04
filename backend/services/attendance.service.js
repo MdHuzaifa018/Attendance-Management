@@ -254,6 +254,7 @@ export const markAttendance = async ({
           teacher: resolvedTeacherId,
           status: rec.status,
           markedAt: new Date(),
+          ...(cls.academicSession ? { academicSession: cls.academicSession } : {}),
         },
       },
       upsert: true,
@@ -301,17 +302,24 @@ export const markAttendance = async ({
  * getTeacherAssignedSubjects
  * Returns subjects assigned to the current user (if teacher) or all active subjects (if admin).
  */
-export const getTeacherAssignedSubjects = async ({ userId, userRole }) => {
+export const getTeacherAssignedSubjects = async ({ userId, userRole, academicSessionId }) => {
+  let validClassIds = null;
+
+  if (academicSessionId) {
+    const classesInSession = await Class.find({ academicSession: academicSessionId }).select("_id").lean();
+    validClassIds = classesInSession.map((c) => c._id);
+  }
+
   if (userRole === "teacher") {
     const teacherDoc = await Teacher.findOne({ user: userId });
     if (!teacherDoc) {
       return { teacher: null, subjects: [] };
     }
 
-    const subjects = await Subject.find({
-      teacher: teacherDoc._id,
-      isActive: true,
-    })
+    const filter = { teacher: teacherDoc._id, isActive: true };
+    if (validClassIds) filter.class = { $in: validClassIds };
+
+    const subjects = await Subject.find(filter)
       .populate("class", "name code semester academicYear")
       .sort({ code: 1 })
       .lean();
@@ -320,7 +328,10 @@ export const getTeacherAssignedSubjects = async ({ userId, userRole }) => {
   }
 
   // If Admin: return all active subjects with class and teacher populated
-  const subjects = await Subject.find({ isActive: true })
+  const filter = { isActive: true };
+  if (validClassIds) filter.class = { $in: validClassIds };
+
+  const subjects = await Subject.find(filter)
     .populate("class", "name code semester academicYear")
     .populate({
       path: "teacher",

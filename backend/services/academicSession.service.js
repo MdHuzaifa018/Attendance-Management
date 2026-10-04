@@ -57,6 +57,35 @@ export const updateSession = async (id, data) => {
   return session;
 };
 
+export const deleteSession = async (id) => {
+  const session = await AcademicSession.findById(id);
+  if (!session) throw new Error("Session not found");
+
+  if (session.isCurrent) {
+    throw new Error("Cannot delete the currently active session. Activate another session first.");
+  }
+
+  const mongoose = (await import("mongoose")).default;
+
+  // Check for existing enrollments
+  const enrollmentsCount = await mongoose.model("Enrollment").countDocuments({ academicSession: id });
+  if (enrollmentsCount > 0) {
+    throw new Error(`Cannot delete: ${enrollmentsCount} student enrollments exist in this session.`);
+  }
+
+  // Check for existing attendance
+  const attendanceCount = await mongoose.model("Attendance").countDocuments({ academicSession: id });
+  if (attendanceCount > 0) {
+    throw new Error(`Cannot delete: ${attendanceCount} attendance records exist in this session.`);
+  }
+
+  // Delete all classes tied to this session
+  await mongoose.model("Class").deleteMany({ academicSession: id });
+  
+  await AcademicSession.findByIdAndDelete(id);
+  return { success: true };
+};
+
 export const getActiveSession = async () => {
   return await AcademicSession.findOne({ isCurrent: true }).lean();
 };

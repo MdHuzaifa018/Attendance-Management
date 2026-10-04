@@ -8,10 +8,12 @@ import toast from "react-hot-toast";
 import LeaveManagementModal from "../../components/LeaveManagementModal.jsx";
 import NoticeBoardWidget from "../../components/NoticeBoardWidget.jsx";
 import TimetableWidget from "../../components/TimetableWidget.jsx";
+import { useSession } from "../../context/SessionContext.jsx";
 
 const TeacherDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { globalSession } = useSession();
   
   const [mySubjects, setMySubjects] = useState([]);
   const [recentSessions, setRecentSessions] = useState([]);
@@ -22,17 +24,17 @@ const TeacherDashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const subjectsRes = await getAssignedSubjects();
+        const subjectsRes = await getAssignedSubjects(globalSession?._id);
         const teacherSubjects = subjectsRes.subjects || [];
         setMySubjects(teacherSubjects);
 
-        // Fetch recent attendance history to see sessions marked
-        // Assuming we can just get history and find ones marked by this teacher
-        // (If the backend doesn't filter by teacher automatically, we fetch all and slice)
-        const historyRes = await getAttendanceSessions({ page: 1, limit: 10 });
+        // Fetch recent attendance history for this session
+        const params = { page: 1, limit: 10 };
+        if (globalSession?._id) params.academicSessionId = globalSession._id;
+        const historyRes = await getAttendanceSessions(params);
         const historyList = historyRes.sessions || [];
         
-        // Let's grab the most recent 3 unique sessions marked
+        // Get the most recent 3 unique sessions marked
         const recent = [];
         const seen = new Set();
         
@@ -55,7 +57,7 @@ const TeacherDashboard = () => {
     };
 
     fetchData();
-  }, [user._id]);
+  }, [user._id, globalSession]);
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">

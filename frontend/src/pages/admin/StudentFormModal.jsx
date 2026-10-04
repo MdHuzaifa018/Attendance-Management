@@ -10,6 +10,7 @@ import {
   getDepartments,
   getClassesByDepartment,
 } from "../../services/studentService.js";
+import { useSession } from "../../context/SessionContext.jsx";
 
 // ─── Zod schemas ─────────────────────────────────────────────────────────────
 
@@ -69,6 +70,8 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess, defaultStatus =
   const isEdit = Boolean(student);
   const schema = isEdit ? editSchema : createSchema;
 
+  const { globalSession } = useSession();
+
   const [departments, setDepartments]   = useState([]);
   const [classes, setClasses]           = useState([]);
   const [loadingDepts, setLoadingDepts] = useState(false);
@@ -118,11 +121,11 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess, defaultStatus =
 
   // Cascade: load classes when department changes
   useEffect(() => {
-    if (!selectedDeptId || !/^[0-9a-fA-F]{24}$/.test(selectedDeptId)) {
+    if (!selectedDeptId || !/^[0-9a-fA-F]{24}$/.test(selectedDeptId) || !globalSession) {
       setClasses([]);
       return;
     }
-    getClassesByDepartment(selectedDeptId)
+    getClassesByDepartment(selectedDeptId, globalSession._id)
       .then((cls) => {
         setClasses(cls);
         // If edit mode and the class belongs to this dept, keep it; otherwise reset
@@ -161,6 +164,9 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess, defaultStatus =
 
   const onSubmit = async (data) => {
     try {
+      if (globalSession) {
+        data.academicSessionId = globalSession._id;
+      }
       let result;
       if (isEdit) {
         result = await updateStudent(student._id, data);

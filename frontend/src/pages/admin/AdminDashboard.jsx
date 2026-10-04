@@ -47,7 +47,7 @@ import {
 import { getTeachers } from "../../services/teacherService.js";
 import { getStudents } from "../../services/studentService.js";
 import { getAttendanceSessions } from "../../services/attendanceHistoryService.js";
-import { getAcademicSessions } from "../../services/academicSessionService.js";
+import { useSession } from "../../context/SessionContext.jsx";
 
 // Donut Chart Colors
 const PIE_COLORS = ["#10b981", "#ef4444", "#f59e0b"]; // Present, Absent, Other
@@ -172,33 +172,17 @@ const AdminDashboard = () => {
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [drillDown, setDrillDown] = useState({ isOpen: false, type: null, loading: false, data: [] });
 
-  // Session State
-  const [sessions, setSessions] = useState([]);
-  const [selectedSession, setSelectedSession] = useState("");
-
-  useEffect(() => {
-    const initSessions = async () => {
-      try {
-        const data = await getAcademicSessions();
-        setSessions(data);
-        const active = data.find((s) => s.isCurrent);
-        if (active) setSelectedSession(active._id);
-      } catch (err) {
-        toast.error("Failed to load academic sessions");
-      }
-    };
-    initSessions();
-  }, []);
+  const { globalSession } = useSession();
 
   // Fetch dashboard analytical data
-  const fetchData = async (days = timeframe, sessionId = selectedSession, isManualRefresh = false) => {
+  const fetchData = async (days = timeframe, sessionId = globalSession?._id, isManualRefresh = false) => {
     if (isManualRefresh) setRefreshing(true);
     else setLoading(true);
 
     try {
       const [overviewRes, trendsRes] = await Promise.all([
         getSystemOverview(sessionId),
-        getAttendanceTrends(days),
+        getAttendanceTrends(days, sessionId),
       ]);
       setOverview(overviewRes);
       setTrends(trendsRes || []);
@@ -214,8 +198,10 @@ const AdminDashboard = () => {
   };
 
   useEffect(() => {
-    fetchData(timeframe, selectedSession);
-  }, [timeframe, selectedSession]);
+    if (globalSession) {
+      fetchData(timeframe, globalSession._id);
+    }
+  }, [timeframe, globalSession]);
 
   // Handle CSV export
   const handleExportCSV = async () => {
@@ -244,7 +230,7 @@ const AdminDashboard = () => {
     } else if (type === "students") {
       setDrillDown({ isOpen: true, type, loading: true, data: [] });
       try {
-        const res = await getStudents({ limit: 1000 }); // Fetch up to 1000 for modal
+        const res = await getStudents({ limit: 1000, academicSessionId: globalSession?._id }); // Fetch up to 1000 for modal
         setDrillDown({ isOpen: true, type, loading: false, data: res.students || [] });
       } catch (err) {
         toast.error("Failed to fetch students");
@@ -255,7 +241,7 @@ const AdminDashboard = () => {
       try {
         const d = new Date();
         const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        const res = await getAttendanceSessions({ startDate: todayStr, endDate: todayStr, limit: 200 });
+        const res = await getAttendanceSessions({ startDate: todayStr, endDate: todayStr, limit: 200, academicSessionId: globalSession?._id });
         setDrillDown({ isOpen: true, type, loading: false, data: res.sessions || [] });
       } catch (err) {
         toast.error("Failed to fetch today's classes");
@@ -271,7 +257,7 @@ const AdminDashboard = () => {
     } else if (type === "at-risk") {
       setDrillDown({ isOpen: true, type, loading: true, data: [] });
       try {
-        const data = await getAtRiskStudentsDetails(selectedSession);
+        const data = await getAtRiskStudentsDetails(globalSession?._id);
         setDrillDown({ isOpen: true, type, loading: false, data });
       } catch (err) {
         toast.error("Failed to fetch at-risk students");
@@ -408,24 +394,8 @@ const AdminDashboard = () => {
 
           {/* Action Toolbar */}
           <div className="flex items-center gap-2 flex-wrap self-start lg:self-auto">
-            {/* Session Filter */}
-            <div className="mr-2">
-              <select
-                value={selectedSession}
-                onChange={(e) => setSelectedSession(e.target.value)}
-                className="pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700 dark:text-slate-200"
-              >
-                <option value="">All Time (Global)</option>
-                {sessions.map((s) => (
-                  <option key={s._id} value={s._id}>
-                    {s.name} {s.isCurrent ? "(Active)" : ""}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             <button
-              onClick={() => fetchData(timeframe, selectedSession, true)}
+              onClick={() => fetchData(timeframe, globalSession?._id, true)}
               disabled={refreshing}
               className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold transition-all cursor-pointer"
               title="Refresh Data"
@@ -490,7 +460,7 @@ const AdminDashboard = () => {
               subtitle={`In ${overview?.classCount || 0} Classes`}
               icon={Users}
               colorScheme="emerald"
-              progress={100}
+              progress={overview?.studentCount > 0 ? 100 : 0}
               badgeText="Enrolled"
               badgeColor="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
               onClick={() => handleCardClick("students")}
@@ -506,7 +476,7 @@ const AdminDashboard = () => {
               } Students`}
               icon={GraduationCap}
               colorScheme="indigo"
-              progress={100}
+              progress={overview?.teacherCount > 0 ? 100 : 0}
               badgeText="Active"
               badgeColor="bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800"
               onClick={() => handleCardClick("teachers")}
@@ -873,7 +843,7 @@ const AdminDashboard = () => {
           {/* ── Operational Widgets: Notice Board & Class Routine ───────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <NoticeBoardWidget />
-            <TimetableWidget />
+            <TimetableWidget academicSessionId={globalSession?._id} />
           </div>
         </>
       )}
