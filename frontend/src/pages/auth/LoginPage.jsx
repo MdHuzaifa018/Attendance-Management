@@ -240,10 +240,10 @@ const LoginPage = () => {
               />
               <div>
                 <span className="font-extrabold text-sm text-slate-900 dark:text-white block leading-tight">
-                  {settings?.collegeName || "Nalanda College"}
+                  Nalanda College ERP
                 </span>
                 <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Attendance & Academic Portal
+                  Smart Campus Academic Portal
                 </span>
               </div>
             </div>

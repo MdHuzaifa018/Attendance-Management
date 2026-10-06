@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
@@ -7,6 +8,7 @@ import { CollegeSettingsProvider } from "./context/CollegeSettingsContext.jsx";
 import { SessionProvider } from "./context/SessionContext.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 import RoleRoute from "./routes/RoleRoute.jsx";
+import PremiumLoader from "./components/common/PremiumLoader.jsx";
 
 // Layouts
 import AdminLayout from "./layouts/AdminLayout.jsx";
@@ -39,6 +41,102 @@ import AdminSettingsPage from "./pages/admin/AdminSettingsPage.jsx";
 import StudentAttendancePage from "./pages/student/StudentAttendancePage.jsx";
 import InstallAppBanner from "./components/InstallAppBanner.jsx";
 
+function AppContent() {
+  const [booting, setBooting] = useState(true);
+
+  useEffect(() => {
+    // Show smooth academic loading sequence on initial page load / refresh
+    const timer = setTimeout(() => {
+      setBooting(false);
+    }, 1300);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (booting) {
+    return <PremiumLoader fullScreen={true} />;
+  }
+
+  return (
+    <>
+      {/* Global toast notifications */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: "#1e293b",
+            color: "#f1f5f9",
+            border: "1px solid #334155",
+            fontSize: "14px",
+            borderRadius: "10px",
+            padding: "12px 16px",
+          },
+          success: {
+            iconTheme: { primary: "#6366f1", secondary: "#fff" },
+          },
+          error: {
+            iconTheme: { primary: "#ef4444", secondary: "#fff" },
+          },
+        }}
+      />
+
+      {/* PWA Mobile Installation Prompt Banner */}
+      <InstallAppBanner />
+
+      <Routes>
+        {/* ── Public routes ──────────────────────────────────────────── */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
+        {/* ── Protected: authentication required ─────────────────────── */}
+        <Route element={<ProtectedRoute />}>
+          {/* Admin area */}
+          <Route element={<RoleRoute allowedRoles={["admin"]} />}>
+            <Route element={<AdminLayout />}>
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/students" element={<StudentsPage />} />
+              <Route path="/admin/alumni" element={<AlumniPage />} />
+              <Route path="/admin/promotions" element={<PromotionsPage />} />
+              <Route path="/admin/teachers" element={<TeachersPage />} />
+              <Route path="/admin/departments" element={<DepartmentsPage />} />
+              <Route path="/admin/sessions" element={<AcademicSessionsPage />} />
+              <Route path="/admin/classes" element={<ClassesPage />} />
+              <Route path="/admin/subjects" element={<SubjectsPage />} />
+              <Route path="/admin/attendance" element={<TeacherAttendancePage />} />
+              <Route path="/admin/history" element={<AdminHistoryPage />} />
+              <Route path="/admin/reports" element={<AdminReportsPage />} />
+              <Route path="/admin/settings" element={<AdminSettingsPage />} />
+            </Route>
+          </Route>
+
+          {/* Teacher area — admin can also access teacher pages */}
+          <Route element={<RoleRoute allowedRoles={["teacher", "admin"]} />}>
+            <Route element={<TeacherLayout />}>
+              <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
+              <Route path="/teacher/attendance" element={<TeacherAttendancePage />} />
+              <Route path="/teacher/history" element={<TeacherHistoryPage />} />
+            </Route>
+          </Route>
+
+          {/* Student area — admin can also access student pages */}
+          <Route element={<RoleRoute allowedRoles={["student", "admin"]} />}>
+            <Route element={<StudentLayout />}>
+              <Route path="/student/dashboard" element={<StudentDashboard />} />
+              <Route path="/student/attendance" element={<StudentAttendancePage />} />
+              <Route path="/student/history" element={<StudentAttendancePage />} />
+            </Route>
+          </Route>
+        </Route>
+
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </>
+  );
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -46,83 +144,7 @@ function App() {
         <CollegeSettingsProvider>
           <AuthProvider>
             <SessionProvider>
-              {/* Global toast notifications */}
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: "#1e293b",
-                  color: "#f1f5f9",
-                  border: "1px solid #334155",
-                  fontSize: "14px",
-                  borderRadius: "10px",
-                  padding: "12px 16px",
-                },
-                success: {
-                  iconTheme: { primary: "#6366f1", secondary: "#fff" },
-                },
-                error: {
-                  iconTheme: { primary: "#ef4444", secondary: "#fff" },
-                },
-              }}
-            />
-
-            {/* PWA Mobile Installation Prompt Banner */}
-            <InstallAppBanner />
-
-            <Routes>
-              {/* ── Public routes ──────────────────────────────────────────── */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/unauthorized" element={<UnauthorizedPage />} />
-
-              {/* ── Protected: authentication required ─────────────────────── */}
-              <Route element={<ProtectedRoute />}>
-
-                {/* Admin area */}
-                <Route element={<RoleRoute allowedRoles={["admin"]} />}>
-                  <Route element={<AdminLayout />}>
-                    <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                    <Route path="/admin/students" element={<StudentsPage />} />
-                    <Route path="/admin/alumni" element={<AlumniPage />} />
-                    <Route path="/admin/promotions" element={<PromotionsPage />} />
-                    <Route path="/admin/teachers" element={<TeachersPage />} />
-                    <Route path="/admin/departments" element={<DepartmentsPage />} />
-                    <Route path="/admin/sessions" element={<AcademicSessionsPage />} />
-                    <Route path="/admin/classes" element={<ClassesPage />} />
-                    <Route path="/admin/subjects" element={<SubjectsPage />} />
-                    <Route path="/admin/attendance" element={<TeacherAttendancePage />} />
-                    <Route path="/admin/history" element={<AdminHistoryPage />} />
-                    <Route path="/admin/reports" element={<AdminReportsPage />} />
-                    <Route path="/admin/settings" element={<AdminSettingsPage />} />
-                  </Route>
-                </Route>
-
-                {/* Teacher area — admin can also access teacher pages */}
-                <Route element={<RoleRoute allowedRoles={["teacher", "admin"]} />}>
-                  <Route element={<TeacherLayout />}>
-                    <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
-                    <Route path="/teacher/attendance" element={<TeacherAttendancePage />} />
-                    <Route path="/teacher/history" element={<TeacherHistoryPage />} />
-                  </Route>
-                </Route>
-
-                {/* Student area — admin can also access student pages */}
-                <Route element={<RoleRoute allowedRoles={["student", "admin"]} />}>
-                  <Route element={<StudentLayout />}>
-                    <Route path="/student/dashboard" element={<StudentDashboard />} />
-                    <Route path="/student/attendance" element={<StudentAttendancePage />} />
-                    <Route path="/student/history" element={<StudentAttendancePage />} />
-                  </Route>
-                </Route>
-
-              </Route>
-
-              {/* Catch-all */}
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
+              <AppContent />
             </SessionProvider>
           </AuthProvider>
         </CollegeSettingsProvider>

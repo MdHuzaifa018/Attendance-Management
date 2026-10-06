@@ -6,23 +6,481 @@
     <link rel="apple-touch-icon" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#4f46e5" />
+    <meta name="theme-color" content="#1d4ed8" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="description" content="Smart Attendance & Academic Management System for Nalanda College. Real-time tracking and seamless coordination." />
+    <meta name="description" content="Nalanda College ERP - Smart Attendance & Academic Management System. Real-time tracking and seamless coordination." />
     <meta name="author" content="Md Huzaifa" />
-    <title>Nalanda College | Attendance Management System</title>
+    <title>Nalanda College ERP | Attendance & Academic Management System</title>
     
-    <!-- Preload Kapra Fonts & Google Fonts -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" href="/fonts/kapra-bold.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/fonts/kapra-italic.woff2" as="font" type="font/woff2" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,800;1,900&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600;1,700;1,800;1,900&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        overflow: hidden !important;
+        background: #f8fafc;
+      }
+
+      #app-splash-academic {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: #f8fafc;
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        color: #0f172a;
+        z-index: 999999;
+        overflow: hidden;
+        user-select: none;
+      }
+
+      /* Academic Grid Mesh */
+      .splash-mesh {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-size: 32px 32px;
+        background-image: 
+          linear-gradient(to right, rgba(100, 116, 139, 0.05) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(100, 116, 139, 0.05) 1px, transparent 1px);
+        z-index: 0;
+      }
+      .splash-aura-top {
+        position: fixed;
+        top: -160px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 720px;
+        height: 520px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.15), rgba(20, 184, 166, 0.1), rgba(99, 102, 241, 0.1));
+        border-radius: 9999px;
+        filter: blur(100px);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* Top Header */
+      .splash-header {
+        position: relative;
+        z-index: 20;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 20px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .splash-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .splash-logo-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3px;
+      }
+      .splash-logo-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+      .splash-title-text {
+        font-weight: 800;
+        font-size: 16px;
+        letter-spacing: -0.02em;
+        color: #0f172a;
+      }
+      .splash-ver {
+        font-size: 11px;
+        font-family: monospace;
+        color: #94a3b8;
+        margin-left: 8px;
+      }
+      .splash-tls-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(226, 232, 240, 0.7);
+        font-family: monospace;
+        font-size: 11px;
+        color: #475569;
+        font-weight: 600;
+      }
+      .splash-ping-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 8px #10b981;
+      }
+
+      /* Center Hero Visual */
+      .splash-center {
+        position: relative;
+        z-index: 10;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        text-align: center;
+      }
+      .splash-orbit-container {
+        position: relative;
+        width: 260px;
+        height: 260px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+      }
+      .splash-ring-1 {
+        position: absolute;
+        inset: 8px;
+        border-radius: 50%;
+        border: 1px dashed rgba(59, 130, 246, 0.4);
+        animation: spinCW 22s linear infinite;
+      }
+      .splash-ring-2 {
+        position: absolute;
+        inset: 28px;
+        border-radius: 50%;
+        border: 1.5px dashed rgba(20, 184, 166, 0.35);
+        animation: spinCCW 16s linear infinite;
+      }
+      .splash-ring-3 {
+        position: absolute;
+        inset: 48px;
+        border-radius: 50%;
+        border: 1px solid rgba(99, 102, 241, 0.25);
+      }
+      .splash-planet-1 {
+        position: absolute;
+        top: 2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #2563eb;
+        box-shadow: 0 0 10px #2563eb;
+        animation: spinCW 22s linear infinite;
+      }
+      .splash-badge-present {
+        position: absolute;
+        top: 0;
+        right: -8px;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        background: #ffffff;
+        border: 1px solid #d1fae5;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: monospace;
+        font-size: 11px;
+        font-weight: 700;
+        color: #065f46;
+        z-index: 20;
+        animation: floatA 5s ease-in-out infinite;
+      }
+      .splash-badge-sync {
+        position: absolute;
+        bottom: -4px;
+        left: -12px;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        background: #ffffff;
+        border: 1px solid #dbeafe;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: monospace;
+        font-size: 11px;
+        font-weight: 700;
+        color: #1e3a8a;
+        z-index: 20;
+        animation: floatB 6.5s ease-in-out infinite;
+      }
+      .splash-center-card {
+        position: relative;
+        z-index: 10;
+        width: 112px;
+        height: 112px;
+        border-radius: 26px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 20px 35px -5px rgba(29, 78, 216, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+      }
+      .splash-card-inner {
+        width: 100%;
+        height: 100%;
+        border-radius: 20px;
+        background: linear-gradient(to bottom, #f8fafc, #eff6ff);
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+      .splash-card-logo-box {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #1d4ed8, #2563eb);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px;
+        position: relative;
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
+      }
+      .splash-card-logo {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+      .splash-verified-tick {
+        position: absolute;
+        bottom: -4px;
+        right: -4px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #10b981;
+        border: 2px solid #ffffff;
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .splash-main-heading {
+        font-size: 26px;
+        font-weight: 900;
+        letter-spacing: -0.025em;
+        color: #0f172a;
+        margin: 0 0 6px 0;
+      }
+      .splash-main-sub {
+        font-size: 14px;
+        color: #64748b;
+        font-weight: 500;
+        margin: 0 0 24px 0;
+      }
+
+      /* Progress Bar */
+      .splash-progress-wrap {
+        width: 100%;
+        max-width: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .splash-bar-track {
+        width: 100%;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 9999px;
+        overflow: hidden;
+        position: relative;
+        padding: 1.5px;
+        box-sizing: border-box;
+      }
+      .splash-bar-fill {
+        height: 100%;
+        width: 82%;
+        background: linear-gradient(90deg, #1d4ed8, #3b82f6, #0d9488);
+        border-radius: 9999px;
+        position: relative;
+        overflow: hidden;
+        animation: splashShimmer 2s infinite ease-in-out;
+      }
+      .splash-bar-labels {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 10px;
+        font-family: monospace;
+        font-size: 11.5px;
+      }
+      .splash-stage {
+        color: #64748b;
+      }
+      .splash-pct {
+        font-weight: 700;
+        color: #0f172a;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        padding: 2px 8px;
+        border-radius: 6px;
+      }
+      .splash-micro-status {
+        margin-top: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        background: rgba(241, 245, 249, 0.9);
+        border: 1px solid #e2e8f0;
+        font-size: 12px;
+        color: #475569;
+        font-weight: 500;
+      }
+
+      /* Footer */
+      .splash-footer {
+        position: relative;
+        z-index: 20;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 20px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-family: monospace;
+        font-size: 12px;
+        color: #94a3b8;
+      }
+      .splash-gateway {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .splash-gateway-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #14b8a6;
+      }
+
+      /* Animations */
+      @keyframes spinCW { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      @keyframes spinCCW { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+      @keyframes floatA { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+      @keyframes floatB { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+      @keyframes splashShimmer {
+        0% { filter: brightness(1); }
+        50% { filter: brightness(1.2); }
+        100% { filter: brightness(1); }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="app-splash-academic">
+        <div class="splash-mesh"></div>
+        <div class="splash-aura-top"></div>
+
+        <!-- Header -->
+        <div class="splash-header">
+          <div class="splash-brand">
+            <div class="splash-logo-box">
+              <img src="/logo.png" alt="Nalanda College Logo" class="splash-logo-img" />
+            </div>
+            <div>
+              <span class="splash-title-text">Nalanda College ERP</span>
+              <span class="splash-ver">v2.4.0</span>
+            </div>
+          </div>
+          <div class="splash-tls-pill">
+            <span class="splash-ping-dot"></span>
+            <span>Secure Session • TLS 1.3</span>
+          </div>
+        </div>
+
+        <!-- Center -->
+        <div class="splash-center">
+          <div class="splash-orbit-container">
+            <div class="splash-ring-1"></div>
+            <div class="splash-ring-2"></div>
+            <div class="splash-ring-3"></div>
+            <div class="splash-planet-1"></div>
+
+            <div class="splash-badge-present">
+              <span style="color: #10b981;">✓</span>
+              <span>Present</span>
+            </div>
+            <div class="splash-badge-sync">
+              <span style="color: #2563eb;">↻</span>
+              <span>Roster Sync</span>
+            </div>
+
+            <div class="splash-center-card">
+              <div class="splash-card-inner">
+                <div class="splash-card-logo-box">
+                  <img src="/logo.png" alt="Nalanda Logo" class="splash-card-logo" />
+                  <span class="splash-verified-tick">✓</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <h1 class="splash-main-heading">Nalanda College ERP</h1>
+          <p class="splash-main-sub">Preparing your academic dashboard...</p>
+
+          <div class="splash-progress-wrap">
+            <div class="splash-bar-track">
+              <div class="splash-bar-fill"></div>
+            </div>
+            <div class="splash-bar-labels">
+              <span class="splash-stage">Roster Sync</span>
+              <span class="splash-pct">82%</span>
+            </div>
+            <div class="splash-micro-status">
+              <span style="color: #0d9488;">↻</span>
+              <span>Synchronizing student roster & schedule...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="splash-footer">
+          <div>Nalanda College • Biharsharif • Academic Portal</div>
+          <div class="splash-gateway">
+            <span class="splash-gateway-dot"></span>
+            <span>Campus Gateway Active</span>
+          </div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

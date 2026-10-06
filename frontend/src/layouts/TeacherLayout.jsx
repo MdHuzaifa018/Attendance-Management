@@ -69,10 +69,10 @@ const TeacherLayout = () => {
             className="w-9 h-9 rounded-xl object-contain bg-white/95 p-0.5 shadow-sm border border-emerald-500/20"
           />
           <div className="min-w-0">
-            <p className="text-slate-900 dark:text-white font-bold text-sm leading-tight truncate">
-              {settings?.collegeName || "Nalanda College"}
+            <p className="text-slate-900 dark:text-white font-black text-sm leading-tight truncate">
+              Nalanda College ERP
             </p>
-            <p className="text-slate-500 text-xs">Faculty Portal</p>
+            <p className="text-slate-500 text-[11px]">Faculty Portal</p>
           </div>
         </div>
 
@@ -146,6 +146,15 @@ const TeacherLayout = () => {
           >
             <Menu className="w-5 h-5" />
           </button>
+
+          <div className="flex items-center gap-2.5">
+            <span className="font-extrabold text-sm sm:text-base tracking-tight text-slate-900 dark:text-white">
+              Nalanda College ERP
+            </span>
+            <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/50">
+              Faculty Portal
+            </span>
+          </div>
 
           <div className="flex-1" />
 

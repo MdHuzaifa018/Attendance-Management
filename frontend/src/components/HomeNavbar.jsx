@@ -67,7 +67,7 @@ const HomeNavbar = () => {
           <div className="relative z-10 flex flex-col">
             <div className="flex items-center gap-1.5">
               <span className="font-display font-black text-xl tracking-tight text-slate-900 dark:text-white leading-none">
-                NALANDA
+                NALANDA COLLEGE
               </span>
               <span className="font-display font-black text-xl tracking-tight text-indigo-600 dark:text-indigo-400 leading-none">
                 ERP

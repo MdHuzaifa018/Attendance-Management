@@ -94,10 +94,10 @@ const AdminLayout = () => {
             className="w-9 h-9 rounded-xl object-contain bg-white/95 p-0.5 shadow-sm border border-indigo-500/20 group-hover:scale-105 transition-transform"
           />
           <div className="min-w-0">
-            <p className="text-slate-900 dark:text-white font-bold text-sm leading-tight truncate">
-              {settings?.collegeName || "Nalanda College"}
+            <p className="text-slate-900 dark:text-white font-black text-sm leading-tight truncate">
+              Nalanda College ERP
             </p>
-            <p className="text-slate-500 text-xs">Attendance System</p>
+            <p className="text-slate-500 text-[11px]">Smart Campus Admin</p>
           </div>
         </Link>
 
@@ -173,6 +173,15 @@ const AdminLayout = () => {
           >
             <Menu className="w-5 h-5" />
           </button>
+
+          <div className="flex items-center gap-2.5">
+            <span className="font-extrabold text-sm sm:text-base tracking-tight text-slate-900 dark:text-white">
+              Nalanda College ERP
+            </span>
+            <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-800/50">
+              Admin Portal
+            </span>
+          </div>
 
           <div className="flex-1" />
 
