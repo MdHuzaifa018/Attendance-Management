@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { updateStudent } from "../services/studentService.js";
+import { uploadImageToCloudinary } from "../services/uploadService.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useCollegeSettings } from "../context/CollegeSettingsContext.jsx";
 
@@ -80,6 +81,9 @@ const StudentIdCardModal = ({
 
   const [activeTab, setActiveTab] = useState("preview");
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingStudentSign, setUploadingStudentSign] = useState(false);
+  const [uploadingDirectorSign, setUploadingDirectorSign] = useState(false);
 
   // Card Data State matching Nalanda College Physical ID Card
   const [cardData, setCardData] = useState({
@@ -158,7 +162,7 @@ const StudentIdCardModal = ({
 
   if (!isOpen) return null;
 
-  // Handle Photo File Upload
+  // Handle Photo File Upload to Cloudinary
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -168,13 +172,23 @@ const StudentIdCardModal = ({
       return;
     }
 
+    setUploadingPhoto(true);
+    const loadingToast = toast.loading("Uploading photo to Cloudinary...");
     try {
-      const base64Photo = await compressImage(file, 400, 500);
-      setCardData((prev) => ({ ...prev, photo: base64Photo }));
-      toast.success("Photo updated on ID card!");
-    } catch {
-      toast.error("Failed to process photo");
+      const res = await uploadImageToCloudinary(file, "students/photos");
+      if (res?.data?.url) {
+        setCardData((prev) => ({ ...prev, photo: res.data.url }));
+        toast.success("Photo uploaded to Cloudinary successfully!", { id: loadingToast });
+      } else {
+        toast.error("Upload failed: No URL returned", { id: loadingToast });
+      }
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message || "Failed to upload photo to Cloudinary. Check credentials.",
+        { id: loadingToast }
+      );
     } finally {
+      setUploadingPhoto(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
@@ -184,23 +198,33 @@ const StudentIdCardModal = ({
     toast.success("Photo removed");
   };
 
-  // Handle Student Signature Upload
+  // Handle Student Signature Upload to Cloudinary
   const handleStudentSignUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file (JPG, PNG)");
+      toast.error("Please upload an image file (JPG, PNG, WEBP)");
       return;
     }
 
+    setUploadingStudentSign(true);
+    const loadingToast = toast.loading("Uploading signature to Cloudinary...");
     try {
-      const base64Sign = await compressImage(file, 350, 150);
-      setCardData((prev) => ({ ...prev, signature: base64Sign }));
-      toast.success("Student signature added to ID card!");
-    } catch {
-      toast.error("Failed to process signature");
+      const res = await uploadImageToCloudinary(file, "students/signatures");
+      if (res?.data?.url) {
+        setCardData((prev) => ({ ...prev, signature: res.data.url }));
+        toast.success("Student signature uploaded to Cloudinary!", { id: loadingToast });
+      } else {
+        toast.error("Upload failed: No URL returned", { id: loadingToast });
+      }
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message || "Failed to upload signature. Check credentials.",
+        { id: loadingToast }
+      );
     } finally {
+      setUploadingStudentSign(false);
       if (studentSignInputRef.current) studentSignInputRef.current.value = "";
     }
   };
@@ -210,29 +234,38 @@ const StudentIdCardModal = ({
     toast.success("Student signature removed");
   };
 
-  // Handle Principal / Director Signature Upload
+  // Handle Principal / Director Signature Upload to Cloudinary
   const handleDirectorSignUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file (JPG, PNG)");
+      toast.error("Please upload an image file (JPG, PNG, WEBP)");
       return;
     }
 
+    setUploadingDirectorSign(true);
+    const loadingToast = toast.loading("Uploading director signature to Cloudinary...");
     try {
-      const base64Sign = await compressImage(file, 350, 150);
-      setCardData((prev) => ({ ...prev, directorSignature: base64Sign }));
-      // Save in localStorage as college default for subsequent ID cards
-      try {
-        localStorage.setItem("nalanda_director_sign", base64Sign);
-      } catch (err) {
-        console.warn("Could not save to localStorage", err);
+      const res = await uploadImageToCloudinary(file, "college/signatures");
+      if (res?.data?.url) {
+        setCardData((prev) => ({ ...prev, directorSignature: res.data.url }));
+        try {
+          localStorage.setItem("nalanda_director_sign", res.data.url);
+        } catch (err) {
+          console.warn("Could not save to localStorage", err);
+        }
+        toast.success("Principal / Director signature uploaded college-wide!", { id: loadingToast });
+      } else {
+        toast.error("Upload failed: No URL returned", { id: loadingToast });
       }
-      toast.success("Principal / Director signature updated college-wide!");
-    } catch {
-      toast.error("Failed to process signature");
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message || "Failed to upload director signature. Check credentials.",
+        { id: loadingToast }
+      );
     } finally {
+      setUploadingDirectorSign(false);
       if (directorSignInputRef.current) directorSignInputRef.current.value = "";
     }
   };
@@ -540,10 +573,19 @@ const StudentIdCardModal = ({
                     <div className="flex items-center gap-2 flex-wrap">
                       <button
                         type="button"
+                        disabled={uploadingPhoto}
                         onClick={() => fileInputRef.current?.click()}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs"
                       >
-                        <Upload className="w-3.5 h-3.5" /> Upload Photo
+                        {uploadingPhoto ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading to Cloudinary...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-3.5 h-3.5" /> Upload Photo
+                          </>
+                        )}
                       </button>
 
                       {cardData.photo && (
@@ -621,11 +663,21 @@ const StudentIdCardModal = ({
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"
+                        disabled={uploadingStudentSign}
                         onClick={() => studentSignInputRef.current?.click()}
-                        className="flex-1 flex items-center justify-center gap-1 px-2.5 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs"
+                        className="flex-1 flex items-center justify-center gap-1 px-2.5 py-1.5 bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs"
                       >
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>{cardData.signature ? "Change Sign" : "Upload Sign"}</span>
+                        {uploadingStudentSign ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>Uploading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-3.5 h-3.5" />
+                            <span>{cardData.signature ? "Change Sign" : "Upload Sign"}</span>
+                          </>
+                        )}
                       </button>
 
                       {cardData.signature && (
@@ -692,11 +744,21 @@ const StudentIdCardModal = ({
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"
+                        disabled={uploadingDirectorSign}
                         onClick={() => directorSignInputRef.current?.click()}
-                        className="flex-1 flex items-center justify-center gap-1 px-2.5 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs"
+                        className="flex-1 flex items-center justify-center gap-1 px-2.5 py-1.5 bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs"
                       >
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>{cardData.directorSignature ? "Change Sign" : "Upload Sign"}</span>
+                        {uploadingDirectorSign ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>Uploading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-3.5 h-3.5" />
+                            <span>{cardData.directorSignature ? "Change Sign" : "Upload Sign"}</span>
+                          </>
+                        )}
                       </button>
 
                       {cardData.directorSignature && (

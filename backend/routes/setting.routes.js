@@ -37,7 +37,15 @@ router.put("/", protect, authorize("admin"), async (req, res, next) => {
     const { logo, collegeName, tagline, affilText, locationText, estdText } = req.body;
 
     const updates = {};
-    if (logo !== undefined) updates.logo = logo || "/logo.png";
+    if (logo !== undefined) {
+      if (logo && logo.startsWith("data:image")) {
+        return res.status(400).json({
+          success: false,
+          message: "Base64 logos are not allowed. Please upload via Cloudinary first.",
+        });
+      }
+      updates.logo = logo || "/logo.png";
+    }
     if (collegeName !== undefined) updates.collegeName = collegeName.trim();
     if (tagline !== undefined) updates.tagline = tagline.trim();
     if (affilText !== undefined) updates.affilText = affilText.trim();

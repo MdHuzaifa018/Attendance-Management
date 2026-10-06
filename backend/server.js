@@ -27,6 +27,7 @@ import publicRoutes          from "./routes/public.routes.js";
 import settingRoutes         from "./routes/setting.routes.js";
 import academicSessionRoutes from "./routes/academicSession.routes.js";
 import promotionRoutes       from "./routes/promotion.routes.js";
+import uploadRoutes          from "./routes/upload.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -34,8 +35,8 @@ const PORT = process.env.PORT || 5000;
 // Middleware setup
 app.use(helmet());                             // Security headers
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
-app.use(express.json({ limit: "25mb" }));      // JSON body parser (supports photo & signature uploads)
-app.use(express.urlencoded({ extended: true, limit: "25mb" }));
+app.use(express.json({ limit: "5mb" }));       // JSON body parser (clean, optimized limit)
+app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use(morgan("dev"));                        // Request logging
 
 // Health check routes
@@ -63,6 +64,7 @@ app.use("/api/timetable",          timetableRoutes);
 app.use("/api/marks",              marksRoutes);
 app.use("/api/academic-sessions",  academicSessionRoutes);
 app.use("/api/promotions",         promotionRoutes);
+app.use("/api/upload",             uploadRoutes);
 
 // Error handling middleware — sab errors yahan aate hain
 app.use(notFound);

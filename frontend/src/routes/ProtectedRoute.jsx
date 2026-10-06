@@ -1,14 +1,13 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import PremiumLoader from "../components/common/PremiumLoader.jsx";
 
 const ProtectedRoute = () => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  // If initial auth verification is still running and no cached user exists
+  // If initial auth verification is still running
   if (loading) {
-    return <PremiumLoader message="Syncing Academic Workspace..." />;
+    return null;
   }
 
   // Not authenticated → send to login, preserve the attempted URL

@@ -71,12 +71,18 @@ export const createStudentSchema = z.object({
   motherName: z.string().max(100).trim().optional().or(z.literal("")),
   aadharNo: z.string().max(30).trim().optional().or(z.literal("")),
   idCardNo: z.string().max(50).trim().optional().or(z.literal("")),
-  photo: z.string().optional().or(z.literal("")),
+  photo: z.string().refine((val) => !val || !val.startsWith("data:image"), {
+    message: "Base64 images are not allowed. Please upload via Cloudinary."
+  }).optional().or(z.literal("")),
   bloodGroup: z.string().max(10).trim().optional().or(z.literal("")),
   dob: z.string().max(30).trim().optional().or(z.literal("")),
   address: z.string().max(250).trim().optional().or(z.literal("")),
-  signature: z.string().optional().or(z.literal("")),
-  directorSignature: z.string().optional().or(z.literal("")),
+  signature: z.string().refine((val) => !val || !val.startsWith("data:image"), {
+    message: "Base64 signatures are not allowed. Please upload via Cloudinary."
+  }).optional().or(z.literal("")),
+  directorSignature: z.string().refine((val) => !val || !val.startsWith("data:image"), {
+    message: "Base64 signatures are not allowed. Please upload via Cloudinary."
+  }).optional().or(z.literal("")),
 });
 
 /**
@@ -123,7 +129,9 @@ export const updateStudentSchema = z.object({
 
   idCardNo: z.string().max(50).trim().optional().or(z.literal("")),
 
-  photo: z.string().optional().or(z.literal("")),
+  photo: z.string().refine((val) => !val || !val.startsWith("data:image"), {
+    message: "Base64 images are not allowed. Please upload via Cloudinary."
+  }).optional().or(z.literal("")),
 
   bloodGroup: z.string().max(10).trim().optional().or(z.literal("")),
 
@@ -131,9 +139,13 @@ export const updateStudentSchema = z.object({
 
   address: z.string().max(250).trim().optional().or(z.literal("")),
 
-  signature: z.string().optional().or(z.literal("")),
+  signature: z.string().refine((val) => !val || !val.startsWith("data:image"), {
+    message: "Base64 signatures are not allowed. Please upload via Cloudinary."
+  }).optional().or(z.literal("")),
 
-  directorSignature: z.string().optional().or(z.literal("")),
+  directorSignature: z.string().refine((val) => !val || !val.startsWith("data:image"), {
+    message: "Base64 signatures are not allowed. Please upload via Cloudinary."
+  }).optional().or(z.literal("")),
 
   isActive: z.boolean().optional(),
 });

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useCollegeSettings } from "../../context/CollegeSettingsContext.jsx";
+import { uploadImageToCloudinary } from "../../services/uploadService.js";
 
 // Helper: Compress uploaded logo to lightweight Base64 DataURL
 const compressLogoImage = (file) => {
@@ -62,6 +63,7 @@ const AdminSettingsPage = () => {
 
   const fileInputRef = useRef(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   // Local form state initialized from context
   const [formData, setFormData] = useState({
@@ -73,7 +75,7 @@ const AdminSettingsPage = () => {
     logo: logo || "/logo.png",
   });
 
-  // Handle Logo File Upload
+  // Handle Logo File Upload to Cloudinary
   const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -83,13 +85,25 @@ const AdminSettingsPage = () => {
       return;
     }
 
+    setUploadingLogo(true);
+    const loadingToast = toast.loading("Uploading college logo to Cloudinary...");
     try {
-      const base64Logo = await compressLogoImage(file);
-      setFormData((prev) => ({ ...prev, logo: base64Logo }));
-      toast.success("New logo selected! Click 'Save Changes' to apply everywhere.");
-    } catch {
-      toast.error("Failed to process logo image");
+      const res = await uploadImageToCloudinary(file, "college/logo");
+      if (res?.data?.url) {
+        setFormData((prev) => ({ ...prev, logo: res.data.url }));
+        toast.success("Logo uploaded to Cloudinary! Click 'Save Changes' to apply everywhere.", {
+          id: loadingToast,
+        });
+      } else {
+        toast.error("Upload failed: No URL returned", { id: loadingToast });
+      }
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message || "Failed to upload logo to Cloudinary. Check credentials.",
+        { id: loadingToast }
+      );
     } finally {
+      setUploadingLogo(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
@@ -228,10 +242,19 @@ const AdminSettingsPage = () => {
               />
               <button
                 type="button"
+                disabled={uploadingLogo}
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-indigo-600/20 cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-indigo-600/20 cursor-pointer"
               >
-                <Upload className="w-4 h-4" /> Upload New Logo
+                {uploadingLogo ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Uploading to Cloudinary...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" /> Upload New Logo
+                  </>
+                )}
               </button>
 
               <button
