@@ -70,7 +70,9 @@ const AdminSettingsPage = () => {
     collegeName: settings?.collegeName || "NALANDA COLLEGE",
     tagline: settings?.tagline || "Attendance & Academic Management System",
     affilText: settings?.affilText || "(A Constituent Unit of Patliputra University, Patna)",
-    locationText: settings?.locationText || "Biharsharif, Nalanda- 803101 (Bihar)",
+    locationText: settings?.locationText || "MOHALLA-GARHPAR, NAISARAI, BIHAR SHARIF 803101",
+    address: settings?.address || "NALANDA COLLEGE 'NEW EXAMINATION HALL', MOHALLA-GARHPAR, NAISARAI, BIHAR SHARIF 803101",
+    email: settings?.email || "nalandacollegebiharsharif@gmail.com",
     estdText: settings?.estdText || "Estd. 1870",
     logo: logo || "/logo.png",
   });
@@ -374,17 +376,45 @@ const AdminSettingsPage = () => {
                 />
               </div>
 
-              {/* Location Text */}
+              {/* Official Address */}
               <div>
                 <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">
-                  Campus Address / Location
+                  Official College Address (Contact Us)
                 </label>
                 <textarea
                   rows={2}
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
+                  placeholder="e.g. NALANDA COLLEGE 'NEW EXAMINATION HALL', MOHALLA-GARHPAR, NAISARAI, BIHAR SHARIF 803101"
+                />
+              </div>
+
+              {/* Official Email */}
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">
+                  Official Contact Email
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
+                  placeholder="e.g. nalandacollegebiharsharif@gmail.com"
+                />
+              </div>
+
+              {/* Short Location Tag */}
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">
+                  Short Location Line
+                </label>
+                <input
+                  type="text"
                   value={formData.locationText}
                   onChange={(e) => setFormData({ ...formData, locationText: e.target.value })}
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
-                  placeholder="e.g. Biharsharif, Nalanda- 803101 (Bihar)"
+                  placeholder="e.g. MOHALLA-GARHPAR, NAISARAI, BIHAR SHARIF 803101"
                 />
               </div>
 

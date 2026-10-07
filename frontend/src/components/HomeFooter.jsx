@@ -123,16 +123,23 @@ const HomeFooter = () => {
           {/* Col 5: College Campus Contact */}
           <div>
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-200 mb-4 font-display">
-              Campus Address
+              Contact Us
             </h4>
             <div className="space-y-3 text-xs text-slate-400">
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                <span>Nalanda College Campus, Ramchandrapur, Biharsharif, Nalanda - 803101</span>
+                <span className="leading-relaxed">
+                  {settings?.address || "NALANDA COLLEGE 'NEW EXAMINATION HALL', MOHALLA-GARHPAR, NAISARAI, BIHAR SHARIF 803101"}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                <span>info@nalandacollege.ac.in</span>
+                <a
+                  href={`mailto:${settings?.email || "nalandacollegebiharsharif@gmail.com"}`}
+                  className="hover:text-amber-400 transition-colors break-all"
+                >
+                  {settings?.email || "nalandacollegebiharsharif@gmail.com"}
+                </a>
               </div>
               <div className="pt-2">
                 <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
@@ -145,7 +152,7 @@ const HomeFooter = () => {
 
         {/* Bottom Credits & Copyright */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-          <p>© {new Date().getFullYear()} Nalanda College ERP. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Nalanda College BIHARSHARIF. All Rights Reserved.</p>
 
           <div className="flex items-center gap-1.5 text-slate-300">
             <span>Designed & Engineered with</span>

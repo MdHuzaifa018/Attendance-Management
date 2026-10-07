@@ -9,7 +9,9 @@ const DEFAULT_SETTINGS = {
   collegeName: "NALANDA COLLEGE",
   tagline: "Attendance & Academic Management System",
   affilText: "(A Constituent Unit of Patliputra University, Patna)",
-  locationText: "Biharsharif, Nalanda- 803101 (Bihar)",
+  locationText: "MOHALLA-GARHPAR, NAISARAI, BIHAR SHARIF 803101",
+  address: "NALANDA COLLEGE 'NEW EXAMINATION HALL', MOHALLA-GARHPAR, NAISARAI, BIHAR SHARIF 803101",
+  email: "nalandacollegebiharsharif@gmail.com",
   estdText: "Estd. 1870",
   logo: "/logo.png",
 };

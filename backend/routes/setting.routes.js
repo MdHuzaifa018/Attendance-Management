@@ -10,7 +10,9 @@ const DEFAULT_SETTINGS = {
   collegeName: "NALANDA COLLEGE",
   tagline: "Attendance & Academic Management System",
   affilText: "(A Constituent Unit of Patliputra University, Patna)",
-  locationText: "Biharsharif, Nalanda- 803101 (Bihar)",
+  locationText: "NALANDA COLLEGE 'NEW EXAMINATION HALL', MOHALLA-GARHPAR, NAISARAI, BIHAR SHARIF 803101",
+  address: "NALANDA COLLEGE 'NEW EXAMINATION HALL', MOHALLA-GARHPAR, NAISARAI, BIHAR SHARIF 803101",
+  email: "nalandacollegebiharsharif@gmail.com",
   estdText: "Estd. 1870",
   logo: "/logo.png",
 };
@@ -34,7 +36,7 @@ router.get("/", async (req, res, next) => {
 // PUT /api/settings - Admin only: update college logo & particulars
 router.put("/", protect, authorize("admin"), async (req, res, next) => {
   try {
-    const { logo, collegeName, tagline, affilText, locationText, estdText } = req.body;
+    const { logo, collegeName, tagline, affilText, locationText, address, email, estdText } = req.body;
 
     const updates = {};
     if (logo !== undefined) {
@@ -50,6 +52,8 @@ router.put("/", protect, authorize("admin"), async (req, res, next) => {
     if (tagline !== undefined) updates.tagline = tagline.trim();
     if (affilText !== undefined) updates.affilText = affilText.trim();
     if (locationText !== undefined) updates.locationText = locationText.trim();
+    if (address !== undefined) updates.address = address.trim();
+    if (email !== undefined) updates.email = email.trim();
     if (estdText !== undefined) updates.estdText = estdText.trim();
     updates.updatedBy = req.user?._id;
 

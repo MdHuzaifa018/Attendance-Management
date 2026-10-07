@@ -26,7 +26,17 @@ const settingSchema = new mongoose.Schema(
     },
     locationText: {
       type: String,
-      default: "Biharsharif, Nalanda- 803101 (Bihar)",
+      default: "NALANDA COLLEGE 'NEW EXAMINATION HALL', MOHALLA-GARHPAR, NAISARAI, BIHAR SHARIF 803101",
+      trim: true,
+    },
+    address: {
+      type: String,
+      default: "NALANDA COLLEGE 'NEW EXAMINATION HALL', MOHALLA-GARHPAR, NAISARAI, BIHAR SHARIF 803101",
+      trim: true,
+    },
+    email: {
+      type: String,
+      default: "nalandacollegebiharsharif@gmail.com",
       trim: true,
     },
     estdText: {
