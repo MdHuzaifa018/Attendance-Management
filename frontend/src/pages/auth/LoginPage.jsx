@@ -21,6 +21,8 @@ import {
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useCollegeSettings } from "../../context/CollegeSettingsContext.jsx";
+import { useSession } from "../../context/SessionContext.jsx";
+import { getPublicStats } from "../../services/publicService.js";
 import ThemeToggle from "../../components/common/ThemeToggle.jsx";
 
 const loginSchema = z.object({
@@ -45,6 +47,20 @@ const LoginPage = () => {
   const { login, user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { logo, settings } = useCollegeSettings();
+  const { globalSession } = useSession();
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getPublicStats().then((data) => {
+      if (!cancelled && data) {
+        setStats(data);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const {
     register,
@@ -178,7 +194,9 @@ const LoginPage = () => {
           {/* Frosted Glass Stats Card */}
           <div className="grid grid-cols-3 gap-3 p-4 rounded-2xl bg-slate-900/70 backdrop-blur-md border border-white/15 shadow-2xl">
             <div className="text-center">
-              <p className="text-2xl font-black text-white font-kapra tracking-tight">120+</p>
+              <p className="text-2xl font-black text-white font-kapra tracking-tight">
+                {stats?.studentsCount ? `${stats.studentsCount}+` : "221+"}
+              </p>
               <p className="text-[11px] text-slate-300 font-medium mt-0.5">Enrolled BCA</p>
             </div>
             <div className="text-center border-x border-white/15">
@@ -186,7 +204,9 @@ const LoginPage = () => {
               <p className="text-[11px] text-slate-300 font-medium mt-0.5">Univ. Target</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-black text-emerald-400 font-kapra tracking-tight">99.8%</p>
+              <p className="text-2xl font-black text-emerald-400 font-kapra tracking-tight">
+                {stats?.attendanceRate ? `${stats.attendanceRate}%` : "99.8%"}
+              </p>
               <p className="text-[11px] text-slate-300 font-medium mt-0.5">Live Sync</p>
             </div>
           </div>
@@ -195,7 +215,13 @@ const LoginPage = () => {
         {/* Bottom Footer Info */}
         <div className="relative z-10 flex flex-col text-xs text-slate-400 pt-4 border-t border-white/10">
           <div className="flex items-center justify-between w-full">
-            <span className="font-semibold text-slate-300">BCA-III Academic Session 2024-25</span>
+            <span className="font-semibold text-slate-300">
+              {globalSession?.name
+                ? `BCA-III Academic Session ${globalSession.name}`
+                : stats?.academicSession
+                ? `BCA-III Academic Session ${stats.academicSession}`
+                : "BCA-III Academic Session 2026-27"}
+            </span>
             <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/10 text-white font-mono">v1.0 ERP</span>
           </div>
           <div className="mt-2 text-left text-slate-400 text-[11px]">

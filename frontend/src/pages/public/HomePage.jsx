@@ -520,7 +520,7 @@ and everything you need to manage your college journey. */}
           >
             <motion.div variants={fadeUpVariant}>
               <div className="font-numbers font-black text-3xl sm:text-5xl text-amber-400">
-                <AnimatedNumber value={stats?.studentsCount ? stats.studentsCount : 120} />+
+                <AnimatedNumber value={stats?.studentsCount ? stats.studentsCount : 221} />+
               </div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">
                 BCA-III Enrolled Students
@@ -528,7 +528,7 @@ and everything you need to manage your college journey. */}
             </motion.div>
             <motion.div variants={fadeUpVariant}>
               <div className="font-numbers font-black text-3xl sm:text-5xl text-indigo-400">
-                <AnimatedNumber value={stats?.lecturesCount ? stats.lecturesCount : 179} />+
+                <AnimatedNumber value={stats?.lecturesCount ? stats.lecturesCount : 113} />+
               </div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">
                 Lectures Tracked

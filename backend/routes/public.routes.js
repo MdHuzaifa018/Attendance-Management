@@ -6,11 +6,12 @@ import Department from "../models/Department.js";
 import Attendance from "../models/Attendance.js";
 import Notice from "../models/Notice.js";
 import Timetable from "../models/Timetable.js";
+import AcademicSession from "../models/AcademicSession.js";
 
 const router = express.Router();
 
 // ── GET /api/public/stats ────────────────────────────────────────────────────
-// Public dashboard stats shown on the college home page (no auth required).
+// Public dashboard stats shown on the college home page and login page (no auth required).
 // Cached for 5 minutes to reduce Atlas load from repeated page visits.
 router.get("/stats", async (req, res) => {
   const CACHE_KEY = "public_stats";
@@ -18,14 +19,37 @@ router.get("/stats", async (req, res) => {
   if (cached) return res.status(200).json({ success: true, data: cached });
 
   // Run all count queries in parallel — much faster than sequential awaits
-  const [studentsCount, teachersCount, lecturesCount, departmentsCount, activeNoticesCount] =
-    await Promise.all([
-      Student.countDocuments({ isActive: true }).catch(() => 0),
-      Teacher.countDocuments({ isActive: true }).catch(() => 0),
-      Attendance.countDocuments().catch(() => 0),
-      Department.countDocuments({ isActive: true }).catch(() => 0),
-      Notice.countDocuments({ isActive: true }).catch(() => 0),
-    ]);
+  const [
+    studentsCount,
+    teachersCount,
+    attendanceRecordsCount,
+    departmentsCount,
+    activeNoticesCount,
+    distinctLectures,
+    activeSessionDoc,
+  ] = await Promise.all([
+    Student.countDocuments({ isActive: true }).catch(() => 0),
+    Teacher.countDocuments({ isActive: true }).catch(() => 0),
+    Attendance.countDocuments().catch(() => 0),
+    Department.countDocuments({ isActive: true }).catch(() => 0),
+    Notice.countDocuments({ isActive: true }).catch(() => 0),
+    Attendance.aggregate([
+      {
+        $group: {
+          _id: {
+            class: "$class",
+            subject: "$subject",
+            date: "$date",
+            session: "$session",
+          },
+        },
+      },
+      { $count: "total" },
+    ]).catch(() => []),
+    AcademicSession.findOne({ isCurrent: true }).lean().catch(() => null),
+  ]);
+
+  const actualLecturesCount = distinctLectures[0]?.total || 0;
 
   // Calculate overall attendance rate from recent records.
   // Falls back to a college benchmark if no records exist yet.
@@ -48,13 +72,15 @@ router.get("/stats", async (req, res) => {
   }
 
   const result = {
-    studentsCount:      studentsCount || 120,
-    teachersCount:      teachersCount || 18,
-    lecturesCount:      lecturesCount || 179,
-    departmentsCount:   departmentsCount || 6,
-    activeNoticesCount: activeNoticesCount || 3,
-    attendanceRate:     attendanceRate || 94.8,
-    heritageYear:       1870,
+    studentsCount:          studentsCount || 221,
+    teachersCount:          teachersCount || 18,
+    lecturesCount:          actualLecturesCount || 113, // Actual distinct lectures conducted
+    attendanceRecordsCount: attendanceRecordsCount || 5900, // Total student attendance marks
+    departmentsCount:       departmentsCount || 6,
+    activeNoticesCount:     activeNoticesCount || 3,
+    attendanceRate:         attendanceRate || 94.8,
+    heritageYear:           1870,
+    academicSession:        activeSessionDoc?.name || "2026-27",
   };
 
   setCache(CACHE_KEY, result, 300); // cache 5 minutes
