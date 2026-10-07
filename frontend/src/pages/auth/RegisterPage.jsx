@@ -166,15 +166,17 @@ const RegisterPage = () => {
           {/* Frosted Glass Stats Card */}
           <div className="grid grid-cols-3 gap-3 p-4 rounded-2xl bg-slate-900/70 backdrop-blur-md border border-white/15 shadow-2xl">
             <div className="text-center">
-              <p className="text-2xl font-black text-amber-400 font-kapra tracking-tight">75%+</p>
+              <p className="text-2xl font-black text-amber-400 font-numbers tracking-wide">
+                75<span className="font-sans font-bold text-lg ml-0.5">%+</span>
+              </p>
               <p className="text-[11px] text-slate-300 font-medium mt-0.5">Target Minimum</p>
             </div>
             <div className="text-center border-x border-white/15">
-              <p className="text-2xl font-black text-white font-kapra tracking-tight">Live</p>
+              <p className="text-2xl font-black text-white font-numbers tracking-wide">Live</p>
               <p className="text-[11px] text-slate-300 font-medium mt-0.5">Daily Logs</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-black text-emerald-400 font-kapra tracking-tight">Direct</p>
+              <p className="text-2xl font-black text-emerald-400 font-numbers tracking-wide">Direct</p>
               <p className="text-[11px] text-slate-300 font-medium mt-0.5">Faculty Sync</p>
             </div>
           </div>
