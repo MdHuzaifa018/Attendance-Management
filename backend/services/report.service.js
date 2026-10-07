@@ -19,61 +19,139 @@ export const getSystemOverview = async (sessionId) => {
   const sessionMatch = sessionId ? { academicSession: new mongoose.Types.ObjectId(sessionId) } : {};
   const attendanceMatch = sessionId ? { academicSession: new mongoose.Types.ObjectId(sessionId) } : {};
 
-  const [studentCount, teacherCount, classCount] = await Promise.all([
-    mongoose.model("Enrollment").countDocuments(sessionMatch), // Count all enrollments in session
+  // Today's date boundary
+  const today = new Date();
+  const startOfToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+  const endOfToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999));
+
+  // Run ALL counts and aggregations concurrently in parallel
+  const [
+    studentCount,
+    teacherCount,
+    classCount,
+    attStats,
+    todayStatsAgg,
+    classBreakdown,
+    atRiskAgg,
+  ] = await Promise.all([
+    mongoose.model("Enrollment").countDocuments(sessionMatch),
     Teacher.countDocuments({ isActive: true }),
     Class.countDocuments({ isActive: true }),
-  ]);
 
-  // 1. System-wide attendance stats
-  const attStats = await Attendance.aggregate([
-    { $match: attendanceMatch },
-    {
-      $group: {
-        _id: null,
-        totalRecords: { $sum: 1 },
-        presentRecords: {
-          $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] },
+    // 1. System-wide attendance stats
+    Attendance.aggregate([
+      { $match: attendanceMatch },
+      {
+        $group: {
+          _id: null,
+          totalRecords: { $sum: 1 },
+          presentRecords: {
+            $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] },
+          },
         },
       },
-    },
+    ]),
+
+    // 2. Today's attendance stats
+    Attendance.aggregate([
+      {
+        $match: {
+          ...attendanceMatch,
+          date: { $gte: startOfToday, $lte: endOfToday },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalToday: { $sum: 1 },
+          presentToday: {
+            $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] },
+          },
+          classesSet: { $addToSet: "$class" },
+          sessionsSet: {
+            $addToSet: {
+              class: "$class",
+              subject: "$subject",
+              session: "$session",
+            },
+          },
+        },
+      },
+    ]),
+
+    // 3. Class-wise performance breakdown (for analyst comparative bar chart)
+    Attendance.aggregate([
+      { $match: attendanceMatch },
+      {
+        $group: {
+          _id: "$class",
+          total: { $sum: 1 },
+          present: {
+            $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "classes",
+          localField: "_id",
+          foreignField: "_id",
+          as: "classDoc",
+        },
+      },
+      { $unwind: "$classDoc" },
+      {
+        $project: {
+          _id: 1,
+          name: "$classDoc.name",
+          code: "$classDoc.code",
+          total: 1,
+          present: 1,
+          rate: {
+            $cond: [
+              { $eq: ["$total", 0] },
+              0,
+              { $round: [{ $multiply: [{ $divide: ["$present", "$total"] }, 100] }, 1] },
+            ],
+          },
+        },
+      },
+      { $sort: { rate: -1 } },
+      { $limit: 6 },
+    ]),
+
+    // 4. Students at-risk (< 75% attendance)
+    Attendance.aggregate([
+      { $match: attendanceMatch },
+      {
+        $group: {
+          _id: "$student",
+          total: { $sum: 1 },
+          present: {
+            $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] },
+          },
+        },
+      },
+      {
+        $project: {
+          percent: {
+            $cond: [
+              { $eq: ["$total", 0] },
+              0,
+              { $round: [{ $multiply: [{ $divide: ["$present", "$total"] }, 100] }, 0] },
+            ],
+          },
+        },
+      },
+      { $match: { percent: { $lt: 75 } } },
+      { $count: "count" },
+    ]),
   ]);
 
   const totalRecords = attStats[0]?.totalRecords || 0;
   const presentRecords = attStats[0]?.presentRecords || 0;
   const absentRecords = totalRecords - presentRecords;
   let overallPercent = totalRecords > 0 ? Math.round((presentRecords / totalRecords) * 100) : 0;
-
-  // 2. Today's attendance stats
-  const today = new Date();
-  const startOfToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
-  const endOfToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999));
-
-  const todayStatsAgg = await Attendance.aggregate([
-    {
-      $match: {
-        ...attendanceMatch,
-        date: { $gte: startOfToday, $lte: endOfToday },
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        totalToday: { $sum: 1 },
-        presentToday: {
-          $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] },
-        },
-        classesSet: { $addToSet: "$class" },
-        sessionsSet: {
-          $addToSet: {
-            class: "$class",
-            subject: "$subject",
-            session: "$session",
-          },
-        },
-      },
-    },
-  ]);
 
   const totalToday = todayStatsAgg[0]?.totalToday || 0;
   const presentToday = todayStatsAgg[0]?.presentToday || 0;
@@ -82,73 +160,6 @@ export const getSystemOverview = async (sessionId) => {
   const activeClassesToday = todayStatsAgg[0]?.classesSet?.length || 0;
   const todaySessionsCount = todayStatsAgg[0]?.sessionsSet?.length || 0;
 
-  // 3. Class-wise performance breakdown (for analyst comparative bar chart)
-  const classBreakdown = await Attendance.aggregate([
-    { $match: attendanceMatch },
-    {
-      $group: {
-        _id: "$class",
-        total: { $sum: 1 },
-        present: {
-          $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] },
-        },
-      },
-    },
-    {
-      $lookup: {
-        from: "classes",
-        localField: "_id",
-        foreignField: "_id",
-        as: "classDoc",
-      },
-    },
-    { $unwind: "$classDoc" },
-    {
-      $project: {
-        _id: 1,
-        name: "$classDoc.name",
-        code: "$classDoc.code",
-        total: 1,
-        present: 1,
-        rate: {
-          $cond: [
-            { $eq: ["$total", 0] },
-            0,
-            { $round: [{ $multiply: [{ $divide: ["$present", "$total"] }, 100] }, 1] },
-          ],
-        },
-      },
-    },
-    { $sort: { rate: -1 } },
-    { $limit: 6 },
-  ]);
-
-  // 4. Students at-risk (< 75% attendance)
-  const atRiskAgg = await Attendance.aggregate([
-    { $match: attendanceMatch },
-    {
-      $group: {
-        _id: "$student",
-        total: { $sum: 1 },
-        present: {
-          $sum: { $cond: [{ $eq: ["$status", "present"] }, 1, 0] },
-        },
-      },
-    },
-    {
-      $project: {
-        percent: {
-          $cond: [
-            { $eq: ["$total", 0] },
-            0,
-            { $round: [{ $multiply: [{ $divide: ["$present", "$total"] }, 100] }, 0] },
-          ],
-        },
-      },
-    },
-    { $match: { percent: { $lt: 75 } } },
-    { $count: "count" },
-  ]);
   const atRiskCount = atRiskAgg[0]?.count || 0;
 
   const result = {

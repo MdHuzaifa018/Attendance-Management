@@ -48,7 +48,7 @@ function AppContent() {
     return (
       <PremiumLoader
         fullScreen={true}
-        duration={1500}
+        duration={750}
         onComplete={() => setBooting(false)}
       />
     );

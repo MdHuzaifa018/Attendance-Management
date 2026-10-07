@@ -99,8 +99,12 @@ attendanceSchema.index(
   }
 );
 
-// Performance Indexes for Dashboard Aggregations
+// Performance Indexes for Dashboard Aggregations & Session Queries
 attendanceSchema.index({ date: -1 });
+attendanceSchema.index({ academicSession: 1, date: -1 });
+attendanceSchema.index({ academicSession: 1, status: 1 });
+attendanceSchema.index({ academicSession: 1, class: 1 });
+attendanceSchema.index({ academicSession: 1, student: 1 });
 attendanceSchema.index({ class: 1, date: -1 });
 attendanceSchema.index({ subject: 1, date: -1 });
 attendanceSchema.index({ status: 1 });

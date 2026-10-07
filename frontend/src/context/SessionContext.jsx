@@ -7,22 +7,36 @@ export const useSession = () => useContext(SessionContext);
 
 export const SessionProvider = ({ children }) => {
   const [sessions, setSessions] = useState([]);
-  const [globalSession, setGlobalSession] = useState(null);
+  const [globalSession, setGlobalSession] = useState(() => {
+    try {
+      const saved = localStorage.getItem("nalanda_active_session");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
 
   const loadSessions = async () => {
     try {
       const { data } = await api.get("/academic-sessions");
       if (data.success) {
-        setSessions(data.sessions || []);
+        const sessionList = data.sessions || [];
+        setSessions(sessionList);
         
-        // Find current active session
-        const active = data.sessions.find(s => s.isCurrent);
-        if (active) {
-          setGlobalSession(active);
-        } else if (data.sessions.length > 0) {
-          setGlobalSession(data.sessions[0]);
-        }
+        // Find current active session or preserve saved session
+        const active = sessionList.find(s => s.isCurrent) || sessionList[0] || null;
+        setGlobalSession((prev) => {
+          // If we had a previously saved valid session from the list, keep it; else use active
+          const validSaved = prev ? sessionList.find(s => s._id === prev._id) : null;
+          const chosen = validSaved || active;
+          if (chosen) {
+            try {
+              localStorage.setItem("nalanda_active_session", JSON.stringify(chosen));
+            } catch {}
+          }
+          return chosen;
+        });
       }
     } catch (error) {
       console.error("Failed to load sessions:", error);
@@ -37,7 +51,12 @@ export const SessionProvider = ({ children }) => {
 
   const switchSession = (sessionId) => {
     const sess = sessions.find((s) => s._id === sessionId);
-    if (sess) setGlobalSession(sess);
+    if (sess) {
+      setGlobalSession(sess);
+      try {
+        localStorage.setItem("nalanda_active_session", JSON.stringify(sess));
+      } catch {}
+    }
   };
 
   const refreshSessions = async () => {
