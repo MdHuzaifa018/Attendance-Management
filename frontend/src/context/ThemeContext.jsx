@@ -8,8 +8,8 @@ export const ThemeProvider = ({ children }) => {
     const saved = localStorage.getItem("app_theme");
     if (saved === "light" || saved === "dark") return saved;
 
-    // 2. Default to dark mode
-    return "dark";
+    // 2. Default to light mode for all 1st time visitors
+    return "light";
   });
 
   useEffect(() => {

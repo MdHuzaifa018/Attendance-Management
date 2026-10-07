@@ -27,12 +27,22 @@
         padding: 0;
         background-color: #f8fafc;
       }
-      @media (prefers-color-scheme: dark) {
-        html, body {
-          background-color: #020617;
-        }
+      .dark html, .dark body, html.dark {
+        background-color: #020617;
       }
     </style>
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem("app_theme");
+          if (saved === "dark") {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
