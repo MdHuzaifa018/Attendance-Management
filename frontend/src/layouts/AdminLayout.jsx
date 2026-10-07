@@ -161,59 +161,61 @@ const AdminLayout = () => {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 w-full max-w-full overflow-hidden">
         {/* Topbar */}
-        <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center gap-4 px-4 lg:px-6 flex-shrink-0 transition-colors">
-          {/* Mobile hamburger */}
-          <button
-            id="admin-sidebar-toggle"
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-            aria-label="Open navigation"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
+        <header className="h-16 w-full max-w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 sm:gap-4 px-3 sm:px-6 flex-shrink-0 transition-colors">
+          {/* Mobile hamburger & Branding */}
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-shrink">
+            <button
+              id="admin-sidebar-toggle"
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-1.5 sm:p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors flex-shrink-0"
+              aria-label="Open navigation"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
 
-          <div className="flex items-center gap-2.5">
-            <span className="font-extrabold text-sm sm:text-base tracking-tight text-slate-900 dark:text-white">
-              Nalanda College ERP
-            </span>
-            <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-800/50">
-              Admin Portal
-            </span>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="font-extrabold text-xs sm:text-base tracking-tight text-slate-900 dark:text-white truncate">
+                <span className="xs:hidden">Nalanda ERP</span>
+                <span className="hidden xs:inline">Nalanda College ERP</span>
+              </span>
+              <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-800/50 flex-shrink-0">
+                Admin Portal
+              </span>
+            </div>
           </div>
 
-          <div className="flex-1" />
+          {/* Right actions: Session Switcher, ThemeToggle & User info */}
+          <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+            {/* Session Switcher */}
+            {globalSession && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-semibold text-slate-500 hidden md:block">Session:</span>
+                <select
+                  value={globalSession._id}
+                  onChange={(e) => switchSession(e.target.value)}
+                  className="bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-700 dark:text-indigo-400 text-xs sm:text-sm font-semibold rounded-lg px-1.5 sm:px-3 py-1 sm:py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer transition-colors max-w-[100px] xs:max-w-[130px] sm:max-w-none truncate"
+                  title="Active Academic Session"
+                >
+                  {sessions.map((s) => (
+                    <option key={s._id} value={s._id}>
+                      {s.name} {s.isCurrent ? "(Active)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
-          {/* Session Switcher */}
-          {globalSession && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-slate-500 hidden sm:block">Session:</span>
-              <select
-                value={globalSession._id}
-                onChange={(e) => switchSession(e.target.value)}
-                className="bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-700 dark:text-indigo-400 text-sm font-semibold rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer transition-colors"
-              >
-                {sessions.map((s) => (
-                  <option key={s._id} value={s._id}>
-                    {s.name} {s.isCurrent ? "(Active)" : ""}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+            <ThemeToggle className="p-1.5 sm:p-2" />
 
-          {/* Right actions: ThemeToggle + User info */}
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
+            <div className="h-5 sm:h-6 w-px bg-slate-200 dark:bg-slate-800 hidden xs:block" />
 
-            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
-
-            <div className="flex items-center gap-2">
-              <span className="hidden sm:block text-slate-800 dark:text-slate-200 text-sm font-semibold">
+            <div className="flex items-center gap-1.5">
+              <span className="hidden md:block text-slate-800 dark:text-slate-200 text-sm font-semibold truncate max-w-[100px]">
                 {user?.name}
               </span>
-              <span className="text-xs bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 px-2.5 py-0.5 rounded-full font-medium capitalize">
+              <span className="text-[11px] sm:text-xs bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 px-2 sm:px-2.5 py-0.5 rounded-full font-medium capitalize flex-shrink-0">
                 {user?.role}
               </span>
             </div>
