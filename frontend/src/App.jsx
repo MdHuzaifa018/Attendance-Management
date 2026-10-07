@@ -44,16 +44,14 @@ import InstallAppBanner from "./components/InstallAppBanner.jsx";
 function AppContent() {
   const [booting, setBooting] = useState(true);
 
-  useEffect(() => {
-    // Show smooth academic loading sequence on initial page load / refresh
-    const timer = setTimeout(() => {
-      setBooting(false);
-    }, 1300);
-    return () => clearTimeout(timer);
-  }, []);
-
   if (booting) {
-    return <PremiumLoader fullScreen={true} />;
+    return (
+      <PremiumLoader
+        fullScreen={true}
+        duration={1500}
+        onComplete={() => setBooting(false)}
+      />
+    );
   }
 
   return (

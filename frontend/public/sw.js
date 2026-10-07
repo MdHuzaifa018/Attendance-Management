@@ -1,11 +1,9 @@
-// Service Worker for Nalanda College Attendance & ERP System
-const CACHE_NAME = "nalanda-erp-v1";
+// Service Worker for Nalanda College Attendance & ERP System (v2 - Instant Fresh Load)
+const CACHE_NAME = "nalanda-erp-v2";
 const STATIC_ASSETS = [
-  "/",
-  "/index.html",
   "/logo.png",
   "/favicon.svg",
-  "/manifest.webmanifest"
+  "/manifest.webmanifest",
 ];
 
 // Install Event
@@ -18,13 +16,14 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-// Activate Event
+// Activate Event - Purge all old caches immediately
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log("[ServiceWorker] Purging outdated cache:", key);
             return caches.delete(key);
           }
         })
@@ -34,40 +33,40 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Fetch Event with Network-First strategy for APIs and Cache-First for static
+// Fetch Event - Network-First for HTML/Navigations, Cache-First for static icons
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // If API request, use Network only or Network-first
+  // APIs are always direct network
   if (url.pathname.startsWith("/api/")) {
     return;
   }
 
+  // HTML pages & Navigations: Always Network-first so users get instant fresh updates!
+  if (
+    event.request.mode === "navigate" ||
+    url.pathname === "/" ||
+    url.pathname.endsWith(".html")
+  ) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
+  // Static assets: cache-first with network fallback
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Fetch background update
-        fetch(event.request)
-          .then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
-            }
-          })
-          .catch(() => {});
         return cachedResponse;
       }
       return fetch(event.request).then((networkResponse) => {
-        if (
-          !networkResponse ||
-          networkResponse.status !== 200 ||
-          networkResponse.type !== "basic"
-        ) {
-          return networkResponse;
-        }
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
         return networkResponse;
       });
     })

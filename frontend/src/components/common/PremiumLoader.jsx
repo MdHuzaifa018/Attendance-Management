@@ -1,10 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   CheckCircle2,
   GraduationCap,
   RefreshCw,
-  Landmark,
-  ShieldCheck,
   Check,
   UserCheck,
 } from "lucide-react";
@@ -14,83 +12,108 @@ import { useCollegeSettings } from "../../context/CollegeSettingsContext.jsx";
  * PremiumLoader
  * State-of-the-art Nalanda College ERP Academic Loader
  * Features:
- * - Concentric orbital celestial rings with clockwise/counter-clockwise motion
+ * - Fluid 0% to 100% counter & progress bar
+ * - Multi-stage academic status synchronization
+ * - Orbital celestial rings with clockwise/counter-clockwise motion
  * - Ambient background mesh and glowing auroras
- * - Dynamic stage progression bar (78% -> 100%)
  * - Seamless Light & Dark mode support
  */
 const PremiumLoader = ({
   fullScreen = true,
   customTitle = "Nalanda College ERP",
   customSubtitle = "Preparing your academic dashboard",
+  duration = 1500,
+  onComplete,
 }) => {
   const { logo, settings } = useCollegeSettings();
 
-  const [currentPct, setCurrentPct] = useState(78);
+  const [currentPct, setCurrentPct] = useState(0);
   const [dots, setDots] = useState("...");
-  const [stage, setStage] = useState("Roster Sync");
-  const [statusText, setStatusText] = useState("Synchronizing student roster & schedule...");
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  // Dynamic progressive status based on current percentage
+  const getStageInfo = (pct) => {
+    if (pct < 25) {
+      return {
+        stage: "Gateway Boot",
+        text: "Initializing Nalanda College Academic Gateway...",
+      };
+    }
+    if (pct < 50) {
+      return {
+        stage: "Roster Sync",
+        text: "Synchronizing student roster & schedule...",
+      };
+    }
+    if (pct < 75) {
+      return {
+        stage: "Auth Validated",
+        text: "Validating faculty & student credentials...",
+      };
+    }
+    if (pct < 95) {
+      return {
+        stage: "Sheets Compiled",
+        text: "Compiling daily lecture attendance sheets...",
+      };
+    }
+    return {
+      stage: "Portal Ready",
+      text: "Academic dashboard ready! Launching portal...",
+    };
+  };
+
+  const currentStage = getStageInfo(currentPct);
 
   // Animated progressive ellipsis
   useEffect(() => {
     const timer = setInterval(() => {
       setDots((prev) => (prev.length >= 3 ? "." : prev + "."));
-    }, 450);
+    }, 400);
     return () => clearInterval(timer);
   }, []);
 
-  // Dynamic progressive loader stages
+  // Smooth 0% -> 100% progress animation
   useEffect(() => {
-    const targetSteps = [
-      { pct: 82, text: "Synchronizing student roster & schedule...", stage: "Roster Sync" },
-      { pct: 89, text: "Validating faculty & student biometric credentials...", stage: "Auth Validated" },
-      { pct: 95, text: "Compiling daily lecture attendance sheets...", stage: "Sheets Compiled" },
-      { pct: 100, text: "Dashboard ready! Launching portal...", stage: "Finalizing" },
-    ];
+    const startTime = performance.now();
+    let frameId;
+    let completedTimeout;
 
-    let stepIndex = 0;
-    let incrementTimer;
-    let stepTimeout;
+    const animateProgress = (now) => {
+      const elapsed = now - startTime;
+      const rawProgress = Math.min(1, elapsed / duration);
+      
+      // Gentle ease-out curve for natural loading feel
+      const easeOut = 1 - Math.pow(1 - rawProgress, 2.5);
+      const computedPct = Math.min(100, Math.floor(easeOut * 100));
 
-    const runProgress = () => {
-      if (stepIndex < targetSteps.length) {
-        const item = targetSteps[stepIndex];
-        const stepTarget = item.pct;
+      setCurrentPct(computedPct);
 
-        incrementTimer = setInterval(() => {
-          setCurrentPct((prev) => {
-            if (prev < stepTarget) {
-              return prev + 1;
-            } else {
-              clearInterval(incrementTimer);
-              setStatusText(item.text);
-              setStage(item.stage);
-              stepIndex++;
-              stepTimeout = setTimeout(runProgress, 1200);
-              return prev;
-            }
-          });
-        }, 40);
+      if (rawProgress < 1) {
+        frameId = requestAnimationFrame(animateProgress);
       } else {
-        // Soft loop if still waiting
-        stepTimeout = setTimeout(() => {
-          setCurrentPct(75);
-          stepIndex = 0;
-          setStatusText("Updating class attendance registries...");
-          setStage("Syncing Hub");
-          setTimeout(runProgress, 1000);
-        }, 3000);
+        setCurrentPct(100);
+        if (onCompleteRef.current) {
+          completedTimeout = setTimeout(() => {
+            if (onCompleteRef.current) {
+              onCompleteRef.current();
+            }
+          }, 180);
+        }
       }
     };
 
-    const initialTimeout = setTimeout(runProgress, 800);
+    frameId = requestAnimationFrame(animateProgress);
 
     return () => {
-      clearTimeout(initialTimeout);
-      clearTimeout(stepTimeout);
-      clearInterval(incrementTimer);
+      cancelAnimationFrame(frameId);
+      if (completedTimeout) clearTimeout(completedTimeout);
     };
-  }, []);
+  }, [duration]);
 
   const content = (
     <div className="relative w-full h-full min-h-screen flex flex-col justify-between overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans select-none">
@@ -114,7 +137,7 @@ const PremiumLoader = ({
           </div>
           <div className="flex items-baseline gap-2">
             <span className="font-extrabold text-slate-900 dark:text-white tracking-tight text-base sm:text-lg">
-              Nalanda College ERP
+              {settings?.collegeName || "Nalanda College ERP"}
             </span>
             <span className="text-[11px] font-mono font-medium text-slate-400 dark:text-slate-500 hidden sm:inline">
               v2.4.0
@@ -218,12 +241,12 @@ const PremiumLoader = ({
             </p>
           </div>
 
-          {/* Progress Bar & Indicators */}
+          {/* Progress Bar & Indicators (0% -> 100%) */}
           <div className="w-full max-w-xs mt-7 flex flex-col items-center">
             {/* Track */}
             <div className="w-full h-2 rounded-full bg-slate-200/80 dark:bg-slate-800 p-[1.5px] shadow-inner relative overflow-hidden backdrop-blur-xs">
               <div
-                className="h-full bg-gradient-to-r from-blue-600 via-indigo-500 to-teal-500 rounded-full transition-all duration-300 ease-out relative overflow-hidden"
+                className="h-full bg-gradient-to-r from-blue-600 via-indigo-500 to-teal-500 rounded-full transition-all duration-75 ease-out relative overflow-hidden"
                 style={{ width: `${currentPct}%` }}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent w-full anim-shimmer" />
@@ -234,18 +257,18 @@ const PremiumLoader = ({
             <div className="w-full flex items-center justify-between mt-2.5 px-0.5">
               <span className="font-mono text-[11.5px] text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 animate-ping" />
-                <span>{stage}</span>
+                <span>{currentStage.stage}</span>
               </span>
-              <span className="font-mono font-semibold text-[12.5px] text-slate-800 dark:text-slate-200 bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/60 dark:border-slate-700 px-2 py-0.5 rounded-md">
+              <span className="font-mono font-bold text-[13px] text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 border border-blue-200/60 dark:border-blue-800/60 px-2.5 py-0.5 rounded-md min-w-[50px] text-center">
                 {currentPct}%
               </span>
             </div>
 
             {/* Micro Status Chip */}
-            <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 text-xs shadow-2xs">
+            <div className="mt-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 text-xs shadow-2xs">
               <RefreshCw className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 animate-spin" />
-              <span className="truncate max-w-[260px] font-medium">
-                {statusText}
+              <span className="truncate max-w-[270px] font-medium">
+                {currentStage.text}
               </span>
             </div>
           </div>
@@ -268,7 +291,7 @@ const PremiumLoader = ({
   );
 
   if (!fullScreen) {
-    return <div className="py-12 flex justify-center items-center">{content}</div>;
+    return <div className="py-12 flex justify-center items-center w-full">{content}</div>;
   }
 
   return (
