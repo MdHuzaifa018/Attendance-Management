@@ -226,7 +226,7 @@ const LoginPage = () => {
                 ? `BCA-III Academic Session ${stats.academicSession}`
                 : "BCA-III Academic Session 2026-27"}
             </span>
-            <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/10 text-white font-mono">v1.0 ERP</span>
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/10 text-white font-mono">v1.1 ERP</span>
           </div>
           <div className="mt-2 text-left text-slate-400 text-[11px]">
             Developed with <span className="text-red-400">❤</span> by{" "}
