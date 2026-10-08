@@ -56,9 +56,28 @@ export const createTeacherSchema = z.object({
 /**
  * updateTeacherSchema
  * Used when admin edits an existing teacher profile.
- * Credentials (password/email) are not modified via this endpoint.
+ * Supports updating credentials (name/email/password) and profile details.
  */
 export const updateTeacherSchema = z.object({
+  name: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .max(100)
+    .trim()
+    .optional(),
+
+  email: z
+    .string()
+    .email("Invalid email address")
+    .trim()
+    .optional(),
+
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .optional()
+    .or(z.literal("")),
+
   employeeId: z
     .string()
     .min(1, "Employee ID is required")

@@ -141,23 +141,60 @@ export const createTeacher = async (data) => {
  * @param {object} updates - Validated body from updateTeacherSchema
  */
 export const updateTeacher = async (teacherId, updates) => {
+  const existingTeacher = await Teacher.findById(teacherId);
+  if (!existingTeacher) {
+    const err = new Error("Teacher not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
   const updateData = {};
   if (updates.employeeId !== undefined) updateData.employeeId = updates.employeeId;
   if (updates.departmentIds !== undefined) updateData.departments = updates.departmentIds;
   if (updates.phone !== undefined) updateData.phone = updates.phone;
   if (updates.designation !== undefined) updateData.designation = updates.designation;
 
-  // Sync isActive with linked User
+  // Update linked User fields (name, email, password, isActive)
+  const userUpdates = {};
+
+  if (updates.name && updates.name.trim()) {
+    userUpdates.name = updates.name.trim();
+  }
+
+  if (updates.email && updates.email.trim()) {
+    const normalizedEmail = updates.email.toLowerCase().trim();
+    const emailConflict = await User.findOne({
+      email: normalizedEmail,
+      _id: { $ne: existingTeacher.user },
+    });
+    if (emailConflict) {
+      const err = new Error(`Email "${updates.email}" is already taken by another account`);
+      err.statusCode = 409;
+      throw err;
+    }
+    userUpdates.email = normalizedEmail;
+  }
+
+  if (updates.password && updates.password.trim()) {
+    if (updates.password.trim().length < 6) {
+      const err = new Error("Password must be at least 6 characters");
+      err.statusCode = 400;
+      throw err;
+    }
+    userUpdates.password = await hashPassword(updates.password.trim());
+  }
+
   if (updates.isActive !== undefined) {
     updateData.isActive = updates.isActive;
-    const teacher = await Teacher.findById(teacherId);
-    if (teacher) {
-      await User.findByIdAndUpdate(teacher.user, { isActive: updates.isActive });
-    }
+    userUpdates.isActive = updates.isActive;
+  }
+
+  if (Object.keys(userUpdates).length > 0 && existingTeacher.user) {
+    await User.findByIdAndUpdate(existingTeacher.user, userUpdates);
   }
 
   // Check employeeId uniqueness if changed
-  if (updates.employeeId) {
+  if (updates.employeeId && updates.employeeId !== existingTeacher.employeeId) {
     const existing = await Teacher.findOne({
       employeeId: updates.employeeId,
       _id: { $ne: teacherId },
@@ -169,17 +206,11 @@ export const updateTeacher = async (teacherId, updates) => {
     }
   }
 
-  const teacher = await Teacher.findByIdAndUpdate(
+  await Teacher.findByIdAndUpdate(
     teacherId,
     { $set: updateData },
     { new: true, runValidators: true }
   );
-
-  if (!teacher) {
-    const err = new Error("Teacher not found");
-    err.statusCode = 404;
-    throw err;
-  }
 
   return getTeacherById(teacherId);
 };

@@ -98,6 +98,18 @@ export const updateStudentSchema = z.object({
     .trim()
     .optional(),
 
+  email: z
+    .string()
+    .email("Invalid email address")
+    .trim()
+    .optional(),
+
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .optional()
+    .or(z.literal("")),
+
   rollNo: z
     .string()
     .min(1, "Roll number is required")
@@ -117,11 +129,11 @@ export const updateStudentSchema = z.object({
 
   departmentId: objectId.optional(),
 
-  classId: objectId.optional(),
+  classId: objectId.optional().or(z.literal("")),
 
   admissionYear: z.coerce.number().int().min(2000).max(2030).optional(),
 
-  duration: z.string().trim().optional(),
+  duration: z.string().trim().optional().or(z.literal("")),
 
   phone: z.string().max(15).optional().or(z.literal("")),
 
@@ -148,4 +160,5 @@ export const updateStudentSchema = z.object({
   }).optional().or(z.literal("")),
 
   isActive: z.boolean().optional(),
+  academicSessionId: objectId.optional(),
 });

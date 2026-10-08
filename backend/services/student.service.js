@@ -230,6 +230,13 @@ export const createStudent = async (data) => {
  * @param {object} updates - Validated body from updateStudentSchema
  */
 export const updateStudent = async (studentId, updates) => {
+  const existingStudent = await Student.findById(studentId);
+  if (!existingStudent) {
+    const err = new Error("Student not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
   // Build the update object — map departmentId/classId → department/class
   const updateData = {};
   if (updates.rollNo !== undefined) updateData.rollNo = updates.rollNo;
@@ -252,7 +259,7 @@ export const updateStudent = async (studentId, updates) => {
   if (updates.directorSignature !== undefined) updateData.directorSignature = updates.directorSignature;
 
   // Update class in Enrollment if provided
-  if (updates.classId !== undefined) {
+  if (updates.classId !== undefined && updates.classId) {
     let targetSessionId = updates.academicSessionId;
     if (!targetSessionId) {
       const activeSession = await mongoose.model("AcademicSession").findOne({ isCurrent: true }).lean();
@@ -267,25 +274,47 @@ export const updateStudent = async (studentId, updates) => {
     }
   }
 
-  // Name update synced to the linked User
+  // Update linked User fields (name, email, password, isActive)
+  const userUpdates = {};
+
   if (updates.name && updates.name.trim()) {
-    const student = await Student.findById(studentId);
-    if (student && student.user) {
-      await User.findByIdAndUpdate(student.user, { name: updates.name.trim() });
-    }
+    userUpdates.name = updates.name.trim();
   }
 
-  // isActive synced to the linked User as well
+  if (updates.email && updates.email.trim()) {
+    const normalizedEmail = updates.email.toLowerCase().trim();
+    const emailConflict = await User.findOne({
+      email: normalizedEmail,
+      _id: { $ne: existingStudent.user },
+    });
+    if (emailConflict) {
+      const err = new Error(`Email "${updates.email}" is already taken by another account`);
+      err.statusCode = 409;
+      throw err;
+    }
+    userUpdates.email = normalizedEmail;
+  }
+
+  if (updates.password && updates.password.trim()) {
+    if (updates.password.trim().length < 6) {
+      const err = new Error("Password must be at least 6 characters");
+      err.statusCode = 400;
+      throw err;
+    }
+    userUpdates.password = await hashPassword(updates.password.trim());
+  }
+
   if (updates.isActive !== undefined) {
     updateData.isActive = updates.isActive;
-    const student = await Student.findById(studentId);
-    if (student) {
-      await User.findByIdAndUpdate(student.user, { isActive: updates.isActive });
-    }
+    userUpdates.isActive = updates.isActive;
+  }
+
+  if (Object.keys(userUpdates).length > 0 && existingStudent.user) {
+    await User.findByIdAndUpdate(existingStudent.user, userUpdates);
   }
 
   // Check rollNo uniqueness if it's being changed
-  if (updates.rollNo) {
+  if (updates.rollNo && updates.rollNo !== existingStudent.rollNo) {
     const existing = await Student.findOne({
       rollNo: updates.rollNo,
       _id: { $ne: studentId },
@@ -302,12 +331,6 @@ export const updateStudent = async (studentId, updates) => {
     { $set: updateData },
     { new: true, runValidators: true }
   );
-
-  if (!student) {
-    const err = new Error("Student not found");
-    err.statusCode = 404;
-    throw err;
-  }
 
   return getStudentById(studentId);
 };
