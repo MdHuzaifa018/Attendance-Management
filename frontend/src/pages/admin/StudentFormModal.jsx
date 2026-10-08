@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { X, AlertCircle, Loader2, KeyRound, User, BookOpen, Users, Phone, MapPin } from "lucide-react";
+import { X, AlertCircle, Loader2, KeyRound, User, BookOpen, Users, Phone, MapPin, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   createStudent,
@@ -79,6 +79,7 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess, defaultStatus =
   const [departments, setDepartments]   = useState([]);
   const [classes, setClasses]           = useState([]);
   const [loadingDepts, setLoadingDepts] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const getFormValues = (s) => {
     if (s) {
@@ -269,11 +270,20 @@ const StudentFormModal = ({ isOpen, onClose, student, onSuccess, defaultStatus =
               <div className="relative">
                 <input
                   id="sf-password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder={isEdit ? "Leave blank to keep existing password (or enter 6+ chars to reset)" : "Min. 6 characters"}
                   {...register("password")}
-                  className={inputCls(errors.password)}
+                  className={`${inputCls(errors.password)} pr-10`}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1"
+                  title={showPassword ? "Hide password" : "Show password"}
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
               {isEdit && (
                 <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">

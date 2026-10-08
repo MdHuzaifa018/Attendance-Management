@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { X, AlertCircle, Loader2, KeyRound, User, Briefcase } from "lucide-react";
+import { X, AlertCircle, Loader2, KeyRound, User, Briefcase, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   createTeacher,
@@ -66,6 +66,7 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
 
   const [departments, setDepartments]   = useState([]);
   const [loadingDepts, setLoadingDepts] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const getTeacherDefaults = (t) => {
     if (t) {
@@ -216,12 +217,23 @@ const TeacherFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
                 <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   {isEdit ? "Password (Reset / Change)" : "Password"} {!isEdit && <span className="text-red-500">*</span>}
                 </label>
-                <input
-                  type="password"
-                  placeholder={isEdit ? "Leave blank to keep current password" : "At least 6 characters"}
-                  className={inputCls(errors.password)}
-                  {...register("password")}
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder={isEdit ? "Leave blank to keep current password" : "At least 6 characters"}
+                    className={`${inputCls(errors.password)} pr-10`}
+                    {...register("password")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1"
+                    title={showPassword ? "Hide password" : "Show password"}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
                 {isEdit && (
                   <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
                     <KeyRound className="w-3 h-3 text-amber-500" /> Only enter if resetting password.

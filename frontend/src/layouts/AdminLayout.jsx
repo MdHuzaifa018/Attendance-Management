@@ -149,17 +149,21 @@ const AdminLayout = () => {
 
         {/* User profile info & Logout */}
         <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex-shrink-0">
-          <div className="flex items-center gap-3 mb-3 min-w-0">
-            <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm">
+          <Link
+            to="/admin/settings"
+            title="Click to edit Admin Profile, ID & Password"
+            className="flex items-center gap-3 mb-3 min-w-0 p-1.5 -mx-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors group cursor-pointer"
+          >
+            <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
               {initials}
             </div>
             <div className="min-w-0">
-              <p className="text-slate-900 dark:text-white text-sm font-semibold truncate">
+              <p className="text-slate-900 dark:text-white text-sm font-semibold truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                 {user?.name}
               </p>
-              <p className="text-slate-500 text-xs capitalize">{user?.role}</p>
+              <p className="text-slate-500 text-xs capitalize">{user?.role} • Edit Profile</p>
             </div>
-          </div>
+          </Link>
           <button
             id="admin-layout-logout-btn"
             onClick={() => setShowLogoutModal(true)}

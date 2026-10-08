@@ -2,6 +2,7 @@ import {
   registerUser,
   loginUser,
   getCurrentUser,
+  updateProfile as authServiceUpdateProfile,
 } from "../services/auth.service.js";
 
 export const register = async (req, res, next) => {
@@ -39,6 +40,22 @@ export const getMe = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: "Current user fetched successfully",
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateProfile = async (req, res, next) => {
+  try {
+    const user = await authServiceUpdateProfile(req.user._id, req.body);
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile and credentials updated successfully",
       data: {
         user,
       },

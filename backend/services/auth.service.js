@@ -158,3 +158,55 @@ export const getCurrentUser = async (userId) => {
 
   return sanitizeUser(user);
 };
+
+export const updateProfile = async (userId, { name, email, currentPassword, newPassword }) => {
+  const user = await User.findById(userId).select("+password");
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  // If new password requested, verify current password
+  if (newPassword && newPassword.trim()) {
+    if (!currentPassword) {
+      const error = new Error("Current password is required to change password");
+      error.statusCode = 400;
+      throw error;
+    }
+    const isCurrentValid = await comparePassword(currentPassword, user.password);
+    if (!isCurrentValid) {
+      const error = new Error("Current password is incorrect");
+      error.statusCode = 400;
+      throw error;
+    }
+    if (newPassword.trim().length < 6) {
+      const error = new Error("New password must be at least 6 characters");
+      error.statusCode = 400;
+      throw error;
+    }
+    user.password = await hashPassword(newPassword.trim());
+  }
+
+  // If updating name
+  if (name && name.trim()) {
+    user.name = name.trim();
+  }
+
+  // If updating email
+  if (email && email.trim()) {
+    const normalizedEmail = email.toLowerCase().trim();
+    if (normalizedEmail !== user.email) {
+      const existing = await User.findOne({ email: normalizedEmail, _id: { $ne: userId } });
+      if (existing) {
+        const error = new Error(`Email "${email}" is already in use by another account`);
+        error.statusCode = 409;
+        throw error;
+      }
+      user.email = normalizedEmail;
+    }
+  }
+
+  await user.save();
+  return sanitizeUser(user);
+};

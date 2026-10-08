@@ -70,6 +70,14 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateProfile = async (profileData) => {
+    const response = await api.put("/auth/profile", profileData);
+    const updatedUser = response.data.data.user;
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    return updatedUser;
+  };
+
   const fetchCurrentUser = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -105,6 +113,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    updateProfile,
     fetchCurrentUser,
     isAuthenticated: Boolean(user),
   };
