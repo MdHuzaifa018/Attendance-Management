@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, Outlet, useNavigate, Link } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -16,6 +16,7 @@ import {
   LogOut,
   Menu,
   Settings,
+  UserPlus,
 } from "lucide-react";
 
 import toast from "react-hot-toast";
@@ -24,8 +25,11 @@ import { useCollegeSettings } from "../context/CollegeSettingsContext.jsx";
 import ThemeToggle from "../components/common/ThemeToggle.jsx";
 import LogoutConfirmModal from "../components/common/LogoutConfirmModal.jsx";
 import { useSession } from "../context/SessionContext.jsx";
+import { getPendingRequestsCount } from "../services/studentRequestService.js";
+
 const navItems = [
   { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/admin/student-requests", label: "Student Requests", icon: UserPlus, hasBadge: true },
   { path: "/admin/students", label: "Active Students", icon: Users },
   { path: "/admin/alumni", label: "Alumni / Passed Out", icon: GraduationCap },
   { path: "/admin/promotions", label: "Promotions", icon: ArrowUpRight },
@@ -43,10 +47,21 @@ const navItems = [
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
   const { user, logout } = useAuth();
   const { logo, settings } = useCollegeSettings();
   const { sessions, globalSession, switchSession } = useSession();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let cancelled = false;
+    getPendingRequestsCount().then((count) => {
+      if (!cancelled) setPendingCount(count);
+    }).catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -122,7 +137,12 @@ const AdminLayout = () => {
               }
             >
               <item.icon className="w-4 h-4 flex-shrink-0" />
-              {item.label}
+              <span>{item.label}</span>
+              {item.hasBadge && pendingCount > 0 && (
+                <span className="ml-auto px-2 py-0.5 text-[10px] font-black rounded-full bg-amber-500 text-white shadow-sm">
+                  {pendingCount}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>

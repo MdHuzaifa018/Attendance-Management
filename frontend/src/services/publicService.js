@@ -55,3 +55,29 @@ export const getPublicTimetable = async () => {
     return null;
   }
 };
+
+/**
+ * Fetch active departments for registration dropdown.
+ */
+export const getPublicDepartments = async () => {
+  try {
+    const res = await api.get("/public/departments");
+    return res.data?.data || [];
+  } catch {
+    return [];
+  }
+};
+
+/**
+ * Fetch active classes (optionally filtered by departmentId) for registration dropdown.
+ */
+export const getPublicClasses = async (departmentId = "") => {
+  try {
+    const res = await api.get("/public/classes", {
+      params: departmentId ? { departmentId } : {},
+    });
+    return res.data?.data || [];
+  } catch {
+    return [];
+  }
+};

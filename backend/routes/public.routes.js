@@ -7,6 +7,7 @@ import Attendance from "../models/Attendance.js";
 import Notice from "../models/Notice.js";
 import Timetable from "../models/Timetable.js";
 import AcademicSession from "../models/AcademicSession.js";
+import Class from "../models/Class.js";
 
 const router = express.Router();
 
@@ -152,6 +153,38 @@ router.get("/timetable", async (req, res) => {
 
   setCache(CACHE_KEY, data, 600); // cache 10 minutes
   res.status(200).json({ success: true, data });
+});
+
+// ── GET /api/public/departments ─────────────────────────────────────────────
+// Returns active departments for public student registration dropdown.
+router.get("/departments", async (req, res) => {
+  try {
+    const departments = await Department.find({ isActive: true })
+      .select("name code description")
+      .sort({ name: 1 })
+      .lean();
+    res.status(200).json({ success: true, count: departments.length, data: departments });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ── GET /api/public/classes ─────────────────────────────────────────────────
+// Returns active classes (optionally filtered by departmentId) for registration dropdown.
+router.get("/classes", async (req, res) => {
+  try {
+    const { departmentId } = req.query;
+    const filter = { isActive: true };
+    if (departmentId) filter.department = departmentId;
+
+    const classes = await Class.find(filter)
+      .select("name code semester section department")
+      .sort({ name: 1 })
+      .lean();
+    res.status(200).json({ success: true, count: classes.length, data: classes });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 export default router;

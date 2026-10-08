@@ -41,21 +41,27 @@ export const AuthProvider = ({ children }) => {
     return user;
   };
 
-  const register = async (name, email, password) => {
-    const response = await api.post("/auth/register", {
-      name,
-      email,
-      password,
-    });
+  const register = async (registrationData) => {
+    const payload =
+      typeof registrationData === "object"
+        ? registrationData
+        : {
+            name: arguments[0],
+            email: arguments[1],
+            password: arguments[2],
+          };
 
-    const { user, token } = response.data.data;
+    const response = await api.post("/auth/register", payload);
+    const result = response.data?.data || response.data;
 
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
+    // If an immediate token was issued (e.g. approved), store it
+    if (result.token && result.user) {
+      localStorage.setItem("token", result.token);
+      localStorage.setItem("user", JSON.stringify(result.user));
+      setUser(result.user);
+    }
 
-    setUser(user);
-
-    return user;
+    return result;
   };
 
   const logout = () => {

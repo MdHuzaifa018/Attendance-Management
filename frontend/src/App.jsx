@@ -24,6 +24,7 @@ import UnauthorizedPage from "./pages/auth/UnauthorizedPage.jsx";
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 import StudentsPage from "./pages/admin/StudentsPage.jsx";
+import StudentRequestsPage from "./pages/admin/StudentRequestsPage.jsx";
 import TeachersPage from "./pages/admin/TeachersPage.jsx";
 import DepartmentsPage from "./pages/admin/DepartmentsPage.jsx";
 import ClassesPage from "./pages/admin/ClassesPage.jsx";
@@ -94,6 +95,7 @@ function AppContent() {
           <Route element={<RoleRoute allowedRoles={["admin"]} />}>
             <Route element={<AdminLayout />}>
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/student-requests" element={<StudentRequestsPage />} />
               <Route path="/admin/students" element={<StudentsPage />} />
               <Route path="/admin/alumni" element={<AlumniPage />} />
               <Route path="/admin/promotions" element={<PromotionsPage />} />
