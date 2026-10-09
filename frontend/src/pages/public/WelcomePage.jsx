@@ -438,7 +438,7 @@ const WelcomePage = () => {
               <div className="lg:col-span-4 flex flex-col items-center text-center space-y-3">
                 <div className="relative w-52 h-64 sm:w-56 sm:h-70 rounded-2xl overflow-hidden bg-slate-900 shadow-xl border-2 border-indigo-500/30">
                   <img
-                    src="/images/principal.jpg"
+                    src="https://iili.io/nGr9Vj9.md.jpg"
                     alt="Prof. (Dr.) Sunita Sinha, Principal"
                     className="w-full h-full object-cover object-[center_15%]"
                     onError={(e) => {
@@ -539,7 +539,7 @@ const WelcomePage = () => {
                 {/* Centered Dignified Portrait (Face Perfectly In Frame) */}
                 <div className="relative w-52 h-64 sm:w-60 sm:h-72 mx-auto rounded-2xl overflow-hidden bg-slate-900 border-2 border-amber-500/40 shadow-md group">
                   <img
-                    src="/images/director.webp"
+                    src="https://iili.io/nGr9l24.md.jpg"
                     alt="Prof. Md Alauddin Khan, BCA Coordinator"
                     className="w-full h-full object-cover object-[center_20%] transform group-hover:scale-105 transition-transform duration-500"
                     onError={(e) => {
