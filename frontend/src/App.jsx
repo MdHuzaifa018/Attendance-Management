@@ -16,6 +16,7 @@ import TeacherLayout from "./layouts/TeacherLayout.jsx";
 import StudentLayout from "./layouts/StudentLayout.jsx";
 
 // Public pages
+import WelcomePage from "./pages/public/WelcomePage.jsx";
 import HomePage from "./pages/public/HomePage.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
@@ -84,7 +85,10 @@ function AppContent() {
 
       <Routes>
         {/* ── Public routes ──────────────────────────────────────────── */}
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<WelcomePage />} />
+        <Route path="/portal" element={<HomePage />} />
+        <Route path="/smart-campus" element={<HomePage />} />
+        <Route path="/erp" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />

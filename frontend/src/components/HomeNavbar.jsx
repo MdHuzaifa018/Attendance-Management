@@ -40,6 +40,7 @@ const HomeNavbar = () => {
   };
 
   const navLinks = [
+    { label: "🏛️ College Overview", href: "/" },
     { label: "Campus & Gallery", href: "#campus-gallery" },
     { label: "Routine", href: "#timetable" },
     { label: "Portals", href: "#portals" },
@@ -81,15 +82,25 @@ const HomeNavbar = () => {
 
         {/* Desktop Navigation Links */}
         <nav className="hidden lg:flex items-center gap-1.5 bg-slate-900/5 dark:bg-white/5 p-1.5 rounded-2xl border border-slate-900/5 dark:border-white/5 backdrop-blur-md">
-          {navLinks.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="relative px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 rounded-xl transition-all duration-300 hover:text-slate-950 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-800/80 group overflow-hidden"
-            >
-              <span className="relative z-10">{item.label}</span>
-            </a>
-          ))}
+          {navLinks.map((item) =>
+            item.href.startsWith("/") ? (
+              <Link
+                key={item.label}
+                to={item.href}
+                className="relative px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 rounded-xl transition-all duration-300 hover:text-slate-950 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-800/80 group overflow-hidden"
+              >
+                <span className="relative z-10">{item.label}</span>
+              </Link>
+            ) : (
+              <a
+                key={item.label}
+                href={item.href}
+                className="relative px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 rounded-xl transition-all duration-300 hover:text-slate-950 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-800/80 group overflow-hidden"
+              >
+                <span className="relative z-10">{item.label}</span>
+              </a>
+            )
+          )}
         </nav>
 
         {/* Right Actions */}
