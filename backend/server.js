@@ -34,8 +34,30 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware setup
-app.use(helmet());                             // Security headers
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+app.use(helmet({ crossOriginResourcePolicy: false })); // Security headers
+
+// Robust CORS for local dev (macOS / Windows / Linux)
+const allowedOrigins = [
+  process.env.CLIENT_URL?.trim(),
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5174",
+  "http://localhost:3000",
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin) || origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: "5mb" }));       // JSON body parser (clean, optimized limit)
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use(morgan("dev"));                        // Request logging
@@ -76,7 +98,7 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`));
   } catch (error) {
     console.error("Server start failed:", error.message);
     process.exit(1);
