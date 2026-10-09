@@ -19,6 +19,13 @@ import {
   Laptop,
   Quote,
   Users,
+  Clock,
+  QrCode,
+  FileSpreadsheet,
+  Check,
+  Briefcase,
+  Layers,
+  ChevronDown,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useCollegeSettings } from "../../context/CollegeSettingsContext.jsx";
@@ -37,20 +44,22 @@ const WelcomePage = () => {
   };
 
   const fadeUpVariant = {
-    hidden: { opacity: 0, y: 24 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+    hidden: { opacity: 0, y: 28 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-poppins transition-colors duration-300 selection:bg-indigo-500 selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans-modern transition-colors duration-300 selection:bg-indigo-500 selection:text-white overflow-x-hidden">
       
-      {/* ── 1. Top Navigation Bar ────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60 transition-colors">
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* 1. TOP NAVIGATION BAR                                              */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl border-b border-slate-200/70 dark:border-slate-800/70 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
           
-          {/* Brand Logo & College Identity */}
-          <Link to="/" className="flex items-center gap-3 group shrink-0">
-            <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-900 p-1 border-2 border-indigo-500/20 shadow-md group-hover:scale-105 transition-transform flex items-center justify-center overflow-hidden">
+          {/* Brand Identity */}
+          <Link to="/" className="flex items-center gap-3.5 group shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-900 p-1 border-2 border-indigo-500/25 shadow-md group-hover:scale-105 transition-transform flex items-center justify-center overflow-hidden">
               <img
                 src={logo || "/images/college-logo.png"}
                 alt="Nalanda College Crest"
@@ -75,24 +84,21 @@ const WelcomePage = () => {
             </div>
           </Link>
 
-          {/* Quick Nav Anchor Links */}
-          <nav className="hidden lg:flex items-center gap-6 text-xs font-semibold text-slate-600 dark:text-slate-300">
+          {/* Clean Navigation Anchors */}
+          <nav className="hidden lg:flex items-center gap-7 text-xs font-bold text-slate-600 dark:text-slate-300">
             <a href="#college-overview" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               College Overview
             </a>
-            <a href="#leadership" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+            <a href="#principal-desk" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               Principal's Desk
             </a>
-            <a href="#coordinator" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+            <a href="#coordinator-desk" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               BCA Coordinator
             </a>
-            <Link
-              to="/portal"
-              className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline flex items-center gap-1"
-            >
-              <span>Smart Campus ERP</span>
-              <ExternalLink className="w-3 h-3" />
-            </Link>
+            <a href="#erp-gateway" className="text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 font-extrabold">
+              <span>Smart ERP Gateway</span>
+              <ChevronDown className="w-3.5 h-3.5" />
+            </a>
           </nav>
 
           {/* Right Action Buttons */}
@@ -129,16 +135,18 @@ const WelcomePage = () => {
         </div>
       </header>
 
-      {/* ── 2. Hero Section: College Heritage & Overview ─────────────────── */}
-      <section id="college-overview" className="relative pt-12 pb-16 lg:pt-16 lg:pb-24 overflow-hidden">
-        {/* Subtle decorative background glow */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* 2. HERO SECTION: Grand Welcome & Campus Overview                   */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      <section className="relative pt-12 pb-20 lg:pt-16 lg:pb-28 overflow-hidden">
+        {/* Subtle decorative glow */}
         <div className="absolute top-1/4 -left-48 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute top-1/3 -right-48 w-96 h-96 bg-amber-500/10 dark:bg-amber-600/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
             
-            {/* Left Column: Prestigious Text & Overview */}
+            {/* Left Column: Prestigious Hero Header */}
             <motion.div
               initial="hidden"
               whileInView="visible"
@@ -146,7 +154,7 @@ const WelcomePage = () => {
               variants={fadeUpVariant}
               className="lg:col-span-7 space-y-6 text-left"
             >
-              {/* Category Pill — Same Theme Marker as Screenshot */}
+              {/* Category Pill */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
                 <Landmark className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                 <span>ESTD. 1870 • 155+ YEARS OF ACADEMIC PRESTIGE</span>
@@ -164,9 +172,9 @@ const WelcomePage = () => {
                 <span className="bg-[#FFE500] dark:bg-[#FFE500] text-slate-950 font-bold px-1.5 py-0.5 rounded-md">
                   Patliputra University, Patna
                 </span>
-                , carrying forward the glorious legacy of ancient Nalanda with cutting-edge academic excellence, dedicated faculty, and modern{" "}
+                , carrying forward the glorious legacy of ancient Nalanda with cutting-edge academic excellence, distinguished faculty, and modern{" "}
                 <span className="bg-[#FFE500] dark:bg-[#FFE500] text-slate-950 font-bold px-1.5 py-0.5 rounded-md">
-                  smart campus digitization
+                  Smart Campus ERP digitization
                 </span>
                 .
               </p>
@@ -215,7 +223,7 @@ const WelcomePage = () => {
               </div>
 
               {/* Call-to-Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-3">
                 <Link
                   to="/portal"
                   className="px-8 py-4 bg-[#FFB800] hover:bg-[#FFA500] text-slate-950 font-black rounded-2xl shadow-[0_8px_24px_rgba(255,184,0,0.35)] transition-all flex items-center justify-center gap-2 group cursor-pointer text-sm sm:text-base uppercase tracking-wider"
@@ -224,13 +232,13 @@ const WelcomePage = () => {
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
 
-                <Link
-                  to="/login"
+                <a
+                  href="#college-overview"
                   className="px-6 py-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 hover:border-slate-300 text-slate-900 dark:text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-2 text-sm sm:text-base uppercase tracking-wider cursor-pointer"
                 >
-                  <span>PORTAL LOGIN</span>
-                  <Sparkles className="w-4 h-4 text-amber-500" />
-                </Link>
+                  <span>EXPLORE OVERVIEW</span>
+                  <ChevronDown className="w-4 h-4 text-indigo-500" />
+                </a>
               </div>
             </motion.div>
 
@@ -242,7 +250,6 @@ const WelcomePage = () => {
               variants={fadeUpVariant}
               className="lg:col-span-5 relative"
             >
-              {/* Outer Decorative Border — Same aesthetic as Screenshot frame */}
               <div className="relative rounded-[2.5rem] bg-gradient-to-br from-indigo-600 via-blue-600 to-amber-500 p-1.5 shadow-2xl">
                 <div className="rounded-[2.3rem] overflow-hidden bg-slate-900 relative aspect-[4/3] sm:aspect-[16/11]">
                   <img
@@ -255,7 +262,7 @@ const WelcomePage = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/25 to-transparent" />
 
-                  {/* Overlaid Pill Badge */}
+                  {/* Overlaid Location Badge */}
                   <div className="absolute top-4 right-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 text-slate-900 dark:text-white text-xs font-black shadow-lg flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 text-red-500" />
                     <span>Bihar Sharif, Nalanda</span>
@@ -266,7 +273,7 @@ const WelcomePage = () => {
                     <span className="text-[10px] font-black uppercase tracking-widest text-amber-400">
                       CAMPUS OVERVIEW
                     </span>
-                    <h3 className="font-kapra text-2xl sm:text-3xl uppercase tracking-tight text-white leading-tight">
+                    <h3 className="font-heading font-black text-2xl uppercase tracking-tight text-white leading-tight">
                       Nalanda College Campus
                     </h3>
                     <p className="text-xs text-slate-300 line-clamp-1">
@@ -281,225 +288,512 @@ const WelcomePage = () => {
         </div>
       </section>
 
-      {/* ── 3. Leadership & Academic Mentorship Section ──────────────────── */}
-      <section id="leadership" className="py-16 lg:py-24 bg-slate-50/70 dark:bg-slate-900/40 border-y border-slate-200/60 dark:border-slate-800/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* 3. SECTION 1: DETAILED COLLEGE OVERVIEW & HERITAGE                 */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      <section id="college-overview" className="py-20 bg-slate-50/70 dark:bg-slate-900/40 border-y border-slate-200/70 dark:border-slate-800/70 scroll-mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
           
           {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto space-y-3 mb-14">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200/60 dark:border-indigo-800/60">
-              <Award className="w-3.5 h-3.5" />
-              <span>COLLEGE LEADERSHIP & MENTORSHIP</span>
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200/60 dark:border-indigo-800/60">
+              <Landmark className="w-3.5 h-3.5" />
+              <span>INSTITUTIONAL OVERVIEW & HERITAGE</span>
             </div>
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-kapra uppercase tracking-tight text-slate-950 dark:text-white leading-[0.95]">
-              Guiding The Path of Excellence
+              A Legacy of 155 Years in Higher Learning
             </h2>
-            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
-              Honoring the visionary leadership of our Principal and Academic Coordinator who inspire
-              and drive our college's academic rigor and digital transformation.
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
+              Established in 1870, Nalanda College stands as one of the oldest and most prestigious educational 
+              institutions in eastern India, serving as an intellectual landmark under Patliputra University, Patna.
             </p>
           </div>
 
-          {/* Leadership Cards Grid: Principal Mam & Coordinator Sir */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10 max-w-5xl mx-auto">
-            
-            {/* ── Card 1: Principal Mam (Prof. Dr. Sunita Sinha) ── */}
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeUpVariant}
-              className="bg-white dark:bg-slate-900 border-2 border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl hover:border-indigo-500/50 transition-all flex flex-col justify-between group relative overflow-hidden"
-            >
-              {/* Top accent line */}
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-600 via-blue-500 to-indigo-700" />
-
-              <div className="space-y-6">
-                {/* Photo and Badge */}
-                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-                  <div className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-2xl overflow-hidden shrink-0 ring-4 ring-indigo-500/20 shadow-lg bg-slate-100 dark:bg-slate-800">
-                    <img
-                      src="/images/principal.jpg"
-                      alt="Prof. (Dr.) Sunita Sinha, Principal"
-                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                      onError={(e) => {
-                        e.target.src = "/images/hero-students.jpg";
-                      }}
-                    />
-                  </div>
-
-                  <div className="text-center sm:text-left space-y-1">
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
-                      <Landmark className="w-3 h-3" />
-                      <span>Principal's Desk</span>
-                    </div>
-                    <h3 className="font-kapra text-2xl sm:text-3xl uppercase tracking-tight text-slate-950 dark:text-white leading-tight pt-1">
-                      Prof. (Dr.) Sunita Sinha
-                    </h3>
-                    <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                      Principal, Nalanda College
-                    </p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      Constituent Unit of Patliputra University, Patna
-                    </p>
-                  </div>
-                </div>
-
-                {/* Inspiring Quote / Message */}
-                <div className="relative p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed italic">
-                  <Quote className="w-4 h-4 text-indigo-500 mb-1 shrink-0 opacity-70" />
-                  "Nalanda College carries a 155-year heritage of intellectual pursuit. We are
-                  dedicated to modernizing academic administration through digital systems like
-                  Smart Campus ERP, ensuring complete attendance transparency and student empowerment."
-                </div>
+          {/* 4 Feature Pillars Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border-2 border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-indigo-500/40 transition-all space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+                <Landmark className="w-6 h-6" />
               </div>
+              <h3 className="font-heading font-black text-lg text-slate-900 dark:text-white">
+                Historic Heritage (1870)
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                Founded more than a century and a half ago, reviving the scholarly spirit of ancient Nalanda Mahavihara for modern students.
+              </p>
+            </div>
 
-              <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                <span className="font-semibold text-slate-700 dark:text-slate-300">Office of the Principal</span>
-                <span className="text-indigo-600 dark:text-indigo-400 font-bold">Nalanda College</span>
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border-2 border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-amber-500/40 transition-all space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+                <GraduationCap className="w-6 h-6" />
               </div>
-            </motion.div>
+              <h3 className="font-heading font-black text-lg text-slate-900 dark:text-white">
+                Patliputra University Unit
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                Constituent college conducting prestigious Undergraduate and Postgraduate degree programs across Arts, Science & Vocations.
+              </p>
+            </div>
 
-            {/* ── Card 2: Academic Coordinator (Prof. Md Alauddin Khan) ── */}
-            <motion.div
-              id="coordinator"
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeUpVariant}
-              className="bg-white dark:bg-slate-900 border-2 border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl hover:border-amber-500/50 transition-all flex flex-col justify-between group relative overflow-hidden"
-            >
-              {/* Top accent line */}
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600" />
-
-              <div className="space-y-6">
-                {/* Photo and Badge */}
-                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-                  <div className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-2xl overflow-hidden shrink-0 ring-4 ring-amber-500/20 shadow-lg bg-slate-100 dark:bg-slate-800">
-                    <img
-                      src="/images/director.webp"
-                      alt="Prof. Md Alauddin Khan, Coordinator & HOD"
-                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                      onError={(e) => {
-                        e.target.src = "/images/hero-students.jpg";
-                      }}
-                    />
-                  </div>
-
-                  <div className="text-center sm:text-left space-y-1">
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                      <Laptop className="w-3 h-3" />
-                      <span>Academic Coordinator</span>
-                    </div>
-                    <h3 className="font-kapra text-2xl sm:text-3xl uppercase tracking-tight text-slate-950 dark:text-white leading-tight pt-1">
-                      Prof. Md Alauddin Khan
-                    </h3>
-                    <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
-                      Coordinator & HOD, Computer Applications (BCA)
-                    </p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      Department of Computer Applications • Nalanda College
-                    </p>
-                  </div>
-                </div>
-
-                {/* Inspiring Quote / Message */}
-                <div className="relative p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed italic">
-                  <Quote className="w-4 h-4 text-amber-500 mb-1 shrink-0 opacity-70" />
-                  "Our Department of Computer Applications is committed to high-standard technical
-                  education. The Smart Campus ERP portal provides live lecture tracking, 75% university rule
-                  monitoring, and seamless digital access to every student."
-                </div>
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border-2 border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-blue-500/40 transition-all space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                <Laptop className="w-6 h-6" />
               </div>
+              <h3 className="font-heading font-black text-lg text-slate-900 dark:text-white">
+                Tech & Computer Science
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                Specialized Department of Computer Applications (BCA) with modern computing labs, programming syllabi, and practical workshops.
+              </p>
+            </div>
 
-              <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                <span className="font-semibold text-slate-700 dark:text-slate-300">Dept. of Computer Applications</span>
-                <span className="text-amber-600 dark:text-amber-400 font-bold">BCA Program</span>
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border-2 border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-emerald-500/40 transition-all space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                <ShieldCheck className="w-6 h-6" />
               </div>
-            </motion.div>
-
+              <h3 className="font-heading font-black text-lg text-slate-900 dark:text-white">
+                Digital Campus ERP
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                Complete digitization of daily attendance, 75% university eligibility enforcement, student barcode ID cards, and semester timetables.
+              </p>
+            </div>
           </div>
+
+          {/* Institutional Stats Strip */}
+          <div className="bg-white dark:bg-slate-900 border-2 border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-md">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-y md:divide-y-0 md:divide-x divide-slate-200 dark:divide-slate-800">
+              <div className="pt-3 md:pt-0">
+                <div className="text-3xl sm:text-4xl font-kapra text-indigo-600 dark:text-indigo-400">1870</div>
+                <div className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mt-1">Foundation Year</div>
+                <div className="text-[11px] text-slate-400">155+ Years Legacy</div>
+              </div>
+              <div className="pt-3 md:pt-0">
+                <div className="text-3xl sm:text-4xl font-kapra text-amber-500">25+</div>
+                <div className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mt-1">Departments</div>
+                <div className="text-[11px] text-slate-400">UG, PG & Vocational</div>
+              </div>
+              <div className="pt-3 md:pt-0">
+                <div className="text-3xl sm:text-4xl font-kapra text-blue-600 dark:text-blue-400">5,000+</div>
+                <div className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mt-1">Total Students</div>
+                <div className="text-[11px] text-slate-400">Across All Disciplines</div>
+              </div>
+              <div className="pt-3 md:pt-0">
+                <div className="text-3xl sm:text-4xl font-kapra text-emerald-600 dark:text-emerald-400">75%</div>
+                <div className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mt-1">Mandatory Attendance</div>
+                <div className="text-[11px] text-slate-400">Monitored via ERP</div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
-      {/* ── 4. Prominent Portal Gateway Banner (The Transition Button) ───── */}
-      <section className="py-16 lg:py-20 relative">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative rounded-[2.5rem] bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-950 p-8 sm:p-12 text-white border-2 border-indigo-700/40 shadow-2xl overflow-hidden text-center">
-            
-            {/* Glow effects */}
-            <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* 4. SECTION 2: FROM THE PRINCIPAL'S DESK (DEDICATED SECTION)        */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      <section id="principal-desk" className="py-20 lg:py-28 bg-white dark:bg-slate-950 scroll-mt-20 relative overflow-hidden">
+        
+        {/* Subtle accent backdrop */}
+        <div className="absolute top-1/2 left-0 w-72 h-72 bg-indigo-500/5 dark:bg-indigo-600/5 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="relative z-10 space-y-6 max-w-3xl mx-auto">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          
+          {/* Section Sub-heading */}
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200/60 dark:border-indigo-800/60">
+              <Landmark className="w-3.5 h-3.5" />
+              <span>OFFICE OF THE PRINCIPAL</span>
+            </div>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-kapra uppercase tracking-tight text-slate-950 dark:text-white leading-[0.95]">
+              Message From The Principal
+            </h2>
+          </div>
+
+          {/* Executive Spotlight Card */}
+          <div className="bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 dark:from-slate-900/90 dark:via-slate-900 dark:to-indigo-950/20 border-2 border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-10 lg:p-12 shadow-xl">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+              
+              {/* Left Column: Principal Mam's Dignified Portrait & Title */}
+              <div className="lg:col-span-5 flex flex-col items-center text-center space-y-5">
+                <div className="relative group">
+                  {/* Decorative glowing gradient ring */}
+                  <div className="absolute -inset-1.5 bg-gradient-to-tr from-indigo-600 via-blue-500 to-amber-500 rounded-3xl blur-md opacity-40 group-hover:opacity-60 transition duration-500" />
+                  
+                  <div className="relative w-64 h-72 sm:w-72 sm:h-80 rounded-2xl overflow-hidden bg-slate-900 shadow-2xl border-2 border-white/20">
+                    <img
+                      src="/images/principal.jpg"
+                      alt="Prof. (Dr.) Sunita Sinha, Principal"
+                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
+                      onError={(e) => {
+                        e.target.src = "/images/hero-students.jpg";
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+                    
+                    {/* Badge on photo */}
+                    <div className="absolute bottom-3 left-3 right-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 text-center shadow-lg">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                        Principal • Nalanda College
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Name & Academic Credentials - Clean Typography (NO font-kapra glitch) */}
+                <div className="space-y-1">
+                  <h3 className="font-heading font-black text-2xl sm:text-3xl text-slate-950 dark:text-white tracking-tight">
+                    Prof. (Dr.) Sunita Sinha
+                  </h3>
+                  <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                    Principal, Nalanda College, Bihar Sharif
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    Constituent Unit of Patliputra University, Patna
+                  </p>
+                </div>
+
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-950/60 rounded-full border border-indigo-200 dark:border-indigo-800 text-xs text-indigo-700 dark:text-indigo-300 font-bold">
+                  <Award className="w-3.5 h-3.5" />
+                  <span>Administrative & Academic Leadership</span>
+                </div>
+              </div>
+
+              {/* Right Column: Full Official Message */}
+              <div className="lg:col-span-7 space-y-6 text-left">
+                
+                {/* Quote Box */}
+                <div className="p-6 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/80 relative">
+                  <Quote className="w-8 h-8 text-indigo-500/30 absolute top-4 right-4 pointer-events-none" />
+                  <p className="text-sm sm:text-base text-slate-800 dark:text-slate-200 font-medium leading-relaxed italic">
+                    "Nalanda College carries a 155-year heritage of intellectual pursuit. We are
+                    dedicated to modernizing academic administration through digital systems like
+                    Smart Campus ERP, ensuring complete attendance transparency and student empowerment."
+                  </p>
+                </div>
+
+                {/* Detailed Letter Paragraphs */}
+                <div className="space-y-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
+                  <p>
+                    <strong className="text-slate-900 dark:text-white font-semibold">Dear Students, Faculty Members, and Guardians,</strong>
+                  </p>
+                  <p>
+                    It is an honor to lead Nalanda College, an institution whose roots trace back to 1870. 
+                    Our mission has always been to uphold the unmatched scholarly tradition of ancient Nalanda 
+                    while equipping today's youth with modern scientific temper, technical capability, and ethical values.
+                  </p>
+                  <p>
+                    With the deployment of the <strong className="text-indigo-600 dark:text-indigo-400 font-semibold">Smart Campus ERP System</strong>, 
+                    we are transitioning towards a completely digitized, paperless academic environment. 
+                    Students can now view their real-time lecture attendance, track their mandatory 75% university eligibility, 
+                    and access departmental notices without delays.
+                  </p>
+                  <p>
+                    I urge every student to attend all lectures diligently, take pride in their academic responsibilities, 
+                    and utilize these digital resources to achieve their highest potential.
+                  </p>
+                </div>
+
+                {/* 3 Strategic Directives */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-left">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mb-1" />
+                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">75% Attendance Mandate</h5>
+                    <p className="text-[11px] text-slate-500">Strict Patliputra Univ compliance</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-left">
+                    <CheckCircle2 className="w-4 h-4 text-indigo-500 mb-1" />
+                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">Digital Transparency</h5>
+                    <p className="text-[11px] text-slate-500">Live lecture records via ERP</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-left">
+                    <CheckCircle2 className="w-4 h-4 text-amber-500 mb-1" />
+                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">Student Welfare</h5>
+                    <p className="text-[11px] text-slate-500">Continuous mentorship & aid</p>
+                  </div>
+                </div>
+
+                {/* Signature Block */}
+                <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-bold text-slate-900 dark:text-white">Prof. (Dr.) Sunita Sinha</span>
+                    <p className="text-[11px] text-slate-500">Principal, Nalanda College</p>
+                  </div>
+                  <span className="text-[11px] font-black uppercase text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 px-2.5 py-1 rounded-lg">
+                    Office of Principal
+                  </span>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* 5. SECTION 3: DEPARTMENT OF COMPUTER APPLICATIONS & COORDINATOR   */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      <section id="coordinator-desk" className="py-20 lg:py-28 bg-slate-50/70 dark:bg-slate-900/40 border-y border-slate-200/70 dark:border-slate-800/70 scroll-mt-20 relative overflow-hidden">
+        
+        {/* Subtle accent backdrop */}
+        <div className="absolute top-1/2 right-0 w-72 h-72 bg-amber-500/5 dark:bg-amber-600/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          
+          {/* Section Sub-heading */}
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/80 border border-amber-200/60 dark:border-amber-800/60">
+              <Laptop className="w-3.5 h-3.5" />
+              <span>DEPARTMENT OF COMPUTER APPLICATIONS (BCA)</span>
+            </div>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-kapra uppercase tracking-tight text-slate-950 dark:text-white leading-[0.95]">
+              Coordinator's Desk & BCA Department
+            </h2>
+          </div>
+
+          {/* Executive Spotlight Card */}
+          <div className="bg-gradient-to-br from-slate-50 via-white to-amber-50/30 dark:from-slate-900/90 dark:via-slate-900 dark:to-amber-950/20 border-2 border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-10 lg:p-12 shadow-xl">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+              
+              {/* Left Column: Full Department & Coordinator Message */}
+              <div className="lg:col-span-7 space-y-6 text-left order-2 lg:order-1">
+                
+                {/* Quote Box */}
+                <div className="p-6 rounded-2xl bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/80 relative">
+                  <Quote className="w-8 h-8 text-amber-500/30 absolute top-4 right-4 pointer-events-none" />
+                  <p className="text-sm sm:text-base text-slate-800 dark:text-slate-200 font-medium leading-relaxed italic">
+                    "Our Department of Computer Applications is committed to high-standard technical
+                    education. The Smart Campus ERP portal provides live lecture tracking, 75% university rule
+                    monitoring, and seamless digital access to every student."
+                  </p>
+                </div>
+
+                {/* Detailed Letter Paragraphs */}
+                <div className="space-y-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
+                  <p>
+                    <strong className="text-slate-900 dark:text-white font-semibold">Welcome to the Department of Computer Applications,</strong>
+                  </p>
+                  <p>
+                    In an era driven by Software Engineering, Artificial Intelligence, and Cloud Computing, 
+                    the Bachelor of Computer Applications (BCA) program at Nalanda College is designed to bridge 
+                    the gap between foundational computer science concepts and industry-ready development skills.
+                  </p>
+                  <p>
+                    The <strong className="text-amber-600 dark:text-amber-400 font-semibold">Smart Campus ERP</strong> is a 
+                    testament to our department's emphasis on real-world engineering. Designed and built right here, 
+                    this platform eliminates manual attendance errors, automates eligibility reports for university exams, 
+                    and empowers faculty members with instant digital class registers.
+                  </p>
+                  <p>
+                    We emphasize daily laboratory programming practice, full-stack application development, 
+                    and strict attendance compliance to ensure every BCA graduate from Nalanda College is ready 
+                    for prestigious MCA admissions and IT industry roles.
+                  </p>
+                </div>
+
+                {/* 3 Department Highlights */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-left">
+                    <Laptop className="w-4 h-4 text-amber-500 mb-1" />
+                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">Modern IT Labs</h5>
+                    <p className="text-[11px] text-slate-500">Dedicated programming terminals</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-left">
+                    <Layers className="w-4 h-4 text-indigo-500 mb-1" />
+                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">Project-Based Learning</h5>
+                    <p className="text-[11px] text-slate-500">Full-stack web & app development</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-left">
+                    <Users className="w-4 h-4 text-emerald-500 mb-1" />
+                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">Faculty Mentorship</h5>
+                    <p className="text-[11px] text-slate-500">Continuous doubt & career guidance</p>
+                  </div>
+                </div>
+
+                {/* Signature Block */}
+                <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-bold text-slate-900 dark:text-white">Prof. Md Alauddin Khan</span>
+                    <p className="text-[11px] text-slate-500">Coordinator & HOD, Computer Applications (BCA)</p>
+                  </div>
+                  <span className="text-[11px] font-black uppercase text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/80 px-2.5 py-1 rounded-lg">
+                    Dept. of BCA
+                  </span>
+                </div>
+
+              </div>
+
+              {/* Right Column: Coordinator Sir's Dignified Portrait & Title */}
+              <div className="lg:col-span-5 flex flex-col items-center text-center space-y-5 order-1 lg:order-2">
+                <div className="relative group">
+                  {/* Decorative glowing gradient ring */}
+                  <div className="absolute -inset-1.5 bg-gradient-to-tr from-amber-500 via-orange-500 to-indigo-600 rounded-3xl blur-md opacity-40 group-hover:opacity-60 transition duration-500" />
+                  
+                  <div className="relative w-64 h-72 sm:w-72 sm:h-80 rounded-2xl overflow-hidden bg-slate-900 shadow-2xl border-2 border-white/20">
+                    <img
+                      src="/images/director.webp"
+                      alt="Prof. Md Alauddin Khan, Coordinator & HOD"
+                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
+                      onError={(e) => {
+                        e.target.src = "/images/hero-students.jpg";
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+                    
+                    {/* Badge on photo */}
+                    <div className="absolute bottom-3 left-3 right-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 text-center shadow-lg">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                        Coordinator & HOD • BCA
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Name & Academic Credentials - Clean Typography (NO font-kapra glitch) */}
+                <div className="space-y-1">
+                  <h3 className="font-heading font-black text-2xl sm:text-3xl text-slate-950 dark:text-white tracking-tight">
+                    Prof. Md Alauddin Khan
+                  </h3>
+                  <p className="text-sm font-bold text-amber-600 dark:text-amber-400">
+                    Coordinator & HOD, Computer Applications (BCA)
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    Department of Computer Applications • Nalanda College
+                  </p>
+                </div>
+
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-50 dark:bg-amber-950/60 rounded-full border border-amber-200 dark:border-amber-800 text-xs text-amber-700 dark:text-amber-300 font-bold">
+                  <Laptop className="w-3.5 h-3.5" />
+                  <span>Technical Education & Curriculum Lead</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* 6. SECTION 4: SMART CAMPUS ERP GATEWAY (THE MAIN ACTION BUTTON)     */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      <section id="erp-gateway" className="py-20 lg:py-28 relative scroll-mt-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="relative rounded-[2.5rem] bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-950 p-8 sm:p-14 lg:p-16 text-white border-2 border-indigo-700/50 shadow-2xl overflow-hidden text-center">
+            
+            {/* Background glowing orbs */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 space-y-8 max-w-4xl mx-auto">
+              
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                <Sparkles className="w-4 h-4 text-amber-400" />
                 <span>OFFICIAL DIGITAL ATTENDANCE & ACADEMIC GATEWAY</span>
               </div>
 
-              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-kapra uppercase tracking-tight text-white leading-tight">
-                Enter The Smart Campus Portal
-              </h2>
+              <div className="space-y-4">
+                <h2 className="text-4xl sm:text-6xl lg:text-7xl font-kapra uppercase tracking-tight text-white leading-[0.92]">
+                  Enter The Smart Campus ERP Portal
+                </h2>
+                <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
+                  Real-time lecture attendance tracking, automated 75% university eligibility monitor, 
+                  contactless barcode ID cards, and semester class timetables for Nalanda College students and faculty.
+                </p>
+              </div>
 
-              <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto leading-relaxed">
-                Seamless real-time attendance tracking, automated university 75% compliance engine,
-                smart digital ID cards with barcodes, and semester routines.
-              </p>
+              {/* 4 Feature Highlights inside ERP */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-left max-w-3xl mx-auto pt-2">
+                <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                  <ShieldCheck className="w-5 h-5 text-emerald-400 mb-1" />
+                  <div className="text-xs font-bold text-white">75% Target Engine</div>
+                  <div className="text-[10px] text-slate-400">Automated alerts</div>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                  <QrCode className="w-5 h-5 text-amber-400 mb-1" />
+                  <div className="text-xs font-bold text-white">Digital ID Card</div>
+                  <div className="text-[10px] text-slate-400">Unique Barcode</div>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                  <CalendarDays className="w-5 h-5 text-indigo-400 mb-1" />
+                  <div className="text-xs font-bold text-white">Dynamic Routine</div>
+                  <div className="text-[10px] text-slate-400">Live timetable</div>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                  <FileSpreadsheet className="w-5 h-5 text-blue-400 mb-1" />
+                  <div className="text-xs font-bold text-white">Faculty Register</div>
+                  <div className="text-[10px] text-slate-400">One-tap entry</div>
+                </div>
+              </div>
 
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
+              {/* High-Impact Main Transition Buttons */}
+              <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
                   to="/portal"
-                  className="w-full sm:w-auto px-8 py-4 bg-[#FFB800] hover:bg-[#FFA500] text-slate-950 font-black rounded-2xl shadow-[0_8px_30px_rgba(255,184,0,0.4)] transition-all flex items-center justify-center gap-2 group cursor-pointer text-sm sm:text-base uppercase tracking-wider"
+                  className="w-full sm:w-auto px-10 py-5 bg-[#FFB800] hover:bg-[#FFA500] text-slate-950 font-black rounded-2xl shadow-[0_12px_32px_rgba(255,184,0,0.45)] hover:shadow-[0_16px_40px_rgba(255,184,0,0.6)] transition-all flex items-center justify-center gap-3 group cursor-pointer text-base uppercase tracking-wider scale-100 hover:scale-105 active:scale-95 duration-200"
                 >
-                  <span>LAUNCH SMART CAMPUS ERP</span>
+                  <span>ACCESS SMART CAMPUS ERP</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
                 </Link>
 
                 <Link
                   to="/login"
-                  className="w-full sm:w-auto px-7 py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl border border-white/20 transition-all flex items-center justify-center gap-2 text-sm sm:text-base uppercase tracking-wider cursor-pointer"
+                  className="w-full sm:w-auto px-8 py-5 bg-white/10 hover:bg-white/15 text-white border-2 border-white/20 hover:border-white/40 font-bold rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer text-base uppercase tracking-wider"
                 >
-                  <span>STUDENT & STAFF SIGN IN</span>
+                  <span>PORTAL LOGIN</span>
+                  <Sparkles className="w-4 h-4 text-amber-400" />
                 </Link>
               </div>
+
             </div>
+
           </div>
+
         </div>
       </section>
 
-      {/* ── 5. Clean Minimal Institutional Footer ────────────────────────── */}
-      <footer className="py-10 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
-        <div className="max-w-7xl mx-auto px-4 space-y-4">
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 font-semibold text-slate-700 dark:text-slate-300">
-            <Link to="/portal" className="hover:text-indigo-600 transition-colors">
-              Smart Campus ERP
-            </Link>
-            <Link to="/login" className="hover:text-indigo-600 transition-colors">
-              Portal Sign In
-            </Link>
-            <Link to="/register" className="hover:text-indigo-600 transition-colors">
-              Student Admission Registration
-            </Link>
-            <a href="#leadership" className="hover:text-indigo-600 transition-colors">
-              Leadership
-            </a>
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* 7. CLEAN INSTITUTIONAL FOOTER                                      */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      <footer className="bg-slate-900 dark:bg-slate-950 text-slate-400 border-t border-slate-800 text-xs py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-slate-800">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center">
+                <img
+                  src={logo || "/images/college-logo.png"}
+                  alt="Nalanda College Logo"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div className="text-left">
+                <h4 className="font-bold text-white uppercase text-sm">
+                  {settings?.collegeName || "Nalanda College, Bihar Sharif"}
+                </h4>
+                <p className="text-[11px] text-slate-400">
+                  Constituent Unit of Patliputra University, Patna • Estd. 1870
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-6 font-semibold text-slate-300 text-xs">
+              <a href="#college-overview" className="hover:text-white transition-colors">College Overview</a>
+              <a href="#principal-desk" className="hover:text-white transition-colors">Principal's Desk</a>
+              <a href="#coordinator-desk" className="hover:text-white transition-colors">BCA Coordinator</a>
+              <Link to="/portal" className="text-amber-400 hover:text-amber-300 font-bold transition-colors">Access ERP</Link>
+            </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-2 max-w-4xl mx-auto">
-            <p className="text-slate-500">
-              © {new Date().getFullYear()} Nalanda College, Bihar Sharif (Patliputra University). All Rights Reserved.
-            </p>
-            <p className="text-slate-400 dark:text-slate-500 font-medium">
-              Smart Campus ERP v1.0 • Developed by{" "}
-              <a
-                href="https://latest-portfolio-huzaif-sheikh.vercel.app/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline"
-              >
-                Md Huzaifa
-              </a>
-            </p>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-400 text-center sm:text-left">
+            <div>
+              © {new Date().getFullYear()} Nalanda College, Bihar Sharif. All rights reserved.
+            </div>
+            <div className="text-slate-400">
+              Department of Computer Applications • Smart Campus ERP System
+            </div>
           </div>
         </div>
       </footer>
