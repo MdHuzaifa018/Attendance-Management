@@ -29,7 +29,7 @@ import ThemeToggle from "../../components/common/ThemeToggle.jsx";
  * Animated Digit Counter Component
  * Triggers counting animation as soon as element enters the viewport.
  */
-const AnimatedDigitCounter = ({ target, suffix = "", prefix = "", duration = 1800 }) => {
+const AnimatedDigitCounter = ({ target, suffix = "", prefix = "", duration = 1800, formatComma = true }) => {
   const [count, setCount] = useState(0);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-40px" });
@@ -52,10 +52,12 @@ const AnimatedDigitCounter = ({ target, suffix = "", prefix = "", duration = 180
     window.requestAnimationFrame(step);
   }, [isInView, target, duration]);
 
+  const displayCount = formatComma && count >= 1000 ? count.toLocaleString() : count;
+
   return (
     <span ref={ref} className="inline-block tabular-nums">
       {prefix}
-      {count >= 1000 ? count.toLocaleString() : count}
+      {displayCount}
       {suffix}
     </span>
   );
@@ -563,7 +565,7 @@ const WelcomePage = () => {
               {/* Stat 1: 1870 Foundation Year */}
               <div className="pt-2 md:pt-0 space-y-0.5">
                 <div className="text-3xl sm:text-4xl font-kapra text-indigo-600 dark:text-indigo-400 tracking-tight">
-                  <AnimatedDigitCounter target={1870} duration={1600} />
+                  <AnimatedDigitCounter target={1870} duration={1600} formatComma={false} />
                 </div>
                 <div className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                   Estd. Year
@@ -644,7 +646,7 @@ const WelcomePage = () => {
                   className="relative w-52 h-64 sm:w-56 sm:h-70 rounded-2xl overflow-hidden bg-slate-900 shadow-xl border-2 border-indigo-500/30 group"
                 >
                   <img
-                    src="/images/principal.jpg"
+                    src="https://iili.io/nGr9Vj9.md.jpg"
                     alt="Prof. Dr. Sunita Sinha, Principal"
                     className="w-full h-full object-cover object-[center_15%] transform group-hover:scale-105 transition-transform duration-500"
                     onError={(e) => {
@@ -777,7 +779,7 @@ const WelcomePage = () => {
                   <motion.img
                     whileHover={{ scale: 1.06 }}
                     transition={{ duration: 0.5 }}
-                    src="/images/director.webp"
+                    src="https://iili.io/nGr9l24.md.jpg"
                     alt="Dr. Sharifuddin Gazi, BCA Coordinator"
                     className="w-full h-full object-cover object-[center_20%] transform"
                     onError={(e) => {
