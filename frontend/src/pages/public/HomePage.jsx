@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion, useMotionValue, useTransform, animate } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import {
   Sparkles,
   ArrowRight,
@@ -60,18 +60,41 @@ import {
 // Sample schedule for routine preview
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-// Premium Animated Counter Component
-function AnimatedNumber({ value }) {
-  const count = useMotionValue(0);
-  const rounded = useTransform(count, Math.round);
+// Premium Animated Counter Component with Scroll-Triggered Animation
+function AnimatedNumber({ value, suffix = "", prefix = "", duration = 1800, formatComma = false }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-40px" });
+
+  const target = parseInt(String(value).replace(/[^0-9]/g, "")) || 0;
 
   useEffect(() => {
-    const parsed = parseInt(String(value).replace(/[^0-9]/g, "")) || 0;
-    const animation = animate(count, parsed, { duration: 2.5, ease: [0.16, 1, 0.3, 1] });
-    return animation.stop;
-  }, [value, count]);
+    if (!isInView || target === 0) return;
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      // smooth ease-out-expo
+      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      setCount(Math.floor(easeProgress * target));
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      } else {
+        setCount(target);
+      }
+    };
+    window.requestAnimationFrame(step);
+  }, [isInView, target, duration]);
 
-  return <motion.span>{rounded}</motion.span>;
+  const displayCount = formatComma && count >= 1000 ? count.toLocaleString() : count;
+
+  return (
+    <span ref={ref} className="inline-block tabular-nums">
+      {prefix}
+      {displayCount}
+      {suffix}
+    </span>
+  );
 }
 
 const sampleSchedule = {
@@ -220,7 +243,7 @@ const HomePage = () => {
       id: 7,
       title: "Annual IT TechFest & Coding Hackathon",
       category: "Events & TechFest",
-      imageUrl: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1000&q=80",
+      imageUrl: "https://iili.io/nMHJECP.md.jpg",
       desc: "Students participating in our flagship 48-hour coding hackathon and tech symposium.",
       tagIcon: <Award className="w-3.5 h-3.5" />,
       tagText: "TechFest",
@@ -320,8 +343,12 @@ const HomePage = () => {
 
       {/* ── 2. Hero Section (Inspired by notyourcollege.com style) ── */}
       <section id="hero" className="relative pt-24 sm:pt-36 pb-16 sm:pb-20 overflow-hidden">
-        {/* Background decorative bursts & ambient glow */}
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-gradient-to-tr from-indigo-500/10 via-amber-400/10 to-transparent blur-3xl pointer-events-none rounded-full" />
+        {/* Background decorative bursts & ambient glow with subtle breathing effect */}
+        <motion.div
+          animate={{ scale: [1, 1.08, 1], opacity: [0.6, 0.9, 0.6] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-20 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-gradient-to-tr from-indigo-500/10 via-amber-400/10 to-transparent blur-3xl pointer-events-none rounded-full"
+        />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
@@ -393,8 +420,7 @@ const HomePage = () => {
                   </h1>
                 </motion.div>
               </div>
-{/* Stay on track with smart attendance, academic updates,
-and everything you need to manage your college journey. */}
+
               {/* Subtitle with Highlighting - Font Poppins */}
               <motion.p variants={fadeUpVariant} className="text-base sm:text-lg lg:text-[1.25rem] 2xl:text-2xl font-poppins text-slate-800 dark:text-slate-200 leading-relaxed max-w-2xl font-normal">
                 Stay on track with <span className="bg-[#ffe500] text-black px-1.5 py-0.5 rounded font-semibold">smart attendance</span>,{" "}
@@ -405,30 +431,36 @@ and everything you need to manage your college journey. */}
               {/* Action Buttons Row */}
               <motion.div variants={fadeUpVariant} className="flex flex-wrap items-center gap-3.5 pt-2">
                 {isAuthenticated ? (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.96 }}
                     onClick={() => navigate(getDashboardPath())}
                     className="interactive-premium flex items-center gap-2 px-6 sm:px-8 py-3.5 bg-amber-400 text-slate-950 font-black text-sm sm:text-base tracking-wide rounded-2xl shadow-xl shadow-amber-400/25 border-2 border-slate-950 cursor-pointer"
                   >
                     <span>GO TO {user?.role.toUpperCase()} DASHBOARD</span>
                     <ArrowRight className="w-5 h-5" />
-                  </button>
+                  </motion.button>
                 ) : (
                   <>
-                    <Link
-                      to="/login"
-                      className="interactive-premium flex items-center gap-2 px-6 sm:px-8 py-3.5 bg-amber-400 text-slate-950 font-black text-sm sm:text-base tracking-wide rounded-2xl shadow-xl shadow-amber-400/25 border-2 border-slate-950 cursor-pointer group"
-                    >
-                      <span>ACCESS ERP PORTAL</span>
-                      <ArrowRight className="w-5 h-5 transition-transform duration-premium group-hover:translate-x-1" />
-                    </Link>
+                    <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                      <Link
+                        to="/login"
+                        className="interactive-premium flex items-center gap-2 px-6 sm:px-8 py-3.5 bg-amber-400 text-slate-950 font-black text-sm sm:text-base tracking-wide rounded-2xl shadow-xl shadow-amber-400/25 border-2 border-slate-950 cursor-pointer group"
+                      >
+                        <span>ACCESS ERP PORTAL</span>
+                        <ArrowRight className="w-5 h-5 transition-transform duration-premium group-hover:translate-x-1" />
+                      </Link>
+                    </motion.div>
 
-                    <Link
-                      to="/register"
-                      className="interactive-premium flex items-center gap-2 px-6 py-3.5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-black text-sm sm:text-base rounded-2xl border-2 border-slate-300 dark:border-slate-700 shadow-sm cursor-pointer"
-                    >
-                      <span>STUDENT SIGNUP</span>
-                      <span className="text-amber-500">⚡</span>
-                    </Link>
+                    <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                      <Link
+                        to="/register"
+                        className="interactive-premium flex items-center gap-2 px-6 py-3.5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-black text-sm sm:text-base rounded-2xl border-2 border-slate-300 dark:border-slate-700 shadow-sm cursor-pointer"
+                      >
+                        <span>STUDENT SIGNUP</span>
+                        <span className="text-amber-500">⚡</span>
+                      </Link>
+                    </motion.div>
                   </>
                 )}
               </motion.div>
@@ -470,9 +502,6 @@ and everything you need to manage your college journey. */}
                 {/* Overlaid Bottom Title */}
                 <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 text-white">
                   <div className="flex items-center gap-2 mb-1">
-                    {/* <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-[9px] sm:text-[10px] uppercase tracking-wider">
-                      ● Live Sync
-                    </span> */}
                     <span className="text-[10px] sm:text-xs font-bold text-slate-300">Nalanda College ERP v1.0</span>
                   </div>
                   <p className="text-xs sm:text-sm font-black font-display tracking-wide">
@@ -482,34 +511,18 @@ and everything you need to manage your college journey. */}
               </div>
 
               {/* Floating Sticker Top Right: ATTEND. LEARN. REPEAT. */}
-              <div className="absolute -top-4 -right-1 sm:-right-6 bg-white dark:bg-slate-900 text-slate-950 dark:text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl border-2 border-slate-950 dark:border-slate-600 shadow-2xl rotate-6 hover:rotate-0 transition-transform flex items-center gap-2 z-20">
+              <motion.div
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -top-4 -right-1 sm:-right-6 bg-white dark:bg-slate-900 text-slate-950 dark:text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl border-2 border-slate-950 dark:border-slate-600 shadow-2xl rotate-6 hover:rotate-0 transition-transform flex items-center gap-2 z-20 cursor-default"
+              >
                 <span className="text-xl sm:text-2xl">🚀</span>
                 <div className="text-left font-kapra leading-[1.1] tracking-tight text-xs sm:text-sm uppercase">
                   <div className="text-slate-950 dark:text-white font-bold">ATTEND.</div>
                   <div className="text-[#0038ff] dark:text-[#4d77ff] font-bold">LEARN.</div>
                   <div className="text-amber-500 font-bold">REPEAT.</div>
                 </div>
-              </div>
-
-              {/* Floating Glassmorphic Badge Bottom Left: Live Attendance Rate */}
-              {/* <div className="absolute -bottom-4 -left-1 sm:-left-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2.5 sm:p-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-2xl -rotate-3 hover:rotate-0 transition-transform">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-xs sm:text-sm shadow-md">
-                    ⚡
-                  </div>
-                  <div>
-                    <div className="text-[10px] sm:text-xs font-black text-slate-900 dark:text-white">
-                      Live Attendance Rate
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-emerald-600 dark:text-emerald-400 font-extrabold text-xs sm:text-sm">
-                        {stats?.attendanceRate ? `${stats.attendanceRate}%` : "94.8%"} Average
-                      </span>
-                      <span className="text-[9px] sm:text-[10px] text-slate-500 font-semibold">· Verified</span>
-                    </div>
-                  </div>
-                </div>
-              </div> */}
+              </motion.div>
 
             </div>
 
@@ -527,7 +540,7 @@ and everything you need to manage your college journey. */}
             variants={staggerContainer}
             className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center divide-x divide-slate-800"
           >
-            <motion.div variants={fadeUpVariant}>
+            <motion.div variants={fadeUpVariant} whileHover={{ y: -4, transition: { duration: 0.2 } }}>
               <div className="font-numbers font-black text-3xl sm:text-5xl text-amber-400">
                 <AnimatedNumber value={stats?.studentsCount ? stats.studentsCount : 221} />+
               </div>
@@ -535,7 +548,7 @@ and everything you need to manage your college journey. */}
                 BCA-III Enrolled Students
               </p>
             </motion.div>
-            <motion.div variants={fadeUpVariant}>
+            <motion.div variants={fadeUpVariant} whileHover={{ y: -4, transition: { duration: 0.2 } }}>
               <div className="font-numbers font-black text-3xl sm:text-5xl text-indigo-400">
                 <AnimatedNumber value={stats?.lecturesCount ? stats.lecturesCount : 113} />+
               </div>
@@ -543,7 +556,7 @@ and everything you need to manage your college journey. */}
                 Lectures Tracked
               </p>
             </motion.div>
-            <motion.div variants={fadeUpVariant}>
+            <motion.div variants={fadeUpVariant} whileHover={{ y: -4, transition: { duration: 0.2 } }}>
               <div className="font-numbers font-black text-3xl sm:text-5xl text-emerald-400">
                 <AnimatedNumber value={75} />%+
               </div>
@@ -551,9 +564,9 @@ and everything you need to manage your college journey. */}
                 Eligibility Benchmark
               </p>
             </motion.div>
-            <motion.div variants={fadeUpVariant}>
+            <motion.div variants={fadeUpVariant} whileHover={{ y: -4, transition: { duration: 0.2 } }}>
               <div className="font-numbers font-black text-3xl sm:text-5xl text-white">
-                <AnimatedNumber value={stats?.heritageYear || 1870} />
+                <AnimatedNumber value={stats?.heritageYear || 1870} formatComma={false} />
               </div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">
                 College Heritage Estd.
@@ -840,7 +853,11 @@ and everything you need to manage your college journey. */}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {/* Card 1 */}
-          <div className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl hover:border-indigo-500/50 transition-all group">
+          <motion.div 
+            variants={fadeUpVariant}
+            whileHover={{ y: -8, transition: { duration: 0.25 } }}
+            className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-2xl hover:border-indigo-500/50 transition-all group"
+          >
             <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg mb-5 shadow-md shadow-indigo-600/30 group-hover:scale-110 transition-transform">
               ⚡
             </div>
@@ -851,10 +868,14 @@ and everything you need to manage your college journey. */}
               Faculty can mark periods in under 10 seconds. Real-time percentages, auto-defaulter flags
               (&lt;75% warning, &lt;50% critical), and conflict prevention.
             </p>
-          </div>
+          </motion.div>
 
           {/* Card 2 */}
-          <div className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl hover:border-amber-500/50 transition-all group">
+          <motion.div 
+            variants={fadeUpVariant}
+            whileHover={{ y: -8, transition: { duration: 0.25 } }}
+            className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-2xl hover:border-amber-500/50 transition-all group"
+          >
             <div className="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-lg mb-5 shadow-md shadow-amber-400/30 group-hover:scale-110 transition-transform">
               <CalendarDays className="w-6 h-6" />
             </div>
@@ -865,10 +886,14 @@ and everything you need to manage your college journey. */}
               Monday to Saturday period breakdown showing subjects, room numbers, computer labs (Lab 1 & 2),
               and faculty assignments at a glance.
             </p>
-          </div>
+          </motion.div>
 
           {/* Card 3 */}
-          <div className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl hover:border-emerald-500/50 transition-all group">
+          <motion.div 
+            variants={fadeUpVariant}
+            whileHover={{ y: -8, transition: { duration: 0.25 } }}
+            className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-2xl hover:border-emerald-500/50 transition-all group"
+          >
             <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-bold text-lg mb-5 shadow-md shadow-emerald-500/30 group-hover:scale-110 transition-transform">
               <Megaphone className="w-6 h-6" />
             </div>
@@ -879,10 +904,14 @@ and everything you need to manage your college journey. */}
               Targeted broadcasts for everyone, students, or faculty. Urgent alerts for exam dates,
               practical evaluations, and university guidelines.
             </p>
-          </div>
+          </motion.div>
 
           {/* Card 4 */}
-          <div className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl hover:border-violet-500/50 transition-all group">
+          <motion.div 
+            variants={fadeUpVariant}
+            whileHover={{ y: -8, transition: { duration: 0.25 } }}
+            className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-2xl hover:border-violet-500/50 transition-all group"
+          >
             <div className="w-12 h-12 rounded-2xl bg-violet-600 text-white flex items-center justify-center font-bold text-lg mb-5 shadow-md shadow-violet-600/30 group-hover:scale-110 transition-transform">
               <Printer className="w-6 h-6" />
             </div>
@@ -893,10 +922,14 @@ and everything you need to manage your college journey. */}
               Printable A4 attendance registers with Nalanda College letterhead & 3 formal signature blocks.
               Plus official dual-view student ID cards.
             </p>
-          </div>
+          </motion.div>
 
           {/* Card 5 */}
-          <div className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl hover:border-pink-500/50 transition-all group">
+          <motion.div 
+            variants={fadeUpVariant}
+            whileHover={{ y: -8, transition: { duration: 0.25 } }}
+            className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-2xl hover:border-pink-500/50 transition-all group"
+          >
             <div className="w-12 h-12 rounded-2xl bg-pink-500 text-white flex items-center justify-center font-bold text-lg mb-5 shadow-md shadow-pink-500/30 group-hover:scale-110 transition-transform">
               <FileText className="w-6 h-6" />
             </div>
@@ -907,10 +940,14 @@ and everything you need to manage your college journey. */}
               Apply online for Medical, Academic, or Casual leave with reason documentation. Teachers and
               Admins review and approve with 1 click.
             </p>
-          </div>
+          </motion.div>
 
           {/* Card 6 */}
-          <div className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl hover:border-cyan-500/50 transition-all group">
+          <motion.div 
+            variants={fadeUpVariant}
+            whileHover={{ y: -8, transition: { duration: 0.25 } }}
+            className="p-7 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-2xl hover:border-cyan-500/50 transition-all group"
+          >
             <div className="w-12 h-12 rounded-2xl bg-cyan-500 text-white flex items-center justify-center font-bold text-lg mb-5 shadow-md shadow-cyan-500/30 group-hover:scale-110 transition-transform">
               <BarChart3 className="w-6 h-6" />
             </div>
@@ -921,7 +958,7 @@ and everything you need to manage your college journey. */}
               View internal assessment marks, practical marks, calculated subject grades, and cumulative
               SGPA performance records instantly.
             </p>
-          </div>
+          </motion.div>
         </motion.div>
       </section>
 
@@ -987,9 +1024,10 @@ and everything you need to manage your college journey. */}
               ? scheduleData[selectedClassId][activeTab]
               : sampleSchedule[activeTab]
             )?.map((item, idx) => (
-              <div
+              <motion.div
                 key={idx}
-                className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-indigo-500/50 transition-all space-y-3"
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-indigo-500/50 hover:shadow-md transition-all space-y-3 cursor-default"
               >
                 <div className="flex items-center justify-between">
                   <span className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-black text-xs flex items-center justify-center border border-indigo-200 dark:border-indigo-800">
@@ -1018,7 +1056,7 @@ and everything you need to manage your college journey. */}
                     Active Routine
                   </span>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </motion.div>
         </motion.div>
@@ -1044,11 +1082,19 @@ and everything you need to manage your college journey. */}
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={staggerContainer}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        >
           {notices.map((n) => (
-            <div
+            <motion.div
               key={n._id}
-              className="p-6 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-md space-y-3 relative hover:shadow-lg transition-all"
+              variants={fadeUpVariant}
+              whileHover={{ y: -6, transition: { duration: 0.25 } }}
+              className="p-6 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-md space-y-3 relative hover:shadow-xl hover:border-amber-400/50 transition-all"
             >
               <div className="flex items-center gap-2">
                 <span
@@ -1073,26 +1119,42 @@ and everything you need to manage your college journey. */}
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-3">
                 {n.content}
               </p>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
       {/* ── 7. Role Access Portals ── */}
       <section id="portals" className="py-20 bg-slate-900 text-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center max-w-2xl mx-auto mb-14 space-y-2">
-            <span className="text-xs font-black uppercase tracking-widest text-amber-400">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
+            className="text-center max-w-2xl mx-auto mb-14 space-y-2"
+          >
+            <motion.span variants={fadeUpVariant} className="text-xs font-black uppercase tracking-widest text-amber-400">
               WHO IS USING NALANDA ERP?
-            </span>
-            <h2 className="font-display font-black text-3xl sm:text-5xl uppercase tracking-tight">
+            </motion.span>
+            <motion.h2 variants={fadeUpVariant} className="font-display font-black text-3xl sm:text-5xl uppercase tracking-tight">
               PORTALS FOR EVERY ROLE.
-            </h2>
-          </div>
+            </motion.h2>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          >
             {/* Student Card */}
-            <div className="p-8 rounded-3xl bg-slate-950 border border-slate-800 hover:border-amber-400/50 transition-all flex flex-col justify-between space-y-6">
+            <motion.div 
+              variants={fadeUpVariant}
+              whileHover={{ y: -8, transition: { duration: 0.25 } }}
+              className="p-8 rounded-3xl bg-slate-950 border border-slate-800 hover:border-amber-400/50 hover:shadow-2xl hover:shadow-amber-400/10 transition-all flex flex-col justify-between space-y-6"
+            >
               <div className="space-y-4">
                 <div className="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-lg shadow-lg shadow-amber-400/20">
                   <GraduationCap className="w-6 h-6" />
@@ -1125,10 +1187,14 @@ and everything you need to manage your college journey. */}
                 <span>STUDENT LOGIN</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
-            </div>
+            </motion.div>
 
             {/* Faculty Card */}
-            <div className="p-8 rounded-3xl bg-slate-950 border border-slate-800 hover:border-indigo-400/50 transition-all flex flex-col justify-between space-y-6">
+            <motion.div 
+              variants={fadeUpVariant}
+              whileHover={{ y: -8, transition: { duration: 0.25 } }}
+              className="p-8 rounded-3xl bg-slate-950 border border-slate-800 hover:border-indigo-400/50 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all flex flex-col justify-between space-y-6"
+            >
               <div className="space-y-4">
                 <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-lg shadow-indigo-600/20">
                   <BookOpen className="w-6 h-6" />
@@ -1161,10 +1227,14 @@ and everything you need to manage your college journey. */}
                 <span>FACULTY LOGIN</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
-            </div>
+            </motion.div>
 
             {/* Admin Card */}
-            <div className="p-8 rounded-3xl bg-slate-950 border border-slate-800 hover:border-emerald-400/50 transition-all flex flex-col justify-between space-y-6">
+            <motion.div 
+              variants={fadeUpVariant}
+              whileHover={{ y: -8, transition: { duration: 0.25 } }}
+              className="p-8 rounded-3xl bg-slate-950 border border-slate-800 hover:border-emerald-400/50 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all flex flex-col justify-between space-y-6"
+            >
               <div className="space-y-4">
                 <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-black text-lg shadow-lg shadow-emerald-500/20">
                   <ShieldCheck className="w-6 h-6" />
@@ -1197,8 +1267,8 @@ and everything you need to manage your college journey. */}
                 <span>ADMIN LOGIN</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
@@ -1265,7 +1335,11 @@ and everything you need to manage your college journey. */}
               </div>
 
               {/* Floating Verified Mentor Badge */}
-              <div className="absolute -bottom-4 bg-white dark:bg-slate-950 px-4 py-2 rounded-2xl border-2 border-indigo-600 dark:border-indigo-500 shadow-xl flex items-center gap-2 z-20">
+              <motion.div
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -bottom-4 bg-white dark:bg-slate-950 px-4 py-2 rounded-2xl border-2 border-indigo-600 dark:border-indigo-500 shadow-xl flex items-center gap-2 z-20 cursor-default"
+              >
                 <span className="text-indigo-600 dark:text-indigo-400"><Award className="w-6 h-6" /></span>
                 <div className="text-left font-poppins">
                   <div className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider">
@@ -1275,7 +1349,7 @@ and everything you need to manage your college journey. */}
                     15+ Years Guiding BCA Students
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Right: Mentor Vision & Impact Pillars */}
@@ -1307,22 +1381,22 @@ and everything you need to manage your college journey. */}
                   Pillars of Academic Mentorship
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-semibold text-slate-700 dark:text-slate-300 font-poppins">
-                  <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800">
+                  <motion.div whileHover={{ y: -2, x: 2 }} className="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 transition-colors">
                     <CheckCircle2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                     <span>Academic Discipline & 75% Rule</span>
-                  </div>
-                  <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800">
+                  </motion.div>
+                  <motion.div whileHover={{ y: -2, x: 2 }} className="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 transition-colors">
                     <CheckCircle2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                     <span>Real-World Project Advocacy</span>
-                  </div>
-                  <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800">
+                  </motion.div>
+                  <motion.div whileHover={{ y: -2, x: 2 }} className="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 transition-colors">
                     <CheckCircle2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                     <span>Digital Campus Transformation</span>
-                  </div>
-                  <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800">
+                  </motion.div>
+                  <motion.div whileHover={{ y: -2, x: 2 }} className="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 transition-colors">
                     <CheckCircle2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                     <span>Individual Student Empowerment</span>
-                  </div>
+                  </motion.div>
                 </div>
               </div>
 
@@ -1407,30 +1481,32 @@ and everything you need to manage your college journey. */}
                   Engineering Stack & Modules Built
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                  <motion.span whileHover={{ scale: 1.05, y: -2 }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins cursor-default">
                     <Code2 className="w-3.5 h-3.5 text-indigo-500" /> React 18 & Vite
-                  </span>
-                  <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                  </motion.span>
+                  <motion.span whileHover={{ scale: 1.05, y: -2 }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins cursor-default">
                     <Palette className="w-3.5 h-3.5 text-sky-500" /> Tailwind CSS v4
-                  </span>
-                  <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                  </motion.span>
+                  <motion.span whileHover={{ scale: 1.05, y: -2 }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins cursor-default">
                     <Server className="w-3.5 h-3.5 text-green-500" /> Node.js & Express API
-                  </span>
-                  <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                  </motion.span>
+                  <motion.span whileHover={{ scale: 1.05, y: -2 }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins cursor-default">
                     <Database className="w-3.5 h-3.5 text-emerald-500" /> MongoDB Atlas
-                  </span>
-                  <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                  </motion.span>
+                  <motion.span whileHover={{ scale: 1.05, y: -2 }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins cursor-default">
                     <ShieldCheck className="w-3.5 h-3.5 text-rose-500" /> Multi-Role RBAC Security
-                  </span>
-                  <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins">
+                  </motion.span>
+                  <motion.span whileHover={{ scale: 1.05, y: -2 }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-poppins cursor-default">
                     <FileText className="w-3.5 h-3.5 text-amber-500" /> Automated PDF Letterhead Engine
-                  </span>
+                  </motion.span>
                 </div>
               </div>
 
               {/* Action Buttons: GitHub & Open-Source Badge */}
               <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
-                <a
+                <motion.a
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
                   href="https://github.com/MdHuzaifa018"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -1438,7 +1514,7 @@ and everything you need to manage your college journey. */}
                 >
                   <span>Follow on GitHub @MdHuzaifa018</span>
                   <ExternalLink className="w-3.5 h-3.5" />
-                </a>
+                </motion.a>
 
                 <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 font-poppins">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -1476,7 +1552,11 @@ and everything you need to manage your college journey. */}
               </div>
 
               {/* Floating Developer Badge */}
-              <div className="absolute -bottom-4 bg-white dark:bg-slate-950 px-4 py-2 rounded-2xl border-2 border-amber-400 shadow-xl flex items-center gap-2 z-20">
+              <motion.div
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -bottom-4 bg-white dark:bg-slate-950 px-4 py-2 rounded-2xl border-2 border-amber-400 shadow-xl flex items-center gap-2 z-20 cursor-default"
+              >
                 <span className="text-amber-500"><Cpu className="w-6 h-6" /></span>
                 <div className="text-left font-poppins">
                   <div className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider">
@@ -1486,7 +1566,7 @@ and everything you need to manage your college journey. */}
                     Architect & Creator of Nalanda ERP
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
           </div>
@@ -1515,12 +1595,14 @@ and everything you need to manage your college journey. */}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 z-10 w-full md:w-auto">
-            <Link
-              to="/login"
-              className="px-8 py-4 bg-slate-950 hover:bg-slate-900 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl transition-all text-center"
-            >
-              ACCESS ERP PORTAL →
-            </Link>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
+              <Link
+                to="/login"
+                className="inline-block px-8 py-4 bg-slate-950 hover:bg-slate-900 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl transition-all text-center"
+              >
+                ACCESS ERP PORTAL →
+              </Link>
+            </motion.div>
           </div>
         </motion.div>
       </section>
