@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles,
   ArrowRight,
@@ -10,21 +10,16 @@ import {
   CheckCircle2,
   CalendarDays,
   ShieldCheck,
-  BookOpen,
   MapPin,
   ExternalLink,
-  ChevronRight,
   Landmark,
-  Compass,
   Laptop,
   Quote,
-  Users,
   IdCard,
   FileSpreadsheet,
-  Layers,
   ChevronDown,
-  Terminal,
-  Cpu,
+  Menu,
+  X,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useCollegeSettings } from "../../context/CollegeSettingsContext.jsx";
@@ -34,6 +29,7 @@ const WelcomePage = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const { logo, settings } = useCollegeSettings();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const getDashboardPath = () => {
     if (!user) return "/login";
@@ -51,14 +47,14 @@ const WelcomePage = () => {
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans-modern transition-colors duration-300 selection:bg-indigo-500 selection:text-white overflow-x-hidden">
       
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* 1. TOP NAVIGATION BAR                                              */}
+      {/* 1. TOP NAVIGATION BAR (100% RESPONSIVE)                            */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl border-b border-slate-200/70 dark:border-slate-800/70 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-50 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-b border-slate-200/70 dark:border-slate-800/70 transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3">
           
           {/* Brand Identity */}
-          <Link to="/" className="flex items-center gap-3.5 group shrink-0">
-            <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-900 p-1 border-2 border-indigo-500/25 shadow-md group-hover:scale-105 transition-transform flex items-center justify-center overflow-hidden">
+          <Link to="/" className="flex items-center gap-2.5 sm:gap-3.5 group min-w-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 p-1 border-2 border-indigo-500/25 shadow-md group-hover:scale-105 transition-transform flex items-center justify-center overflow-hidden shrink-0">
               <img
                 src={logo || "/images/college-logo.png"}
                 alt="Nalanda College Crest"
@@ -68,22 +64,22 @@ const WelcomePage = () => {
                 }}
               />
             </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="font-black text-slate-950 dark:text-white tracking-tight text-base sm:text-lg leading-tight uppercase font-heading">
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="font-black text-slate-950 dark:text-white tracking-tight text-sm sm:text-lg leading-tight uppercase font-heading truncate">
                   {settings?.collegeName || "Nalanda College"}
                 </span>
-                <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-400 border border-amber-300/50">
+                <span className="hidden md:inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-400 border border-amber-300/50 shrink-0">
                   Estd. 1870
                 </span>
               </div>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate max-w-[220px] sm:max-w-none">
-                Constituent Unit of Patliputra University, Patna • Bihar Sharif
+              <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate max-w-[180px] sm:max-w-xs md:max-w-none">
+                Constituent Unit of Patliputra Univ. • Bihar Sharif
               </span>
             </div>
           </Link>
 
-          {/* Clean Navigation Links */}
+          {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-6 text-xs font-bold text-slate-600 dark:text-slate-300">
             <a href="#college-overview" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               College Overview
@@ -92,7 +88,7 @@ const WelcomePage = () => {
               Principal's Desk
             </a>
             <a href="#coordinators" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-              Coordinators (BCA & MCA)
+              Coordinators
             </a>
             <Link to="/portal" className="text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 font-extrabold">
               <span>Smart ERP Portal</span>
@@ -100,38 +96,103 @@ const WelcomePage = () => {
             </Link>
           </nav>
 
-          {/* Right Action Buttons */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Right Action Items */}
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <ThemeToggle />
 
+            {/* Desktop Dashboard / Sign In */}
             {isAuthenticated ? (
               <button
                 onClick={() => navigate(getDashboardPath())}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
+                className="hidden sm:flex items-center gap-2 px-3.5 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all cursor-pointer"
               >
                 <span>Dashboard</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="hidden sm:inline-flex items-center gap-1 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                >
-                  Sign In
-                </Link>
-
-                <Link
-                  to="/portal"
-                  className="flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-[#FFB800] hover:bg-[#FFA500] text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-[0_6px_20px_rgba(255,184,0,0.35)] transition-all cursor-pointer uppercase tracking-wider"
-                >
-                  <span>Access ERP</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </>
+              <Link
+                to="/login"
+                className="hidden sm:inline-flex items-center gap-1 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+              >
+                Sign In
+              </Link>
             )}
+
+            {/* Primary Access ERP Button (Clean & Scaled for Mobile) */}
+            <Link
+              to="/portal"
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 bg-[#FFB800] hover:bg-[#FFA500] text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-[0_4px_14px_rgba(255,184,0,0.35)] transition-all cursor-pointer uppercase tracking-wider shrink-0"
+            >
+              <span>Access ERP</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+
+            {/* Mobile Hamburger Toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Toggle Navigation Menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Dropdown Menu Drawer */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="lg:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl px-4 py-5 space-y-3 shadow-xl"
+            >
+              <div className="flex flex-col space-y-2 text-sm font-bold">
+                <a
+                  href="#college-overview"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors flex items-center justify-between"
+                >
+                  <span>🏛️ College Overview</span>
+                  <ChevronDown className="w-4 h-4 text-slate-400 -rotate-90" />
+                </a>
+                <a
+                  href="#principal-desk"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors flex items-center justify-between"
+                >
+                  <span>🎓 Principal's Desk</span>
+                  <ChevronDown className="w-4 h-4 text-slate-400 -rotate-90" />
+                </a>
+                <a
+                  href="#coordinators"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors flex items-center justify-between"
+                >
+                  <span>💻 Coordinators (BCA & MCA)</span>
+                  <ChevronDown className="w-4 h-4 text-slate-400 -rotate-90" />
+                </a>
+              </div>
+
+              <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col gap-2">
+                <Link
+                  to="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 font-bold text-xs uppercase tracking-wider text-slate-800 dark:text-slate-200"
+                >
+                  Sign In to Account
+                </Link>
+                <Link
+                  to="/portal"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center py-3 bg-[#FFB800] text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider shadow-md"
+                >
+                  Launch Smart Campus ERP ➔
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
@@ -155,7 +216,7 @@ const WelcomePage = () => {
                 <span>ESTD. 1870 • 155+ YEARS OF ACADEMIC PRESTIGE</span>
               </div>
 
-              {/* Bold Headline */}
+              {/* Bold Headline — Original Kapra font */}
               <h1 className="text-slate-950 dark:text-white font-kapra tracking-tight leading-[0.92] text-5xl sm:text-6xl md:text-7xl uppercase">
                 NALANDA COLLEGE, <br />
                 <span className="text-[#0038ff] dark:text-[#4d77ff]">BIHAR SHARIF.</span>
@@ -167,11 +228,11 @@ const WelcomePage = () => {
                 <span className="bg-[#FFE500] text-slate-950 font-bold px-1.5 py-0.5 rounded-md">
                   Patliputra University, Patna
                 </span>
-                . Bringing higher education excellence and modern{" "}
+                . Dedicated to higher academic excellence, modern computer education, and{" "}
                 <span className="bg-[#FFE500] text-slate-950 font-bold px-1.5 py-0.5 rounded-md">
                   Smart Campus ERP
                 </span>{" "}
-                to empower students and faculty.
+                attendance governance.
               </p>
 
               {/* 4 Clean Mini Badges */}
@@ -225,7 +286,7 @@ const WelcomePage = () => {
               <div className="relative rounded-[2.2rem] bg-gradient-to-br from-indigo-600 via-blue-600 to-amber-500 p-1.5 shadow-2xl">
                 <div className="rounded-[2rem] overflow-hidden bg-slate-900 relative aspect-[4/3]">
                   <img
-                    src="/images/college-campus.jpg"
+                    src="https://iili.io/nzGbi79.md.jpg"
                     alt="Nalanda College Historic Campus"
                     className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
                     onError={(e) => {
@@ -235,7 +296,7 @@ const WelcomePage = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
 
                   <div className="absolute top-3.5 right-3.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 text-slate-900 dark:text-white text-[11px] font-black shadow-lg flex items-center gap-1.5">
-                    <MapPin className="w-3 h-3 text-red-500" />
+                    <MapPin className="w-3.5 h-3.5 text-red-500" />
                     <span>Bihar Sharif, Nalanda</span>
                   </div>
 
@@ -264,12 +325,12 @@ const WelcomePage = () => {
       <section id="college-overview" className="py-16 bg-slate-50/70 dark:bg-slate-900/40 border-y border-slate-200/70 dark:border-slate-800/70 scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           
-          {/* Section Header */}
           <div className="text-center max-w-2xl mx-auto space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200/60 dark:border-indigo-800/60">
               <Landmark className="w-3.5 h-3.5" />
               <span>COLLEGE OVERVIEW</span>
             </div>
+            {/* Same Font Style (Kapra) - Unicode-range prevents DEMO watermark */}
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-kapra uppercase tracking-tight text-slate-950 dark:text-white leading-[0.95]">
               155+ Years of Academic Heritage
             </h2>
@@ -279,7 +340,6 @@ const WelcomePage = () => {
             </p>
           </div>
 
-          {/* 4 Clean Pillar Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2">
               <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
@@ -330,23 +390,23 @@ const WelcomePage = () => {
             </div>
           </div>
 
-          {/* Quick Stats Strip */}
+          {/* Clean Kapra Numbers with Fallback (No Watermark) */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center divide-y md:divide-y-0 md:divide-x divide-slate-200 dark:divide-slate-800">
               <div className="pt-2 md:pt-0">
-                <div className="text-2xl sm:text-3xl font-kapra text-indigo-600 dark:text-indigo-400">1870</div>
+                <div className="text-3xl sm:text-4xl font-kapra text-indigo-600 dark:text-indigo-400">1870</div>
                 <div className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Estd. Year</div>
               </div>
               <div className="pt-2 md:pt-0">
-                <div className="text-2xl sm:text-3xl font-kapra text-amber-500">25+</div>
+                <div className="text-3xl sm:text-4xl font-kapra text-amber-500">25+</div>
                 <div className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Departments</div>
               </div>
               <div className="pt-2 md:pt-0">
-                <div className="text-2xl sm:text-3xl font-kapra text-blue-600 dark:text-blue-400">5,000+</div>
+                <div className="text-3xl sm:text-4xl font-kapra text-blue-600 dark:text-blue-400">5,000+</div>
                 <div className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Students</div>
               </div>
               <div className="pt-2 md:pt-0">
-                <div className="text-2xl sm:text-3xl font-kapra text-emerald-600 dark:text-emerald-400">75%</div>
+                <div className="text-3xl sm:text-4xl font-kapra text-emerald-600 dark:text-emerald-400">75%</div>
                 <div className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Attendance Mandate</div>
               </div>
             </div>
@@ -366,22 +426,21 @@ const WelcomePage = () => {
               <Landmark className="w-3.5 h-3.5" />
               <span>OFFICE OF THE PRINCIPAL</span>
             </div>
+            {/* Original Kapra heading with apostrophe falling back without watermark */}
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-kapra uppercase tracking-tight text-slate-950 dark:text-white leading-[0.95]">
               Principal's Desk
             </h2>
           </div>
 
-          {/* Clean Executive Card */}
           <div className="bg-gradient-to-br from-slate-50 via-white to-indigo-50/20 dark:from-slate-900/90 dark:via-slate-900 dark:to-indigo-950/20 border-2 border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-lg">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               
-              {/* Left Column: Portrait */}
               <div className="lg:col-span-4 flex flex-col items-center text-center space-y-3">
-                <div className="relative w-52 h-60 sm:w-56 sm:h-64 rounded-2xl overflow-hidden bg-slate-900 shadow-xl border-2 border-indigo-500/30">
+                <div className="relative w-52 h-64 sm:w-56 sm:h-70 rounded-2xl overflow-hidden bg-slate-900 shadow-xl border-2 border-indigo-500/30">
                   <img
                     src="/images/principal.jpg"
                     alt="Prof. (Dr.) Sunita Sinha, Principal"
-                    className="w-full h-full object-cover object-top"
+                    className="w-full h-full object-cover object-[center_15%]"
                     onError={(e) => {
                       e.target.src = "/images/hero-students.jpg";
                     }}
@@ -395,8 +454,8 @@ const WelcomePage = () => {
                 </div>
 
                 <div className="space-y-0.5">
-                  <h3 className="font-heading font-black text-xl sm:text-2xl text-slate-950 dark:text-white">
-                    Prof. (Dr.) Sunita Sinha
+                  <h3 className="font-kapra uppercase text-2xl sm:text-3xl text-slate-950 dark:text-white tracking-tight">
+                    Prof. Dr. Sunita Sinha
                   </h3>
                   <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
                     Principal, Nalanda College
@@ -407,10 +466,7 @@ const WelcomePage = () => {
                 </div>
               </div>
 
-              {/* Right Column: Crisp Concise Message */}
               <div className="lg:col-span-8 space-y-4 text-left">
-                
-                {/* Short Quote */}
                 <div className="p-4 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-800/70 relative">
                   <Quote className="w-6 h-6 text-indigo-500/30 absolute top-3 right-3 pointer-events-none" />
                   <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-medium leading-relaxed italic">
@@ -419,7 +475,6 @@ const WelcomePage = () => {
                   </p>
                 </div>
 
-                {/* 3 Quick Focus Bullets */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 mb-1" />
@@ -438,7 +493,6 @@ const WelcomePage = () => {
                   </div>
                 </div>
 
-                {/* Signature Tag */}
                 <div className="pt-2 flex items-center justify-between text-xs border-t border-slate-100 dark:border-slate-800">
                   <span className="font-semibold text-slate-700 dark:text-slate-300">
                     Office of The Principal
@@ -447,7 +501,6 @@ const WelcomePage = () => {
                     Nalanda College, Bihar Sharif
                   </span>
                 </div>
-
               </div>
 
             </div>
@@ -457,10 +510,10 @@ const WelcomePage = () => {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* 5. SECTION 3: ACADEMIC COORDINATORS (BCA & MCA IN ONE SECTION)     */}
+      {/* 5. SECTION 3: DEPARTMENT COORDINATORS (PERFECTLY CENTERED FACES)   */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       <section id="coordinators" className="py-16 lg:py-20 bg-slate-50/70 dark:bg-slate-900/40 border-y border-slate-200/70 dark:border-slate-800/70 scroll-mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           
           {/* Section Header */}
           <div className="text-center max-w-2xl mx-auto space-y-1.5">
@@ -472,136 +525,110 @@ const WelcomePage = () => {
               Department Coordinators
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-              Leading the BCA & MCA vocational programs with dedicated computing labs and academic mentorship.
+              Academic leadership guiding the BCA & MCA vocational programs at Nalanda College.
             </p>
           </div>
 
-          {/* 2 Coordinator Cards Side-by-Side in One Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto">
+          {/* 2 Coordinator Cards with Centered Executive Portraits */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10 max-w-4xl mx-auto">
             
             {/* Card 1: BCA Coordinator (Prof. Md Alauddin Khan) */}
-            <div className="bg-white dark:bg-slate-900 border-2 border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-md hover:border-amber-500/50 transition-all flex flex-col justify-between space-y-5">
-              <div className="space-y-4">
+            <div className="bg-white dark:bg-slate-900 border-2 border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-lg hover:border-amber-500/50 transition-all flex flex-col justify-between space-y-6">
+              <div className="space-y-5 text-center">
                 
-                {/* Profile Header */}
-                <div className="flex items-center gap-4">
-                  <div className="relative w-24 h-24 rounded-2xl overflow-hidden shrink-0 border-2 border-amber-500/30 bg-slate-100 dark:bg-slate-800">
-                    <img
-                      src="/images/director.webp"
-                      alt="Prof. Md Alauddin Khan, BCA Coordinator"
-                      className="w-full h-full object-cover object-top"
-                      onError={(e) => {
-                        e.target.src = "/images/hero-students.jpg";
-                      }}
-                    />
-                  </div>
-
-                  <div className="space-y-0.5">
-                    <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                      BCA Coordinator
-                    </span>
-                    <h3 className="font-heading font-black text-xl text-slate-950 dark:text-white">
-                      Prof. Md Alauddin Khan
-                    </h3>
-                    <p className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                      Coordinator & HOD, Computer Applications
-                    </p>
-                    <p className="text-[11px] text-slate-400">
-                      Bachelor of Computer Applications (BCA)
-                    </p>
+                {/* Centered Dignified Portrait (Face Perfectly In Frame) */}
+                <div className="relative w-52 h-64 sm:w-60 sm:h-72 mx-auto rounded-2xl overflow-hidden bg-slate-900 border-2 border-amber-500/40 shadow-md group">
+                  <img
+                    src="/images/director.webp"
+                    alt="Prof. Md Alauddin Khan, BCA Coordinator"
+                    className="w-full h-full object-cover object-[center_20%] transform group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      e.target.src = "/images/hero-students.jpg";
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+                  
+                  {/* Badge */}
+                  <div className="absolute bottom-3 left-3 right-3 bg-amber-500 text-slate-950 text-[11px] font-black uppercase tracking-wider py-1 rounded-lg shadow-md">
+                    BCA Coordinator
                   </div>
                 </div>
 
-                {/* Crisp Quote */}
-                <div className="p-3.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/60 text-xs text-slate-700 dark:text-slate-300 italic">
-                  "Our goal is preparing students with strong programming foundations, hands-on lab work, 
-                  and strict 75% attendance compliance tracked live via Smart Campus ERP."
+                {/* Profile Details */}
+                <div className="space-y-1">
+                  <h3 className="font-kapra uppercase text-2xl sm:text-3xl text-slate-950 dark:text-white tracking-tight">
+                    Prof. Md Alauddin Khan
+                  </h3>
+                  <p className="text-sm font-bold text-amber-600 dark:text-amber-400">
+                    Coordinator & HOD, Computer Applications (BCA)
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Nalanda College, Bihar Sharif
+                  </p>
                 </div>
 
-                {/* 3 Quick Highlights */}
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
-                    <Terminal className="w-3.5 h-3.5 text-amber-500 mx-auto mb-0.5" />
-                    <div className="text-[10px] font-bold text-slate-900 dark:text-white">Coding Labs</div>
-                  </div>
-                  <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 mx-auto mb-0.5" />
-                    <div className="text-[10px] font-bold text-slate-900 dark:text-white">75% Mandate</div>
-                  </div>
-                  <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
-                    <Layers className="w-3.5 h-3.5 text-indigo-500 mx-auto mb-0.5" />
-                    <div className="text-[10px] font-bold text-slate-900 dark:text-white">Live Projects</div>
-                  </div>
+                {/* Clean Quote */}
+                <div className="p-4 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/70 text-xs sm:text-sm text-slate-700 dark:text-slate-300 italic leading-relaxed text-left">
+                  <Quote className="w-4 h-4 text-amber-500 mb-1 inline mr-1 opacity-70" />
+                  "Preparing students with strong programming fundamentals, hands-on laboratory practice, 
+                  and strict 75% attendance compliance monitored via Smart Campus ERP."
                 </div>
 
               </div>
 
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 flex justify-between">
-                <span>Dept. of BCA</span>
-                <span className="font-semibold text-amber-600 dark:text-amber-400">Nalanda College</span>
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 flex justify-between items-center">
+                <span className="font-semibold text-slate-700 dark:text-slate-300">Bachelor of Computer Applications</span>
+                <span className="font-bold text-amber-600 dark:text-amber-400">BCA Program</span>
               </div>
             </div>
 
             {/* Card 2: MCA Coordinator */}
-            <div className="bg-white dark:bg-slate-900 border-2 border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-md hover:border-indigo-500/50 transition-all flex flex-col justify-between space-y-5">
-              <div className="space-y-4">
+            <div className="bg-white dark:bg-slate-900 border-2 border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-lg hover:border-indigo-500/50 transition-all flex flex-col justify-between space-y-6">
+              <div className="space-y-5 text-center">
                 
-                {/* Profile Header */}
-                <div className="flex items-center gap-4">
-                  <div className="relative w-24 h-24 rounded-2xl overflow-hidden shrink-0 border-2 border-indigo-500/30 bg-slate-100 dark:bg-slate-800">
-                    <img
-                      src="/images/mca-coordinator.jpg"
-                      alt="MCA Academic Coordinator"
-                      className="w-full h-full object-cover object-top"
-                      onError={(e) => {
-                        e.target.src = "/images/hero-students.jpg";
-                      }}
-                    />
-                  </div>
-
-                  <div className="space-y-0.5">
-                    <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
-                      MCA Coordinator
-                    </span>
-                    <h3 className="font-heading font-black text-xl text-slate-950 dark:text-white">
-                      Dr. Rajesh Sharma
-                    </h3>
-                    <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                      Coordinator, MCA Program
-                    </p>
-                    <p className="text-[11px] text-slate-400">
-                      Master of Computer Applications (MCA)
-                    </p>
+                {/* Centered Dignified Portrait */}
+                <div className="relative w-52 h-64 sm:w-60 sm:h-72 mx-auto rounded-2xl overflow-hidden bg-slate-900 border-2 border-indigo-500/40 shadow-md group">
+                  <img
+                    src="/images/mca-coordinator.jpg"
+                    alt="Dr. Rajesh Sharma, MCA Coordinator"
+                    className="w-full h-full object-cover object-[center_20%] transform group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      e.target.src = "/images/hero-students.jpg";
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+                  
+                  {/* Badge */}
+                  <div className="absolute bottom-3 left-3 right-3 bg-indigo-600 text-white text-[11px] font-black uppercase tracking-wider py-1 rounded-lg shadow-md">
+                    MCA Coordinator
                   </div>
                 </div>
 
-                {/* Crisp Quote */}
-                <div className="p-3.5 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-800/60 text-xs text-slate-700 dark:text-slate-300 italic">
-                  "Guiding postgraduate students in advanced algorithms, cloud technologies, 
-                  and career placement while ensuring rigorous lecture and lab attendance."
+                {/* Profile Details */}
+                <div className="space-y-1">
+                  <h3 className="font-kapra uppercase text-2xl sm:text-3xl text-slate-950 dark:text-white tracking-tight">
+                    Dr. Rajesh Sharma
+                  </h3>
+                  <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                    Coordinator, MCA Program
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Nalanda College, Bihar Sharif
+                  </p>
                 </div>
 
-                {/* 3 Quick Highlights */}
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
-                    <Cpu className="w-3.5 h-3.5 text-indigo-500 mx-auto mb-0.5" />
-                    <div className="text-[10px] font-bold text-slate-900 dark:text-white">Advanced AI</div>
-                  </div>
-                  <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
-                    <Award className="w-3.5 h-3.5 text-amber-500 mx-auto mb-0.5" />
-                    <div className="text-[10px] font-bold text-slate-900 dark:text-white">PG Seminars</div>
-                  </div>
-                  <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
-                    <Users className="w-3.5 h-3.5 text-emerald-500 mx-auto mb-0.5" />
-                    <div className="text-[10px] font-bold text-slate-900 dark:text-white">Placement</div>
-                  </div>
+                {/* Clean Quote */}
+                <div className="p-4 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-800/70 text-xs sm:text-sm text-slate-700 dark:text-slate-300 italic leading-relaxed text-left">
+                  <Quote className="w-4 h-4 text-indigo-500 mb-1 inline mr-1 opacity-70" />
+                  "Guiding postgraduate students in advanced algorithms, artificial intelligence, 
+                  and career placement while ensuring rigorous lecture and practical lab attendance."
                 </div>
 
               </div>
 
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 flex justify-between">
-                <span>Dept. of MCA</span>
-                <span className="font-semibold text-indigo-600 dark:text-indigo-400">Nalanda College</span>
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 flex justify-between items-center">
+                <span className="font-semibold text-slate-700 dark:text-slate-300">Master of Computer Applications</span>
+                <span className="font-bold text-indigo-600 dark:text-indigo-400">MCA Program</span>
               </div>
             </div>
 
@@ -611,7 +638,7 @@ const WelcomePage = () => {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* 6. SECTION 4: SMART CAMPUS ERP GATEWAY (NO BARCODE REFERENCE!)     */}
+      {/* 6. SECTION 4: SMART CAMPUS ERP GATEWAY (ORIGINAL KAPRA FONT)        */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       <section id="erp-gateway" className="py-16 lg:py-20 relative scroll-mt-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -635,7 +662,7 @@ const WelcomePage = () => {
                 </p>
               </div>
 
-              {/* 4 Feature Chips - NO BARCODE! */}
+              {/* 4 Feature Chips */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-left max-w-2xl mx-auto pt-1">
                 <div className="p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
                   <ShieldCheck className="w-4 h-4 text-emerald-400 mb-1" />
